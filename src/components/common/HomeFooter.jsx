@@ -41,14 +41,22 @@ const socials = [
   { href: 'https://www.youtube.com/channel/UCPq5njZ3e63myDvzfcoSDEQ',              label: 'YouTube',   Icon: YoutubeIcon   },
 ];
 
+const socialHoverStyles = {
+  X: 'hover:text-black',
+  Instagram: 'hover:text-[#E1306C]',
+  Facebook: 'hover:text-[#1877F2]',
+  LinkedIn: 'hover:text-[#0077B5]',
+  YouTube: 'hover:text-[#FF0000]',
+};
+
 export default function HomeFooter() {
   const { t } = useTranslation();
 
   return (
     <footer className="bg-white border-t border-gray-200 py-6 md:py-8 mt-auto">
-      <div className="max-w-[1200px] mx-auto flex flex-col items-center gap-4 md:gap-5 text-center px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1200px] mx-auto flex flex-col items-center gap-2 md:gap-3 text-center px-4 sm:px-6 lg:px-8">
         {/* Social Icons */}
-        <div className="flex items-center gap-3 md:gap-4 flex-wrap justify-center">
+        <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-center">
           {socials.map(({ href, label, Icon }) => (
             <a
               key={label}
@@ -56,7 +64,7 @@ export default function HomeFooter() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={label}
-              className="w-5 h-5 md:w-5 md:h-5 text-gray-500 transition-all duration-200 hover:text-gray-900 hover:scale-110"
+              className={`w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full text-gray-400 transition-all duration-200 hover:scale-110 ${socialHoverStyles[label]}`}
             >
               <Icon />
             </a>
@@ -67,9 +75,72 @@ export default function HomeFooter() {
           {t('footerCopyright')}
         </p>
         <p className="text-gray-500 text-xs sm:text-sm my-0.5 font-body flex items-center justify-center gap-1.5 px-2">
-          Made with<Heart size={20} fill="#fca5a5" stroke="none" className="text-red-300 inline-block align-middle" />in India.
+          Made with
+          <span className="relative inline-flex items-center justify-center group">
+            <Heart size={20} fill="#fca5a5" stroke="none" className="text-red-300 inline-block align-middle" />
+            <Heart
+              size={14}
+              fill="#fca5a5"
+              stroke="none"
+              className="floating-heart heart-1"
+            />
+            <Heart
+              size={14}
+              fill="#fca5a5"
+              stroke="none"
+              className="floating-heart heart-2"
+            />
+            <Heart
+              size={14}
+              fill="#fca5a5"
+              stroke="none"
+              className="floating-heart heart-3"
+            />
+          </span>
+          in India.
         </p>
       </div>
+      <style>{`
+        .floating-heart {
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%) translateY(0);
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        .group:hover .floating-heart {
+          opacity: 1;
+          animation: heartFloat 1.4s ease-out infinite;
+        }
+
+        .heart-1 {
+          animation-delay: 0s;
+        }
+
+        .heart-2 {
+          animation-delay: 0.2s;
+        }
+
+        .heart-3 {
+          animation-delay: 0.4s;
+        }
+
+        @keyframes heartFloat {
+          0% {
+            transform: translateX(-50%) translateY(0) scale(1);
+            opacity: 0.8;
+          }
+          25% {
+            opacity: 1;
+          }
+          100% {
+            transform: translateX(-50%) translateY(-32px) scale(0.8);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </footer>
   );
 }

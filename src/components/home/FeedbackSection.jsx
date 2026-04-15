@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ThumbsUp, ThumbsDown } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { feedbackAPI } from '../../api/services';
 
@@ -71,7 +71,8 @@ export default function FeedbackSection() {
                 </>
               ) : null
             ) : (
-              <p className="text-xs md:text-sm font-medium text-purple">
+              <p className="text-xs md:text-sm font-medium text-purple flex items-center gap-2">
+                <Sparkles size={16} className="text-purple-500" />
                 {feedbackType === 'like' ? t('feedbackPositive') : t('feedbackNegative')}
               </p>
             )}
@@ -95,7 +96,7 @@ export default function FeedbackSection() {
                 {feedbackSubmitting ? t('feedbackSubmitting') : t('submitFeedback')}
               </button>
               <button
-                className="px-5 py-2 bg-white border border-gray-300 text-gray-700 rounded-full text-[11px] sm:text-xs font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-50 w-full sm:w-auto"
+                className="btn-glow btn-glow-sm w-full sm:w-auto !px-5 !py-2 !text-[11px] sm:!text-xs bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 onClick={() => { setFeedbackType(null); setFeedbackMessage(''); }}
                 disabled={feedbackSubmitting}
               >

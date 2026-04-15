@@ -80,47 +80,45 @@ export default function TechnologySection() {
             return (
               <div
                 key={item.id}
-                className="card-glow-hover p-4 md:p-5 bg-white border border-gray-200 rounded-[14px] flex flex-col gap-2 overflow-hidden cursor-pointer transition-all duration-300"
+                className="card-glow-hover p-4 md:p-5 bg-white border border-gray-200 rounded-[14px] flex flex-col gap-3 overflow-hidden cursor-pointer transition-all duration-300"
                 onClick={() => handleCardClick(item.id)}
               >
-                <div className="flex items-start justify-between gap-2 mb-1">
+                <div className="flex items-start gap-3 mb-2">
                   {item.imageUrl ? (
-                    <img 
-                      src={item.imageUrl} 
+                    <img
+                      src={item.imageUrl}
                       alt={item.name}
-                      className="w-[42px] h-[42px] border border-indigo-200 rounded-[10px] object-cover flex-shrink-0"
+                      className="w-[42px] h-[42px] border rounded-[10px] object-cover flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-[42px] h-[42px] bg-indigo-50 border border-indigo-200 rounded-[10px] flex items-center justify-center text-xl flex-shrink-0">
+                    <div className="w-[42px] h-[42px] border rounded-[10px] flex items-center justify-center text-lg font-bold flex-shrink-0 bg-indigo-50 border-indigo-200 text-indigo-600">
                       ⧁
                     </div>
                   )}
-                  <div className="flex flex-col gap-1 flex-1 min-w-0">
-                    <span className="text-[0.72rem] font-semibold text-amber-600 uppercase tracking-wider">
-                      {item.category?.replace(/_/g, ' ')}
-                    </span>
-                    <span className="text-xs text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap">
-                      {item.pricingDemand}
-                    </span>
-                  </div>
-                  {item.official && (
-                    <div className="px-2 py-0.5 bg-amber-50 border border-amber-200 rounded text-[0.68rem] font-bold text-amber-600 flex-shrink-0">
-                      ✦ Official
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-display text-[1.05rem] font-bold text-gray-900 mb-1 truncate">
+                      {item.name}
+                    </h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs text-gray-500 truncate">
+                        {item.category?.replace(/_/g, ' ') || t('technology')}
+                      </span>
+                      {item.official && (
+                        <span className="px-2 py-0.5 rounded-md text-[0.65rem] font-semibold bg-amber-50 border border-amber-200 text-amber-600">
+                          ✦ Official
+                        </span>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
 
-                <h3 className="font-display text-[1.15rem] font-semibold text-gray-900 leading-tight mt-1">
-                  {item.name}
-                </h3>
-
-                <p className="text-sm text-gray-600 line-clamp-2 mb-2 flex-1">
+                <p className="text-sm text-gray-600 line-clamp-2 flex-1">
                   {item.description}
                 </p>
 
-                <div className="flex items-center gap-2 mb-2">
-                  <span 
-                    className="px-2.5 py-1 rounded-md text-xs font-semibold" 
+                <div className="flex flex-wrap gap-2 items-center">
+                  <span
+                    className="px-2.5 py-1 rounded-md text-xs font-semibold"
                     style={{ color: s.color, background: s.bg, border: `1px solid ${s.border}` }}
                   >
                     {item.softwareStatus}
@@ -131,7 +129,8 @@ export default function TechnologySection() {
                 </div>
 
                 <div className="mb-2">
-                  <div className="font-display text-[1.6rem] font-bold text-green-600 leading-tight">
+                  <div className="text-[0.65rem] text-gray-500">Asking Price</div>
+                  <div className="font-display text-[1.85rem] font-bold text-indigo-600 leading-tight tracking-[-0.01em]">
                     ₹{Number(item.price).toLocaleString('en-IN')}
                   </div>
                 </div>
@@ -140,7 +139,7 @@ export default function TechnologySection() {
                   <div className="flex items-center gap-3 text-sm text-gray-600">
                     <span title="Views">👁 {item.views || 0}</span>
                   </div>
-                    <button className="btn-glow btn-glow-sm w-full sm:w-auto">
+                  <button className="btn-glow btn-glow-sm w-full sm:w-auto">
                     View Details
                   </button>
                 </div>

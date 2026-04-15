@@ -257,9 +257,9 @@ export default function AppLayout({ children }) {
                   <Link
                     to="/notifications"
                     onClick={() => setBellOpen(false)}
-                    className="text-[0.78rem] text-gray-700 no-underline hover:underline"
+                    className="text-[0.78rem] text-purple-600 no-underline hover:text-purple-800 hover:underline"
                   >
-                    View all notifications â†’
+                    View all notifications →
                   </Link>
                 </div>
               </div>
