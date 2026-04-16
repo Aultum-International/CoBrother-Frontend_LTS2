@@ -1,50 +1,8 @@
-import { useState } from 'react';
-import { ThumbsUp, ThumbsDown } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { feedbackAPI } from '../../api/services';
 import DomainsSection from '../home/DomainsSection';
 import VenturesSection from '../home/VenturesSection';
 import TechnologySection from '../home/TechnologySection';
-import FeedbackSection from '../home/FeedbackSection';
 
 export default function ExploreSection() {
-  const { t } = useTranslation();
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-
-  const handleFeedbackTypeClick = (type) => {
-    setFeedbackType(type);
-  };
-
-  const handleFeedbackSubmit = async () => {
-    if (!feedbackMessage.trim()) {
-      alert(t('feedback.placeholder'));
-      return;
-    }
-    try {
-      setFeedbackSubmitting(true);
-      const response = await feedbackAPI.submit({
-        feedbackType,
-        message: feedbackMessage,
-        pageUrl: window.location.href,
-      });
-      
-      if (response.data && response.data.status === 'success') {
-        setFeedbackSubmitted(true);
-      } else {
-        alert(t('feedback.failedToSend'));
-      }
-    } catch (error) {
-      console.error('Feedback error:', error);
-      alert(t('feedback.somethingWrong'));
-    } finally {
-      setFeedbackSubmitting(false);
-    }
-  };
-
-
   return (
     <>
       {/* ═══════════════════════════════════════════════════════════════════
@@ -62,10 +20,6 @@ export default function ExploreSection() {
       ═══════════════════════════════════════════════════════════════════ */}
       <TechnologySection />
 
-      {/* ═══════════════════════════════════════════════════════════════════
-          FEEDBACK WIDGET (Separate Component)
-      ═══════════════════════════════════════════════════════════════════ */}
-      <FeedbackSection />
     </>
   );
 }

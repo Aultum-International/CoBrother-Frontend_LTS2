@@ -14,6 +14,7 @@ import HeroGlow from '../components/common/HeroGlow';
 import ExploreSection from '../components/common/ExploreSection';
 import DomainSearchBar from '../components/common/DomainSearchBar';
 import HomeFooter from '../components/common/HomeFooter';
+import FeedbackSection from '../components/home/FeedbackSection';
 import ExploreButton from '../components/common/ExploreButton';
 
 export const searchDomainRedirect = (domainQuery, selectedExtension = '.com') => {
@@ -140,41 +141,82 @@ export default function Home() {
       <DomainSearchBar />
       <ExploreSection />
 
-      <section className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 bg-slate-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid gap-12 md:grid-cols-[1.1fr_.9fr] items-center">
-            <div className="space-y-8">
-              <div className="inline-flex rounded-full border border-indigo-200 bg-indigo-100/80 px-4 py-1 text-sm font-semibold uppercase tracking-[0.24em] text-indigo-700 shadow-sm">
-                CoBrother home for domains, ventures, creation and community
-              </div>
-              <div className="space-y-5">
-                <h1 className="text-4xl sm:text-5xl xl:text-6xl font-display font-bold tracking-tight text-slate-950">
-                  Build your online identity, grow your venture, and connect with creators.
-                </h1>
-                <p className="max-w-2xl text-lg leading-8 text-slate-600">
-                  Discover domains, co-ventures, technology and community tools from a single polished homepage.
-                </p>
-              </div>
-            </div>
-          </div>
+   <section className="py-2 md:py-28 px-4 sm:px-6 lg:px-8 ">
 
-          <div className="mt-12 rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_20px_80px_-40px_rgba(15,23,42,0.12)]">
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-              {features.map((feature, index) => (
-                <div key={index} className="group overflow-hidden rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
-                  <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-indigo-50 text-indigo-700 shadow-sm">
-                    {feature.icon}
-                  </div>
-                  <h3 className="text-xl font-semibold text-slate-950 mb-3">{t(feature.titleKey)}</h3>
-                  <p className="text-sm leading-7 text-slate-600 mb-6">{t(feature.descKey)}</p>
-                  <ExploreButton onClick={() => navigate(feature.link)}>
-                    {t('exploreBtn')}
-                  </ExploreButton>
-                </div>
-              ))}
+  {/* Heading */}
+  <div className="max-w-2xl mx-auto text-center mb-14 md:mb-20">
+    <span className="inline-block mb-4 px-4 py-1.5 text-xs font-semibold bg-gradient-to-r from-sky-100 to-emerald-100 text-sky-700 rounded-full shadow-sm">
+      FEATURED TOOLS
+    </span>
+
+    <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight tracking-tight">
+      Explore the{" "}
+      <span className="relative inline-block">
+        <span className="bg-gradient-to-r from-sky-500 to-emerald-500 bg-clip-text text-transparent">
+          CoBrother
+        </span>
+        <span className="absolute -bottom-1 left-0 w-full h-[6px] bg-gradient-to-r from-sky-200 to-emerald-200 blur-md opacity-70"></span>
+      </span>{" "}
+      pathways
+    </h2>
+
+    <p className="mt-5 text-gray-500 text-sm md:text-base">
+      Discover powerful tools to build, scale, and dominate faster
+    </p>
+  </div>
+
+  {/* Cards */}
+  <div className="max-w-[1200px] mx-auto">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+
+      {features.map((feature, index) => (
+        <div
+          key={index}
+          className="group relative p-[1px] rounded-2xl bg-gradient-to-br from-sky-200/40 via-transparent to-emerald-200/40 hover:from-sky-300/60 hover:to-emerald-300/60 transition-all duration-500"
+        >
+          {/* Inner Card */}
+          <div className="relative h-full bg-white rounded-2xl p-6 md:p-8 flex flex-col backdrop-blur-xl">
+
+            {/* Glow Effect */}
+            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-br from-sky-100/40 to-emerald-100/40 blur-xl"></div>
+
+            {/* Icon */}
+            <div className="relative z-10 w-14 h-14 flex items-center justify-center rounded-xl bg-gradient-to-br from-sky-100 to-emerald-100 text-sky-600 mb-5 shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+              {feature.icon}
             </div>
+
+            {/* Title */}
+            <h3 className="relative z-10 text-lg md:text-xl font-semibold text-gray-900 mb-2">
+              {t(feature.titleKey)}
+            </h3>
+
+            {/* Description */}
+            <p className="relative z-10 text-sm text-gray-500 mb-6 leading-relaxed flex-1">
+              {t(feature.descKey)}
+            </p>
+
+            {/* CTA */}
+            <button
+              onClick={() => navigate(feature.link)}
+              className="relative z-10 mt-auto inline-flex items-center gap-2 text-sm font-semibold text-sky-600"
+            >
+              {t('Explore')}
+              <span className="transition-transform duration-300 group-hover:translate-x-1">
+                →
+              </span>
+            </button>
+
           </div>
         </div>
+      ))}
+
+    </div>
+  </div>
+
+</section>
+
+      <section className="py-2 ">
+        <FeedbackSection />
       </section>
 
       <HomeFooter />

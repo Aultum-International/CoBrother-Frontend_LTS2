@@ -42,7 +42,7 @@ export default function FeedbackSection() {
 
   return (
     <section className="bg-white py-8 md:py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-[980px] mx-auto p-4 md:p-5 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-2xl">
+      <div className="max-w-[980px] mx-auto p-4 md:p-10 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-2xl">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-6">
           <div className="flex-1 min-w-0">
             <p className="text-sm md:text-base font-semibold text-gray-900 mb-1 leading-snug">
