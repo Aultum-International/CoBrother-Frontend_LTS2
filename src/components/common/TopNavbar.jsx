@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -11,6 +11,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showInitial, setShowInitial] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const langRef = useRef(null);
 
   const languages = [
     { code: 'en', name: 'English (IND)', currency: '₹' },
@@ -24,28 +25,38 @@ export default function TopNavbar({ homeMobileMenu = false }) {
 
   const currentLanguageName = languages.find((l) => l.code === i18n.language)?.name || 'English (IND)';
 
-  // Slow flip animation every 3 seconds when user is logged in
   useEffect(() => {
     if (!user) {
       setShowInitial(false);
       return;
     }
-
-    // Start the flip effect after 1 second
     const startFlip = setTimeout(() => {
       setShowInitial(true);
     }, 1000);
-
-    // Flip every 3 seconds
     const interval = setInterval(() => {
       setShowInitial(prev => !prev);
     }, 3000);
-
     return () => {
       clearTimeout(startFlip);
       clearInterval(interval);
     };
   }, [user]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (langRef.current && !langRef.current.contains(e.target)) {
+        setLanguageOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const handleLanguageChange = (langCode) => {
+    i18n.changeLanguage(langCode);
+    localStorage.setItem('selectedLanguage', langCode);
+    setLanguageOpen(false);
+  };
 
   const getUserInitial = () => {
     if (!user) return '';
@@ -59,7 +70,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
     >
       <div className="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-end">
         <div className="flex items-center gap-2 md:gap-5">
-          <div className="relative">
+          <div className="relative" ref={langRef}>
             <button
               className="text-white text-xs md:text-sm font-normal no-underline flex items-center gap-1 px-2.5 md:px-3 py-1.5 md:py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
               onClick={() => setLanguageOpen((prev) => !prev)}
@@ -75,8 +86,8 @@ export default function TopNavbar({ homeMobileMenu = false }) {
                   <button
                     key={lang.code}
                     type="button"
-                    onClick={(e) => e.preventDefault()}
-                    className={`w-full px-4 py-2.5 bg-transparent border-none text-left text-sm cursor-default transition-colors duration-200 font-body ${
+                    onClick={() => handleLanguageChange(lang.code)}
+                    className={`w-full px-4 py-2.5 bg-transparent border-none text-left text-sm cursor-pointer transition-colors duration-200 font-body ${
                       i18n.language === lang.code
                         ? 'bg-purple-50 text-purple font-semibold'
                         : 'text-gray-700 hover:bg-gray-100'
@@ -94,7 +105,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
               href="/contact"
               className="text-white text-sm font-normal no-underline flex items-center gap-1 px-3 py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
             >
-              {t('contactUs')}
+              {t('nav.contactUs')}
             </a>
           </div>
 
@@ -103,11 +114,10 @@ export default function TopNavbar({ homeMobileMenu = false }) {
               href="/account"
               className="text-white text-sm font-normal no-underline flex items-center gap-1 px-3 py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
             >
-              My Profile
+              {t('nav.myProfile')}
             </a>
           </div>
 
-          {/* Profile/Initial Icon with Slow Flip */}
           <div className="relative ml-1 md:ml-2">
             <button
               type="button"
@@ -118,7 +128,6 @@ export default function TopNavbar({ homeMobileMenu = false }) {
               }}
               onClick={() => setProfileDropdownOpen((prev) => !prev)}
             >
-              {/* Front - Profile Icon */}
               <div
                 className="absolute inset-0 rounded-full flex items-center justify-center border border-white/25 bg-transparent transition-all duration-500"
                 style={{
@@ -127,10 +136,8 @@ export default function TopNavbar({ homeMobileMenu = false }) {
                   backfaceVisibility: 'hidden',
                 }}
               >
-                <img src={cobrotherProfile} alt="Profile" className="w-full h-full object-contain p-1" />
+                <img src={cobrotherProfile} alt={t('nav.profile')} className="w-full h-full object-contain p-1" />
               </div>
-
-              {/* Back - User Initial Circle */}
               <div
                 className="absolute inset-0 rounded-full flex items-center justify-center border border-white/25 bg-gradient-to-br from-black-500 to-indigo-600 text-white font-bold text-lg transition-all duration-500"
                 style={{
@@ -143,7 +150,6 @@ export default function TopNavbar({ homeMobileMenu = false }) {
               </div>
             </button>
 
-            {/* Profile Dropdown - Mobile/Tablet Only */}
             {profileDropdownOpen && (
               <div className="md:hidden absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[140px] overflow-hidden z-[1001]">
                 <a
@@ -151,14 +157,14 @@ export default function TopNavbar({ homeMobileMenu = false }) {
                   className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
-                  {t('contactUs')}
+                  {t('nav.contactUs')}
                 </a>
                 <a
                   href={user ? "/dashboard" : "/profile"}
                   className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
-                  Profile
+                  {t('nav.profile')}
                 </a>
               </div>
             )}
@@ -175,7 +181,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
               className="text-white text-sm px-3 py-2 rounded hover:bg-white/10 transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Home
+              {t('nav.home')}
             </a>
           </div>
         </div>

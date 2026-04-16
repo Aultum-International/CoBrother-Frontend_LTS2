@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { communityAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import AppLayout from '../components/layout/AppLayout';
@@ -17,6 +18,7 @@ const INDUSTRIES = [
 ];
 
 export default function CommunityPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -57,7 +59,7 @@ export default function CommunityPage() {
         .then(({ data }) => {
           const profile = data?.data ?? data;
           setMyProfile(profile);
-          setLinkedInSuccess('LinkedIn connected! Your name and photo have been imported. Now complete your profile below.');
+          setLinkedInSuccess(t('community.linkedInConnectedSuccess', 'LinkedIn connected! Your name and photo have been imported. Now complete your profile below.'));
           setShowForm(true);
           // Insert into profiles list if not already there
           setProfiles(prev => {
@@ -66,7 +68,7 @@ export default function CommunityPage() {
           });
         })
         .catch(() => {
-          setLinkedInError('LinkedIn connected but failed to load profile. Please refresh.');
+          setLinkedInError(t('community.linkedInLoadFailed', 'LinkedIn connected but failed to load profile. Please refresh.'));
         })
         .finally(() => setLinkedInLoading(false));
     }
@@ -98,7 +100,7 @@ export default function CommunityPage() {
       window.location.href = url;
     } catch (e) {
       setLinkedInLoading(false);
-      setLinkedInError('Could not get LinkedIn auth URL. Please try again.');
+      setLinkedInError(t('community.linkedInAuthError', 'Could not get LinkedIn auth URL. Please try again.'));
     }
   };
 
@@ -110,7 +112,7 @@ export default function CommunityPage() {
         <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
           <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
           <p className="text-gray-400 text-sm">
-            Connecting your LinkedIn profile…
+            {t('community.connectingLinkedIn', 'Connecting your LinkedIn profile…')}
           </p>
         </div>
       </AppLayout>
@@ -135,24 +137,24 @@ export default function CommunityPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Community</h1>
-            <p className="text-gray-600 mt-1">Connect with founders, investors, and operators.</p>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('community.title', 'Community')}</h1>
+            <p className="text-gray-600 mt-1">{t('community.subtitle', 'Connect with founders, investors, and operators.')}</p>
           </div>
           <div className="flex gap-3 flex-wrap items-center">
             {myProfile ? (
               <div className="flex gap-3">
                 <button className="btn-glow btn-glow-sm" onClick={() => navigate('/profile/analytics')}>
-                  📈 Analytics
+                  📈 {t('community.analytics', 'Analytics')}
                 </button>
                 <button className="btn-glow btn-glow-sm" onClick={() => setShowForm(v => !v)}>
-                  ✏ Edit Profile
+                  ✏ {t('community.editProfile', 'Edit Profile')}
                 </button>
               </div>
             ) : (
               <button className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleConnectLinkedIn} disabled={linkedInLoading}>
                 {linkedInLoading
-                  ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> Connecting…</>
-                  : <><LinkedInIcon /> Connect with LinkedIn</>
+                  ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> {t('community.connecting', 'Connecting…')}</>
+                  : <><LinkedInIcon /> {t('community.connectLinkedIn', 'Connect with LinkedIn')}</>
                 }
               </button>
             )}
@@ -185,10 +187,10 @@ export default function CommunityPage() {
         ) : profiles.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">◉</div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No community members yet</h3>
-            <p className="text-gray-600 mb-6">Connect your LinkedIn to join the community and be discovered.</p>
+            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('community.noMembersTitle', 'No community members yet')}</h3>
+            <p className="text-gray-600 mb-6">{t('community.noMembersDesc', 'Connect your LinkedIn to join the community and be discovered.')}</p>
             <button className="px-5 py-2 bg-[#0077B5] text-white rounded-full text-sm font-semibold transition-all duration-200 hover:bg-[#006399] flex items-center gap-2 mx-auto" onClick={handleConnectLinkedIn}>
-              <LinkedInIcon /> Connect with LinkedIn
+              <LinkedInIcon /> {t('community.connectLinkedIn', 'Connect with LinkedIn')}
             </button>
           </div>
         ) : (
@@ -220,6 +222,7 @@ export default function CommunityPage() {
 }
 
 function CommunityDetailModal({ profile, isMe, onClose, onEdit }) {
+  const { t } = useTranslation();
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
   const p = detail || profile;
@@ -250,7 +253,7 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit }) {
                 : <div className="w-16 h-16 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-2xl font-bold text-indigo-600 flex-shrink-0">{p.name?.[0]?.toUpperCase() || '?'}</div>
               }
               <div>
-                <h2 className="font-display text-[1.75rem] font-semibold text-gray-900">{p.name || 'Anonymous'}</h2>
+                <h2 className="font-display text-[1.75rem] font-semibold text-gray-900">{p.name || t('community.anonymous', 'Anonymous')}</h2>
                 {p.role && (
                   <div className="inline-block mt-1 px-1.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded text-[0.7rem] text-indigo-600 uppercase tracking-wider">
                     {p.role.replace(/_/g, ' ')}
@@ -266,7 +269,7 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit }) {
 
             {skills.length > 0 && (
               <div className="mb-5">
-                <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Skills</div>
+                <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('community.skills', 'Skills')}</div>
                 <div className="flex flex-wrap gap-1.5">
                   {skills.map(s => <span key={s} className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-xs text-gray-600">{s}</span>)}
                 </div>
@@ -275,25 +278,25 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit }) {
 
             {p.linkedInProfileUrl && (
               <div className="mb-5">
-                <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">LinkedIn</div>
+                <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('community.linkedin', 'LinkedIn')}</div>
                 <a href={p.linkedInProfileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm text-[#0077b5] no-underline hover:text-[#005885]">
-                  <LinkedInIcon size={14} /> View Profile ↗
+                  <LinkedInIcon size={14} /> {t('community.viewProfile', 'View Profile ↗')}
                 </a>
               </div>
             )}
 
             {p.whyImHere && (
               <div className="mb-5">
-                <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Why I'm Here</div>
+                <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('community.whyImHere', "Why I'm Here")}</div>
                 <p className="text-gray-600 leading-relaxed text-sm m-0">{p.whyImHere}</p>
               </div>
             )}
 
             <div className="flex gap-3 mt-6">
               {isMe && (
-                <button className="btn-glow" onClick={onEdit}>✏ Edit Profile</button>
+                <button className="btn-glow" onClick={onEdit}>✏ {t('community.editProfile', 'Edit Profile')}</button>
               )}
-              <button className="btn-glow" onClick={onClose}>Close</button>
+              <button className="btn-glow" onClick={onClose}>{t('community.close', 'Close')}</button>
             </div>
           </>
         )}
@@ -305,6 +308,7 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit }) {
 
 // ─── Community Profile Form ───────────────────────────────────────────────────
 function CommunityProfileForm({ initial, onSaved, onCancel }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     role:     initial?.role     || '',
     skills:   initial?.skills   || '',
@@ -320,13 +324,13 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    if (!initial?.id) { setError('Profile ID missing — please refresh.'); return; }
+    if (!initial?.id) { setError(t('community.profileIdMissing', 'Profile ID missing — please refresh.')); return; }
     setLoading(true); setError('');
     try {
       const { data } = await communityAPI.update(initial.id, form);
       onSaved(data?.data ?? data);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to save. Please try again.');
+      setError(err.response?.data?.error || t('community.saveFailed', 'Failed to save. Please try again.'));
     } finally { setLoading(false); }
   };
 
@@ -343,70 +347,70 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
               <div className="font-semibold text-gray-900">{initial.name}</div>
               {initial.linkedInProfileUrl && (
                 <a href={initial.linkedInProfileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs text-[#0077b5] no-underline hover:text-[#005885] mt-0.5">
-                  <LinkedInIcon size={13} /> View LinkedIn profile
+                  <LinkedInIcon size={13} /> {t('community.viewLinkedInProfile', 'View LinkedIn profile')}
                 </a>
               )}
             </div>
           </div>
-          <div className="mt-2.5 text-xs text-blue-500">✓ Name and photo imported from LinkedIn</div>
+          <div className="mt-2.5 text-xs text-blue-500">{t('community.linkedInImported', '✓ Name and photo imported from LinkedIn')}</div>
         </div>
       )}
 
       <h3 className="font-display text-2xl text-gray-900 font-semibold">
-        Complete Your Community Profile
+        {t('community.completeProfile', 'Complete Your Community Profile')}
       </h3>
-      <p className="text-gray-500 text-sm mt-1">Help others understand what you bring to the table.</p>
+      <p className="text-gray-500 text-sm mt-1">{t('community.completeProfileDesc', 'Help others understand what you bring to the table.')}</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Your Role <span className="text-red-500 font-bold">*</span></label>
+            <label className="text-sm font-medium text-gray-700">{t('community.yourRole', 'Your Role')} <span className="text-red-500 font-bold">*</span></label>
             <select name="role" value={form.role} onChange={handleChange} required
               className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
-              <option value="">Select role</option>
+              <option value="">{t('community.selectRole', 'Select role')}</option>
               {ROLES.map(r => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Industry <span className="text-red-500 font-bold">*</span></label>
+            <label className="text-sm font-medium text-gray-700">{t('community.industry', 'Industry')} <span className="text-red-500 font-bold">*</span></label>
             <select name="industry" value={form.industry} onChange={handleChange} required
               className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
-              <option value="">Select industry</option>
+              <option value="">{t('community.selectIndustry', 'Select industry')}</option>
               {INDUSTRIES.map(i => <option key={i} value={i}>{i.replace(/_/g, ' ')}</option>)}
             </select>
           </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Skills <span className="text-gray-400 text-xs">(comma-separated)</span></label>
+          <label className="text-sm font-medium text-gray-700">{t('community.skills', 'Skills')} <span className="text-gray-400 text-xs">{t('community.commaSeparated', '(comma-separated)')}</span></label>
           <input name="skills" value={form.skills} onChange={handleChange}
-            placeholder="e.g. Java, React, Marketing, Finance"
+            placeholder={t('community.skillsPlaceholder', 'e.g. Java, React, Marketing, Finance')}
             className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Location</label>
+          <label className="text-sm font-medium text-gray-700">{t('community.location', 'Location')}</label>
           <input name="location" value={form.location} onChange={handleChange}
-            placeholder="e.g. Bengaluru, India"
+            placeholder={t('community.locationPlaceholder', 'e.g. Bengaluru, India')}
             className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">Why I'm Here <span className="text-gray-400 text-xs">(optional)</span></label>
+          <label className="text-sm font-medium text-gray-700">{t('community.whyImHere', "Why I'm Here")} <span className="text-gray-400 text-xs">{t('community.optional', '(optional)')}</span></label>
           <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange}
-            placeholder="e.g. Looking to co-found a SaaS product, open to advisory roles in fintech, seeking a tech co-founder for my D2C brand..."
+            placeholder={t('community.whyImHerePlaceholder', 'e.g. Looking to co-found a SaaS product, open to advisory roles in fintech, seeking a tech co-founder for my D2C brand...')}
             rows={3}
             className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">LinkedIn Profile URL <span className="text-red-500 font-bold">*</span></label>
+          <label className="text-sm font-medium text-gray-700">{t('community.linkedInUrl', 'LinkedIn Profile URL')} <span className="text-red-500 font-bold">*</span></label>
           <input name="linkedInProfileUrl" value={form.linkedInProfileUrl} onChange={handleChange}
-            placeholder="https://www.linkedin.com/in/your-username"
+            placeholder={t('community.linkedInUrlPlaceholder', 'https://www.linkedin.com/in/your-username')}
             required
             className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
           <span className="text-xs text-gray-400 mt-0.5">
-            Find it on your LinkedIn profile page — e.g. linkedin.com/in/johndoe
+            {t('community.linkedInUrlHint', 'Find it on your LinkedIn profile page — e.g. linkedin.com/in/johndoe')}
           </span>
         </div>
 
@@ -414,9 +418,9 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
 
         <div className="flex gap-3">
           <button type="submit" className="btn-glow" disabled={loading}>
-            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'Save Profile →'}
+            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : t('community.saveProfile', 'Save Profile →')}
           </button>
-          <button type="button" className="btn-glow" onClick={onCancel}>Cancel</button>
+          <button type="button" className="btn-glow" onClick={onCancel}>{t('community.cancel', 'Cancel')}</button>
         </div>
       </form>
     </div>
@@ -425,6 +429,7 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
 
 // ─── Community Card ───────────────────────────────────────────────────────────
 function CommunityCard({ profile, isMe, onView, onEdit, likeState, onLike }) {
+  const { t } = useTranslation();
   const skills = profile.skills?.split(',').map(s => s.trim()).filter(Boolean) || [];
 
   return (
@@ -442,7 +447,7 @@ function CommunityCard({ profile, isMe, onView, onEdit, likeState, onLike }) {
           : <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-xl font-semibold text-indigo-600 flex-shrink-0">{profile.name?.[0]?.toUpperCase() || '?'}</div>
         }
         <div>
-          <h4 className="font-semibold text-[0.95rem] text-gray-900">{profile.name || 'Anonymous'}</h4>
+          <h4 className="font-semibold text-[0.95rem] text-gray-900">{profile.name || t('community.anonymous', 'Anonymous')}</h4>
           {profile.role && (
             <div className="inline-block mt-0.5 px-1.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded text-[0.7rem] text-indigo-600 uppercase tracking-wider">{profile.role.replace(/_/g, ' ')}</div>
           )}
@@ -450,7 +455,7 @@ function CommunityCard({ profile, isMe, onView, onEdit, likeState, onLike }) {
       </div>
 
       <div className="flex flex-col gap-1">
-        <span className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider">Industry & Location</span>
+        <span className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider">{t('community.industryAndLocation', 'Industry & Location')}</span>
         <div className="flex flex-wrap gap-1.5">
           {profile.industry && (
             <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700">{profile.industry.replace(/_/g, ' ')}</span>
@@ -463,7 +468,7 @@ function CommunityCard({ profile, isMe, onView, onEdit, likeState, onLike }) {
 
       {skills.length > 0 && (
         <div className="flex flex-col gap-1">
-          <span className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider">Skills</span>
+          <span className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider">{t('community.skills', 'Skills')}</span>
           <div className="flex flex-wrap gap-1.5">
             {skills.slice(0, 4).map(s => <span key={s} className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-xs text-gray-600">{s}</span>)}
             {skills.length > 4 && <span className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-xs text-gray-400">+{skills.length - 4}</span>}
@@ -473,7 +478,7 @@ function CommunityCard({ profile, isMe, onView, onEdit, likeState, onLike }) {
 
       {profile.linkedInProfileUrl && (
         <a href={profile.linkedInProfileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs text-[#0077b5] no-underline mt-0.5 hover:text-[#005885]" onClick={e => e.stopPropagation()}>
-          <LinkedInIcon size={13} /> LinkedIn ↗
+          <LinkedInIcon size={13} /> {t('community.linkedInLink', 'LinkedIn ↗')}
         </a>
       )}
 

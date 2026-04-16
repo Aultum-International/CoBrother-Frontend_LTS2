@@ -20,7 +20,7 @@ export default function ExploreSection() {
 
   const handleFeedbackSubmit = async () => {
     if (!feedbackMessage.trim()) {
-      alert(t('feedbackPlaceholder'));
+      alert(t('feedback.placeholder'));
       return;
     }
     try {
@@ -34,11 +34,11 @@ export default function ExploreSection() {
       if (response.data && response.data.status === 'success') {
         setFeedbackSubmitted(true);
       } else {
-        alert('Failed to send feedback. Please try again.');
+        alert(t('feedback.failedToSend'));
       }
     } catch (error) {
       console.error('Feedback error:', error);
-      alert('Something went wrong. Please try again later.');
+      alert(t('feedback.somethingWrong'));
     } finally {
       setFeedbackSubmitting(false);
     }

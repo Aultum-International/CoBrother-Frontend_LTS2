@@ -35,36 +35,27 @@ export default function HomeNavbar({
                 }`}
                 onClick={() => setOpenDropdown(openDropdown === 'domains' ? null : 'domains')}
               >
-                {t('domains')} <ChevronDown size={14} />
+                {t('homeNav.domains')} <ChevronDown size={14} />
               </button>
               {openDropdown === 'domains' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
                   <button
                     className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                    onClick={() => {
-                      navigate('/domains');
-                      setOpenDropdown(null);
-                    }}
+                    onClick={() => { navigate('/domains'); setOpenDropdown(null); }}
                   >
-                    {t('exploreDomains')}
+                    {t('homeNav.exploreDomains')}
                   </button>
                   <button
                     className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                    onClick={() => {
-                      navigate('/domains/dashboard');
-                      setOpenDropdown(null);
-                    }}
+                    onClick={() => { navigate('/domains/dashboard'); setOpenDropdown(null); }}
                   >
-                    {t('listDomains')}
+                    {t('homeNav.listDomains')}
                   </button>
                   <button
                     className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                    onClick={() => {
-                      navigate('/auctions');
-                      setOpenDropdown(null);
-                    }}
+                    onClick={() => { navigate('/auctions'); setOpenDropdown(null); }}
                   >
-                    {t('bidDomains')}
+                    {t('homeNav.bidDomains')}
                   </button>
                 </div>
               )}
@@ -79,36 +70,27 @@ export default function HomeNavbar({
                 }`}
                 onClick={() => setOpenDropdown(openDropdown === 'venture' ? null : 'venture')}
               >
-                {t('Ventures')} <ChevronDown size={14} />
+                {t('homeNav.ventures')} <ChevronDown size={14} />
               </button>
               {openDropdown === 'venture' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
                   <button
                     className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                    onClick={() => {
-                      navigate('/ventures');
-                      setOpenDropdown(null);
-                    }}
+                    onClick={() => { navigate('/ventures'); setOpenDropdown(null); }}
                   >
-                    {t('exploreVenture')}
+                    {t('homeNav.exploreVenture')}
                   </button>
                   <button
                     className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                    onClick={() => {
-                      navigate('/ventures/new');
-                      setOpenDropdown(null);
-                    }}
+                    onClick={() => { navigate('/ventures/new'); setOpenDropdown(null); }}
                   >
-                    {t('listVenture')}
+                    {t('homeNav.listVenture')}
                   </button>
                   <button
                     className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                    onClick={() => {
-                      navigate('/auctions');
-                      setOpenDropdown(null);
-                    }}
+                    onClick={() => { navigate('/auctions'); setOpenDropdown(null); }}
                   >
-                    {t('bidVenture')}
+                    {t('homeNav.bidVenture')}
                   </button>
                 </div>
               )}
@@ -123,36 +105,27 @@ export default function HomeNavbar({
                 }`}
                 onClick={() => setOpenDropdown(openDropdown === 'auctions' ? null : 'auctions')}
               >
-                {t('auctions')} <ChevronDown size={14} />
+                {t('homeNav.auctions')} <ChevronDown size={14} />
               </button>
               {openDropdown === 'auctions' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
                   <button
                     className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                    onClick={() => {
-                      navigate('/auctions');
-                      setOpenDropdown(null);
-                    }}
+                    onClick={() => { navigate('/auctions'); setOpenDropdown(null); }}
                   >
-                    Domain Auction
+                    {t('homeNav.domainAuction')}
                   </button>
                   <button
                     className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                    onClick={() => {
-                      navigate('/venture-auction');
-                      setOpenDropdown(null);
-                    }}
+                    onClick={() => { navigate('/venture-auction'); setOpenDropdown(null); }}
                   >
-                    Venture Auction
+                    {t('homeNav.ventureAuction')}
                   </button>
                   <button
                     className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                    onClick={() => {
-                      navigate('/disruptors');
-                      setOpenDropdown(null);
-                    }}
+                    onClick={() => { navigate('/disruptors'); setOpenDropdown(null); }}
                   >
-                    Disruptor Auction
+                    {t('homeNav.disruptorAuction')}
                   </button>
                 </div>
               )}
@@ -167,18 +140,15 @@ export default function HomeNavbar({
                 }`}
                 onClick={() => setOpenDropdown(openDropdown === 'technology' ? null : 'technology')}
               >
-                {t('technologies')} <ChevronDown size={14} />
+                {t('homeNav.technologies')} <ChevronDown size={14} />
               </button>
               {openDropdown === 'technology' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
                   <button
                     className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                    onClick={() => {
-                      navigate('/cocreation');
-                      setOpenDropdown(null);
-                    }}
+                    onClick={() => { navigate('/cocreation'); setOpenDropdown(null); }}
                   >
-                    {t('exploreTechnology')}
+                    {t('homeNav.exploreTechnology')}
                   </button>
                 </div>
               )}
@@ -193,36 +163,27 @@ export default function HomeNavbar({
                 }`}
                 onClick={() => setOpenDropdown(openDropdown === 'disruptors' ? null : 'disruptors')}
               >
-                {t('disruptors')} <ChevronDown size={14} />
+                {t('homeNav.disruptors')} <ChevronDown size={14} />
               </button>
               {openDropdown === 'disruptors' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px] z-50 overflow-hidden">
                   <button
                     className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                    onClick={() => {
-                      navigate('/join-form');
-                      setOpenDropdown(null);
-                    }}
+                    onClick={() => { navigate('/join-form'); setOpenDropdown(null); }}
                   >
-                    {t('beTheDisruptors')}
+                    {t('homeNav.beTheDisruptors')}
                   </button>
                   <button
                     className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                    onClick={() => {
-                      navigate('/community');
-                      setOpenDropdown(null);
-                    }}
+                    onClick={() => { navigate('/community'); setOpenDropdown(null); }}
                   >
-                    {t('exploreDisruptors')}
+                    {t('homeNav.exploreDisruptors')}
                   </button>
                   <button
                     className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                    onClick={() => {
-                      navigate('/auctions');
-                      setOpenDropdown(null);
-                    }}
+                    onClick={() => { navigate('/auctions'); setOpenDropdown(null); }}
                   >
-                    {t('bidDisruptors')}
+                    {t('homeNav.bidDisruptors')}
                   </button>
                 </div>
               )}
@@ -241,11 +202,11 @@ export default function HomeNavbar({
 
           <div className="hidden lg:flex items-center gap-2 lg:gap-3">
             <button className="btn-glow btn-glow-md" onClick={() => navigate('/join-form')}>
-              {t('joinUs')}
+              {t('homeNav.joinUs')}
             </button>
             {!user ? (
               <button className="btn-glow btn-glow-md" onClick={() => navigate('/login')}>
-                {t('signIn')}
+                {t('homeNav.signIn')}
               </button>
             ) : (
               <button
@@ -255,7 +216,7 @@ export default function HomeNavbar({
                   window.location.href = '/';
                 }}
               >
-                Logout
+                {t('homeNav.logout')}
               </button>
             )}
           </div>
@@ -270,7 +231,7 @@ export default function HomeNavbar({
           />
           <div className="lg:hidden fixed top-[100px] left-0 w-[290px] max-w-[90vw] h-[calc(100dvh-100px)] bg-white shadow-2xl z-50 animate-[slideInLeft_0.3s_ease-out] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 m-0">Menu</h3>
+              <h3 className="text-lg font-semibold text-gray-900 m-0">{t('nav.menu')}</h3>
               <button
                 className="bg-transparent border-none cursor-pointer text-gray-600 transition-colors duration-200 hover:text-gray-900"
                 onClick={closeMobileMenu}
@@ -281,67 +242,48 @@ export default function HomeNavbar({
             <div className="flex flex-col py-2">
               <button
                 className="w-full px-5 py-3.5 border-none text-left text-base text-gray-700 bg-transparent cursor-pointer transition-all duration-200 border-l-[3px] border-l-transparent hover:bg-gray-50 hover:text-gray-900 hover:border-l-gray-900"
-                onClick={() => {
-                  navigate('/domains');
-                  closeMobileMenu();
-                }}
+                onClick={() => { navigate('/domains'); closeMobileMenu(); }}
               >
-                {t('domains')}
+                {t('homeNav.domains')}
               </button>
               <button
                 className="w-full px-5 py-3.5 border-none text-left text-base text-gray-700 bg-transparent cursor-pointer transition-all duration-200 border-l-[3px] border-l-transparent hover:bg-gray-50 hover:text-gray-900 hover:border-l-gray-900"
-                onClick={() => {
-                  navigate('/ventures');
-                  closeMobileMenu();
-                }}
+                onClick={() => { navigate('/ventures'); closeMobileMenu(); }}
               >
-                {t('venture')}
+                {t('homeNav.ventures')}
               </button>
               <button
                 className="w-full px-5 py-3.5 border-none text-left text-base text-gray-700 bg-transparent cursor-pointer transition-all duration-200 border-l-[3px] border-l-transparent hover:bg-gray-50 hover:text-gray-900 hover:border-l-gray-900"
-                onClick={() => {
-                  navigate('/auctions');
-                  closeMobileMenu();
-                }}
+                onClick={() => { navigate('/auctions'); closeMobileMenu(); }}
               >
-                {t('auctions')}
+                {t('homeNav.auctions')}
               </button>
               <button
                 className="w-full px-5 py-3.5 border-none text-left text-base text-gray-700 bg-transparent cursor-pointer transition-all duration-200 border-l-[3px] border-l-transparent hover:bg-gray-50 hover:text-gray-900 hover:border-l-gray-900"
-                onClick={() => {
-                  navigate('/cocreation');
-                  closeMobileMenu();
-                }}
+                onClick={() => { navigate('/cocreation'); closeMobileMenu(); }}
               >
-                {t('technologies')}
+                {t('homeNav.technologies')}
               </button>
               <button
                 className="w-full px-5 py-3.5 border-none text-left text-base text-gray-700 bg-transparent cursor-pointer transition-all duration-200 border-l-[3px] border-l-transparent hover:bg-gray-50 hover:text-gray-900 hover:border-l-gray-900"
-                onClick={() => {
-                  navigate('/community');
-                  closeMobileMenu();
-                }}
+                onClick={() => { navigate('/community'); closeMobileMenu(); }}
               >
-                {t('disruptors')}
+                {t('homeNav.disruptors')}
               </button>
               <div className="px-5 pt-4 pb-2 grid grid-cols-1 gap-2">
                 <button className="btn-glow btn-glow-md w-full" onClick={() => { navigate('/join-form'); closeMobileMenu(); }}>
-                  {t('joinUs')}
+                  {t('homeNav.joinUs')}
                 </button>
                 {!user ? (
                   <button className="btn-glow btn-glow-md w-full" onClick={() => { navigate('/login'); closeMobileMenu(); }}>
-                    {t('signIn')}
+                    {t('homeNav.signIn')}
                   </button>
                 ) : (
                   <button
                     className="btn-glow btn-glow-md w-full"
-                    onClick={() => {
-                      localStorage.clear();
-                      window.location.href = '/';
-                      closeMobileMenu();
-                    }}
+                    onClick={() => { localStorage.clear(); window.location.href = '/'; closeMobileMenu(); }}
                   >
-                    Logout
+                    {t('homeNav.logout')}
                   </button>
                 )}
               </div>

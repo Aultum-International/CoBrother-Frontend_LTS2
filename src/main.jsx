@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './tailwind.css'
 import './index.css'
 import './styles/professional-ui.css'
-import './i18n'
+import './i18n/index'
 import App from './App.jsx'
 import ErrorBoundary from './components/common/ErrorBoundary.jsx'
 

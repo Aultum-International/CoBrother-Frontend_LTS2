@@ -1,25 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search } from 'lucide-react';
-
-/**
- * Reusable filter bar.
- * Props:
- *   search, onSearch
- *   category, onCategory, categoryOptions — [{value, label}]
- *   minPrice, maxPrice, onMinPrice, onMaxPrice — pass null to hide price filter
- *   sortBy, onSort, sortOptions — [{value, label}] (optional, uses defaults if omitted)
- *   onClear, activeFilterCount
- *   placeholder — search input placeholder
- */
-
-const DEFAULT_SORT_OPTIONS = [
-  { value: 'newest',     label: 'Newest First'   },
-  { value: 'oldest',     label: 'Oldest First'   },
-  { value: 'price_asc',  label: 'Price: Low → High' },
-  { value: 'price_desc', label: 'Price: High → Low' },
-  { value: 'most_liked', label: 'Most Liked'     },
-  { value: 'most_viewed',label: 'Most Viewed'    },
-];
+import { useTranslation } from 'react-i18next';
 
 export default function FilterBar({
   search, onSearch,
@@ -27,20 +8,28 @@ export default function FilterBar({
   minPrice, maxPrice, onMinPrice, onMaxPrice,
   sortBy, onSort, sortOptions,
   onClear, activeFilterCount = 0,
-  placeholder = 'Search…',
+  placeholder,
   theme = 'dark',
 }) {
+  const { t } = useTranslation();
   const [searchInput, setSearchInput] = useState(search || '');
   const debounceRef = useRef(null);
 
-  // Debounce search 300ms
+  const DEFAULT_SORT_OPTIONS = [
+    { value: 'newest',     label: t('filter.newestFirst')  },
+    { value: 'oldest',     label: t('filter.oldestFirst')  },
+    { value: 'price_asc',  label: t('filter.priceLowHigh') },
+    { value: 'price_desc', label: t('filter.priceHighLow') },
+    { value: 'most_liked', label: t('filter.mostLiked')    },
+    { value: 'most_viewed',label: t('filter.mostViewed')   },
+  ];
+
   useEffect(() => {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => onSearch(searchInput), 300);
     return () => clearTimeout(debounceRef.current);
   }, [searchInput]);
 
-  // Sync if parent clears
   useEffect(() => { if (!search) setSearchInput(''); }, [search]);
 
   const sorts = sortOptions || DEFAULT_SORT_OPTIONS;
@@ -53,9 +42,7 @@ export default function FilterBar({
         ? 'bg-white border border-gray-200 shadow-sm' 
         : 'bg-white/[0.03] border border-white/[0.08]'
     }`}>
-      {/* Row 1: search + sort */}
       <div className="flex gap-3 flex-wrap">
-        {/* Search */}
         <div className="flex-[1_1_220px] relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-700 inline-flex items-center justify-center pointer-events-none">
             <Search size={15} strokeWidth={2.4} />
@@ -63,7 +50,7 @@ export default function FilterBar({
           <input
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
-            placeholder={placeholder}
+            placeholder={placeholder || t('common.search') + '…'}
             className={`pl-9 w-full px-3 py-2 rounded-[10px] border outline-none transition-all ${
               isLight
                 ? 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]'
@@ -71,8 +58,6 @@ export default function FilterBar({
             }`}
           />
         </div>
-
-        {/* Sort */}
         <select
           value={sortBy}
           onChange={e => onSort(e.target.value)}
@@ -88,9 +73,7 @@ export default function FilterBar({
         </select>
       </div>
 
-      {/* Row 2: category + price + clear */}
       <div className="flex gap-3 flex-wrap items-center">
-        {/* Category */}
         {categoryOptions.length > 0 && (
           <select
             value={category}
@@ -101,21 +84,20 @@ export default function FilterBar({
                 : 'bg-bg-input border-border-dark text-text focus:border-gold'
             }`}
           >
-            <option value="">All Categories</option>
+            <option value="">{t('filter.allCategories')}</option>
             {categoryOptions.map(c => (
               <option key={c.value} value={c.value}>{c.label}</option>
             ))}
           </select>
         )}
 
-        {/* Price range */}
         {showPrice && (
           <div className="flex gap-2 items-center flex-[1_1_220px]">
             <input
               type="number" min="0"
               value={minPrice}
               onChange={e => onMinPrice(e.target.value)}
-              placeholder="Min ₹"
+              placeholder={t('filter.minPrice')}
               className={`w-[90px] px-3 py-2 rounded-[10px] border outline-none transition-all ${
                 isLight
                   ? 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]'
@@ -127,7 +109,7 @@ export default function FilterBar({
               type="number" min="0"
               value={maxPrice}
               onChange={e => onMaxPrice(e.target.value)}
-              placeholder="Max ₹"
+              placeholder={t('filter.maxPrice')}
               className={`w-[90px] px-3 py-2 rounded-[10px] border outline-none transition-all ${
                 isLight
                   ? 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]'
@@ -137,13 +119,12 @@ export default function FilterBar({
           </div>
         )}
 
-        {/* Clear filters */}
         {activeFilterCount > 0 && (
           <button
             onClick={onClear}
             className="bg-red-500/10 border border-red-500/25 rounded-lg px-3.5 py-1.5 text-[#c86e6e] text-[0.8rem] cursor-pointer flex items-center gap-1.5 whitespace-nowrap hover:bg-red-500/20 transition-colors"
           >
-            ✕ Clear
+            {t('filter.clear')}
             <span className="bg-[#c86e6e] text-white rounded-full w-[18px] h-[18px] text-[0.68rem] font-bold flex items-center justify-center">
               {activeFilterCount}
             </span>
@@ -151,7 +132,6 @@ export default function FilterBar({
         )}
       </div>
 
-      {/* Active filter chips */}
       {activeFilterCount > 0 && (
         <div className="flex gap-1.5 flex-wrap">
           {searchInput && (
@@ -161,11 +141,11 @@ export default function FilterBar({
             <Chip label={category.replace(/_/g, ' ')} onRemove={() => onCategory('')} light={isLight} />
           )}
           {minPrice && (
-            <Chip label={`Min ₹${Number(minPrice).toLocaleString('en-IN')}`}
+            <Chip label={`${t('filter.minPrice')}${Number(minPrice).toLocaleString('en-IN')}`}
                   onRemove={() => onMinPrice('')} light={isLight} />
           )}
           {maxPrice && (
-            <Chip label={`Max ₹${Number(maxPrice).toLocaleString('en-IN')}`}
+            <Chip label={`${t('filter.maxPrice')}${Number(maxPrice).toLocaleString('en-IN')}`}
                   onRemove={() => onMaxPrice('')} light={isLight} />
           )}
         </div>

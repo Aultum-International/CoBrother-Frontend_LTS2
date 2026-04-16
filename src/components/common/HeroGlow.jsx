@@ -13,10 +13,10 @@ export default function HeroGlow() {
       <div className="max-w-[1200px] mx-auto flex flex-col gap-5 md:gap-12 relative z-10">
         <div className="flex flex-col gap-5">
           <h2 className="font-display text-[1.75rem] sm:text-[2rem] md:text-[2.5rem] font-bold text-gray-900 m-0 leading-tight">
-            {t('heroHeading')}
+            {t('hero.heading')}
           </h2>
           <p className="text-sm sm:text-base md:text-lg text-gray-700 m-0 leading-relaxed max-w-[600px]">
-            {t('heroSubtitle')}
+            {t('hero.subtitle')}
           </p>
           {/* <button
             className="bg-[#232F3E] text-white border-none py-3.5 px-7 rounded-full text-base font-semibold cursor-pointer transition-all duration-200 self-start font-body hover:bg-white hover:text-gray-900 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.15)]"

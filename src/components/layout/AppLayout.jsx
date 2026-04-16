@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, Menu, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import TopNavbar from '../common/TopNavbar';
 import coBrotherLogo from '../../assets/Cobrother_logo.png';
 import { useAuth } from '../../context/AuthContext';
@@ -16,24 +17,16 @@ import NotificationIcon from '../../assets/notification.png';
 import AdminIcon from '../../assets/Community-profileicon.png';
 
 const TYPE_ICONS = {
-  COVENTURE_APPLICATION_RECEIVED: 'ðŸ“‹',
-  COVENTURE_APPLICATION_STATUS_CHANGED: 'ðŸ“£',
-  DOMAIN_SOLD: 'â—‡',
-  SOFTWARE_PURCHASED: 'âŸ',
-  SOFTWARE_MARKED_COMPLETE: 'âœ“',
-  PROFILE_VIEWED: 'ðŸ‘',
-  NEW_LISTING_IN_INDUSTRY: 'ðŸ†•',
+  COVENTURE_APPLICATION_RECEIVED: '📋',
+  COVENTURE_APPLICATION_STATUS_CHANGED: '📣',
+  DOMAIN_SOLD: '◇',
+  SOFTWARE_PURCHASED: '⟐',
+  SOFTWARE_MARKED_COMPLETE: '✔',
+  PROFILE_VIEWED: '👁',
+  NEW_LISTING_IN_INDUSTRY: '🆕',
 };
 
-function timeAgo(dateStr) {
-  const diff = (Date.now() - new Date(dateStr)) / 1000;
-  if (diff < 60) return 'just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
-}
-
-function renderNavIcon(icon, label) {
+function renderNavIcon(icon) {
   const isImageSource = typeof icon === 'string' && /^(data:|https?:|\/)/.test(icon);
 
   if (isImageSource) {
@@ -48,7 +41,6 @@ function renderNavIcon(icon, label) {
     <span
       className="inline-flex items-center justify-center w-5 h-5 text-base leading-none"
       aria-hidden="true"
-      title={label}
     >
       {icon}
     </span>
@@ -56,6 +48,7 @@ function renderNavIcon(icon, label) {
 }
 
 export default function AppLayout({ children }) {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -66,18 +59,18 @@ export default function AppLayout({ children }) {
   const bellRef = useRef(null);
 
   const navLinks = [
-    { to: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
-    { to: '/ventures', label: 'Venture', icon: VentureIcon },
-    { to: '/domains', label: 'Domains', icon: DomainsIcon },
-    { to: '/cocreation', label: 'Technology', icon: TechnologyIcon },
-    { to: '/community', label: 'Disruptor', icon: CommunityIcon },
-    { to: '/auctions', label: 'Auctions', icon: AuctionIcon },
-    { to: '/purchases', label: 'Purchases', icon: PurchaseIcon },
+    { to: '/dashboard', labelKey: 'nav.dashboard', icon: DashboardIcon },
+    { to: '/ventures', labelKey: 'nav.venture', icon: VentureIcon },
+    { to: '/domains', labelKey: 'nav.domains', icon: DomainsIcon },
+    { to: '/cocreation', labelKey: 'nav.technology', icon: TechnologyIcon },
+    { to: '/community', labelKey: 'nav.disruptor', icon: CommunityIcon },
+    { to: '/auctions', labelKey: 'nav.auctions', icon: AuctionIcon },
+    { to: '/purchases', labelKey: 'nav.purchases', icon: PurchaseIcon },
   ];
 
-  const coBrotherLinks = [{ to: '/cobrother', label: 'CoBrother', icon: 'â—†' }];
+  const coBrotherLinks = [{ to: '/cobrother', labelKey: 'nav.cobrother', icon: '◆' }];
 
-  const adminLinks = [...navLinks, { to: '/admin', label: 'Admin', icon: AdminIcon }];
+  const adminLinks = [...navLinks, { to: '/admin', labelKey: 'nav.admin', icon: AdminIcon }];
 
   const visibleLinks =
     user?.role === 'COBROTHER'
@@ -144,6 +137,14 @@ export default function AppLayout({ children }) {
     if (notification.link) navigate(notification.link);
   };
 
+  const timeAgo = (dateStr) => {
+    const diff = (Date.now() - new Date(dateStr)) / 1000;
+    if (diff < 60) return t('time.justNow');
+    if (diff < 3600) return t('time.minutesAgo', { count: Math.floor(diff / 60) });
+    if (diff < 86400) return t('time.hoursAgo', { count: Math.floor(diff / 3600) });
+    return t('time.daysAgo', { count: Math.floor(diff / 86400) });
+  };
+
   const handleLogout = async () => {
     await logout();
     navigate('/login');
@@ -175,9 +176,9 @@ export default function AppLayout({ children }) {
                     : ''
                 }`}
               >
-                {renderNavIcon(link.icon, link.label)}
+                {renderNavIcon(link.icon)}
                 <span className={isActive ? 'bg-gradient-to-r from-indigo-600 to-fuchsia-500 text-transparent bg-clip-text' : ''}>
-                  {link.label}
+                  {t(link.labelKey)}
                 </span>
               </Link>
             );
@@ -189,11 +190,11 @@ export default function AppLayout({ children }) {
             <button
               className="relative bg-white border border-gray-200 cursor-pointer p-2.5 rounded-xl text-gray-600 transition-all duration-150 leading-none hover:bg-gray-100 hover:text-gray-900 hover:border-gray-300 flex items-center justify-center"
               onClick={handleBellOpen}
-              title="Notifications"
+              title={t('nav.notifications')}
             >
               <img
                 src={NotificationIcon}
-                alt="Notifications"
+                alt={t('nav.notifications')}
                 className="w-5 h-5 object-contain flex-shrink-0"
               />
               {unreadCount > 0 && (
@@ -206,13 +207,13 @@ export default function AppLayout({ children }) {
             {bellOpen && (
               <div className="absolute top-[calc(100%+10px)] right-0 w-[360px] bg-white border border-gray-200 rounded-[14px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] z-[1000] overflow-hidden">
                 <div className="flex justify-between items-center px-4 py-3.5 border-b border-gray-100 font-semibold text-sm text-gray-900">
-                  <span>Notifications</span>
+                  <span>{t('nav.notifications')}</span>
                   {unreadCount > 0 && (
                     <button
                       className="bg-transparent border-none text-gray-700 text-xs cursor-pointer p-0 hover:underline"
                       onClick={handleMarkAllRead}
                     >
-                      Mark all read
+                      {t('nav.markAllRead')}
                     </button>
                   )}
                 </div>
@@ -220,7 +221,7 @@ export default function AppLayout({ children }) {
                 <div className="max-h-[380px] overflow-y-auto">
                   {notifications.length === 0 ? (
                     <div className="py-8 px-4 text-center text-gray-500 text-sm">
-                      No notifications yet
+                      {t('nav.noNotifications')}
                     </div>
                   ) : (
                     notifications.map((notification) => (
@@ -232,7 +233,7 @@ export default function AppLayout({ children }) {
                         onClick={() => handleNotificationClick(notification)}
                       >
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gray-100 flex-shrink-0">
-                          {TYPE_ICONS[notification.type] || 'ðŸ””'}
+                          {TYPE_ICONS[notification.type] || '🔔'}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-[0.82rem] font-semibold text-gray-900 mb-0.5">
@@ -259,7 +260,7 @@ export default function AppLayout({ children }) {
                     onClick={() => setBellOpen(false)}
                     className="text-[0.78rem] text-purple-600 no-underline hover:text-purple-800 hover:underline"
                   >
-                    View all notifications →
+                    {t('nav.viewAllNotifications')}
                   </Link>
                 </div>
               </div>
@@ -278,7 +279,7 @@ export default function AppLayout({ children }) {
             <button
               className="max-xl:hidden bg-transparent border border-gray-200 text-gray-600 rounded-lg p-1.5 cursor-pointer transition-all duration-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
               onClick={handleLogout}
-              title="Logout"
+              title={t('nav.logout')}
             >
               <LogOut size={16} />
             </button>
@@ -315,8 +316,8 @@ export default function AppLayout({ children }) {
                   }`}
                   onClick={() => setMobileOpen(false)}
                 >
-                  {renderNavIcon(link.icon, link.label)}
-                  <span>{link.label}</span>
+                  {renderNavIcon(link.icon)}
+                  <span>{t(link.labelKey)}</span>
                 </Link>
               ))}
 
@@ -329,7 +330,7 @@ export default function AppLayout({ children }) {
                   <span className="inline-flex items-center justify-center w-5 h-5">
                     <img src={NotificationIcon} alt="" className="w-4 h-4 object-contain" />
                   </span>
-                  Notifications
+                  {t('nav.notifications')}
                 </span>
                 {unreadCount > 0 && (
                   <span className="bg-[#c86e6e] text-white text-[0.7rem] font-bold min-w-[18px] h-[18px] rounded-lg flex items-center justify-center px-[5px]">
@@ -349,7 +350,7 @@ export default function AppLayout({ children }) {
                 <span className="inline-flex items-center justify-center w-5 h-5">
                   <LogOut size={16} />
                 </span>
-                Logout
+                {t('nav.logout')}
               </button>
             </div>
           </div>

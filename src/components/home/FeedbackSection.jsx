@@ -16,7 +16,7 @@ export default function FeedbackSection() {
 
   const handleFeedbackSubmit = async () => {
     if (!feedbackMessage.trim()) {
-      alert(t('feedbackPlaceholder'));
+      alert(t('feedback.placeholder'));
       return;
     }
     try {
@@ -30,11 +30,11 @@ export default function FeedbackSection() {
       if (response.data && response.data.status === 'success') {
         setFeedbackSubmitted(true);
       } else {
-        alert('Failed to send feedback. Please try again.');
+        alert(t('feedback.failedToSend'));
       }
     } catch (error) {
       console.error('Feedback error:', error);
-      alert('Something went wrong. Please try again later.');
+      alert(t('feedback.somethingWrong'));
     } finally {
       setFeedbackSubmitting(false);
     }
@@ -46,10 +46,10 @@ export default function FeedbackSection() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-6">
           <div className="flex-1 min-w-0">
             <p className="text-sm md:text-base font-semibold text-gray-900 mb-1 leading-snug">
-              {t('feedbackQuestion')}
+              {t('feedback.question')}
             </p>
             <p className="text-xs md:text-sm text-gray-600 leading-relaxed max-w-[560px]">
-              {t('feedbackDesc')}
+              {t('feedback.desc')}
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-start md:justify-end gap-2 md:gap-3">
@@ -60,20 +60,20 @@ export default function FeedbackSection() {
                     className="btn-glow btn-glow-sm flex items-center gap-1.5 !px-3 !py-1.5 !text-[11px] sm:!text-xs"
                     onClick={() => handleFeedbackTypeClick('like')}
                   >
-                    {t('feedbackYes')} <ThumbsUp size={14} />
+                    {t('feedback.yes')} <ThumbsUp size={14} />
                   </button>
                   <button
                     className="btn-glow btn-glow-sm flex items-center gap-1.5 !px-3 !py-1.5 !text-[11px] sm:!text-xs"
                     onClick={() => handleFeedbackTypeClick('dislike')}
                   >
-                    {t('feedbackNo')} <ThumbsDown size={14} />
+                    {t('feedback.no')} <ThumbsDown size={14} />
                   </button>
                 </>
               ) : null
             ) : (
               <p className="text-xs md:text-sm font-medium text-purple flex items-center gap-2">
                 <Sparkles size={16} className="text-purple-500" />
-                {feedbackType === 'like' ? t('feedbackPositive') : t('feedbackNegative')}
+                {feedbackType === 'like' ? t('feedback.positive') : t('feedback.negative')}
               </p>
             )}
           </div>
@@ -82,7 +82,7 @@ export default function FeedbackSection() {
           <div className="mt-4">
             <textarea
               className="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-xl text-xs sm:text-sm text-gray-900 placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-gray-400 focus:shadow-[0_0_0_3px_rgba(0,0,0,0.06)] resize-none"
-              placeholder={t('feedbackPlaceholder')}
+              placeholder={t('feedback.placeholder')}
               rows="2"
               value={feedbackMessage}
               onChange={(e) => setFeedbackMessage(e.target.value)}
@@ -93,14 +93,14 @@ export default function FeedbackSection() {
                 onClick={handleFeedbackSubmit}
                 disabled={feedbackSubmitting}
               >
-                {feedbackSubmitting ? t('feedbackSubmitting') : t('submitFeedback')}
+                {feedbackSubmitting ? t('feedback.submitting') : t('feedback.submit')}
               </button>
               <button
                 className="btn-glow btn-glow-sm w-full sm:w-auto !px-5 !py-2 !text-[11px] sm:!text-xs bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 onClick={() => { setFeedbackType(null); setFeedbackMessage(''); }}
                 disabled={feedbackSubmitting}
               >
-                {t('cancelFeedback')}
+                {t('feedback.cancel')}
               </button>
             </div>
           </div>

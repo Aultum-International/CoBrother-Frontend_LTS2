@@ -96,20 +96,20 @@ export default function Home() {
   const features = [
     {
       icon: <img src={coBrandingIcon} alt="Domain" className="w-10 h-10 object-contain" />,
-      titleKey: 'domainTitle',
-      descKey: 'domainDesc',
+      titleKey: 'home.domainTitle',
+      descKey: 'home.domainDesc',
       link: '/domains'
     },
     {
       icon: <img src={coVentureIcon} alt="Venture" className="w-10 h-10 object-contain" />,
-      titleKey: 'ventureTitle',
-      descKey: 'ventureDesc',
+      titleKey: 'home.ventureTitle',
+      descKey: 'home.ventureDesc',
       link: '/ventures'
     },
     {
       icon: <img src={coCreationIcon} alt="Technology" className="w-10 h-10 object-contain" />,
-      titleKey: 'technologyTitle',
-      descKey: 'technologyDesc',
+      titleKey: 'home.technologyTitle',
+      descKey: 'home.technologyDesc',
       link: '/cocreation'
     },
     // {
@@ -120,8 +120,8 @@ export default function Home() {
     // },
     {
       icon: <img src={cobrotherProfile} alt="Disruptors" className="community-profile-icon" />,
-      titleKey: 'disruptorsTitle',
-      descKey: 'disruptorsDesc',
+      titleKey: 'home.disruptorsTitle',
+      descKey: 'home.disruptorsDesc',
       link: '/disruptors'
     }
   ];
@@ -149,7 +149,7 @@ export default function Home() {
                 <h3 className="font-display text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3">{t(feature.titleKey)}</h3>
                 <p className="text-lg text-gray-600 mb-5 md:mb-6 flex-1 leading-relaxed">{t(feature.descKey)}</p>
                 <ExploreButton onClick={() => navigate(feature.link)}>
-                  {t('exploreBtn')}
+                  {t('home.explore')}
                 </ExploreButton>
               </div>
             ))}

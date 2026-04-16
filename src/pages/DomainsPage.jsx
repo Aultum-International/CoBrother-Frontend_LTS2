@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus, Gavel, ShoppingCart, MessageSquare, Trash2, CheckCircle, Share2, ArrowUpRight } from 'lucide-react';
 import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -14,11 +15,6 @@ import ConfirmDialog from '../components/common/ConfirmDialog';
 import Confetti from '../components/common/Confetti';
 import DomainsIcon from '../assets/CoBranding.png';
 
-const DOMAIN_PRICING_OPTIONS = [
-  { value: 'FIXED',      label: 'Fixed Price' },
-  { value: 'NEGOTIABLE', label: 'Negotiable'  },
-];
-
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
   PENDING:   { color: '#c8a96e', bg: 'rgba(200,169,110,0.1)', border: 'rgba(200,169,110,0.3)' },
@@ -26,8 +22,14 @@ const STATUS_COLORS = {
 };
 
 export default function DomainsPage() {
+  const { t }     = useTranslation();
   const { user }  = useAuth();
   const navigate  = useNavigate();
+
+  const DOMAIN_PRICING_OPTIONS = [
+    { value: 'FIXED',      label: t('domainsPage.fixedPrice') },
+    { value: 'NEGOTIABLE', label: t('domainsPage.negotiable')  },
+  ];
 
   const [allDomains, setAllDomains]         = useState([]);
   const [loading, setLoading]               = useState(true);
@@ -88,32 +90,32 @@ export default function DomainsPage() {
         <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/30 backdrop-blur-sm pointer-events-none animate-fadeIn">
           <div className="bg-white rounded-2xl shadow-2xl px-10 py-8 text-center max-w-sm mx-4 animate-slideUp">
             <div className="text-5xl mb-3">🌐</div>
-            <h2 className="font-display text-2xl font-extrabold text-gray-900 mb-1">Domain Listed!</h2>
-            <p className="text-sm text-gray-500">Your domain is now live on the marketplace.</p>
+            <h2 className="font-display text-2xl font-extrabold text-gray-900 mb-1">{t('domainsPage.domainListed')}</h2>
+            <p className="text-sm text-gray-500">{t('domainsPage.domainListedDesc')}</p>
           </div>
         </div>
       )}
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Domains</h1>
-            <p className="text-gray-600 mt-1">Buy and sell premium domain names.</p>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('domainsPage.title')}</h1>
+            <p className="text-gray-600 mt-1">{t('domainsPage.subtitle')}</p>
           </div>
           <div className="flex gap-3">
             <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => navigate('/domains/dashboard')}>
-              <LayoutDashboard size={16} /> Dashboard
+              <LayoutDashboard size={16} /> {t('domainsPage.dashboard')}
             </button>
             <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => setShowForm(true)}>
-              <Plus size={16} /> List Domain
+              <Plus size={16} /> {t('domainsPage.listDomain')}
             </button>
           </div>
         </div>
 
         <div className="flex gap-2 mb-6">
           <button className={`btn-glow btn-glow-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('all')}>All Domains</button>
+            onClick={() => setFilterTab('all')}>{t('domainsPage.allDomains')}</button>
           <button className={`btn-glow btn-glow-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('mine')}>My Listings</button>
+            onClick={() => setFilterTab('mine')}>{t('domainsPage.myListings')}</button>
         </div>
 
         {showForm && (
@@ -138,13 +140,13 @@ export default function DomainsPage() {
           maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
           sortBy={sortBy}           onSort={handleSort}
           onClear={clearAll}        activeFilterCount={activeFilterCount}
-          placeholder="Search domains by name or extension…"
+          placeholder={t('domainsPage.searchPlaceholder')}
           theme="light"
         />
 
         {!loading && allDomains.length > 0 && (
           <div className="text-sm text-gray-600 mb-4">
-            {totalCount} domain{totalCount !== 1 ? 's' : ''} found
+            {t('domainsPage.domainsFound', { count: totalCount })}
           </div>
         )}
 
@@ -156,19 +158,19 @@ export default function DomainsPage() {
           <div className="text-center py-20">
             <img src={DomainsIcon} alt="Domain" className="mx-auto mb-4 w-16 h-16 object-contain" />
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
-              {activeFilterCount > 0 ? 'No domains match your filters' :
-               filterTab === 'mine' ? 'You have no active listings' :
-               'No domains listed yet'}
+              {activeFilterCount > 0 ? t('domainsPage.noDomainsMatch') :
+               filterTab === 'mine' ? t('domainsPage.noActiveListings') :
+               t('domainsPage.noDomainsYet')}
             </h3>
             <p className="text-gray-600 mb-6">
               {activeFilterCount > 0
-                ? 'Try adjusting your search or filters.'
-                : 'Be the first to list a domain for sale.'}
+                ? t('domainsPage.tryAdjusting')
+                : t('domainsPage.beFirstDomain')}
             </p>
             {activeFilterCount > 0
-              ? <button className="btn-glow btn-glow-sm" onClick={clearAll}>Clear Filters</button>
+              ? <button className="btn-glow btn-glow-sm" onClick={clearAll}>{t('domainsPage.clearFilters')}</button>
               : <button className="btn-glow btn-glow-sm" onClick={() => setShowForm(true)}>
-                  List a Domain
+                  {t('domainsPage.listADomain')}
                 </button>
             }
           </div>
@@ -253,9 +255,9 @@ export default function DomainsPage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        title="Remove Domain Listing?"
-        message="This will remove your domain from the marketplace. You can re-list it later."
-        confirmLabel="Remove"
+        title={t('removeDomain.title')}
+        message={t('removeDomain.message')}
+        confirmLabel={t('removeDomain.confirm')}
         danger
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
@@ -267,6 +269,7 @@ export default function DomainsPage() {
 // ─── Domain Card ──────────────────────────────────────────────────────────────
 function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
                        onDelete, likeState, onLike }) {
+  const { t } = useTranslation();
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
   const s           = STATUS_COLORS[domain.domainStatus] || STATUS_COLORS.AVAILABLE;
@@ -333,7 +336,7 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
               </span>
               {isOwner && (
                 <span className="ml-1.5 px-2 py-[3px] bg-white text-indigo-600 text-[10px] font-extrabold rounded-md uppercase tracking-wide shadow-sm">
-                  ✦ Owner
+                  {t('domainsPage.owner')}
                 </span>
               )}
             </div>
@@ -373,12 +376,12 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
         <div className="flex items-center gap-1.5 flex-wrap mb-3">
           {domain.verified && (
             <span className="px-2 py-[2px] text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-md">
-              ✓ Verified
+              {t('domainsPage.verified')}
             </span>
           )}
           {isHighValue && domain.domainStatus === 'AVAILABLE' && (
             <span className="px-2 py-[2px] text-[10px] font-bold text-purple-600 bg-purple-50 border border-purple-200 rounded-md">
-              Premium
+              {t('domainsPage.premium')}
             </span>
           )}
           {isAuction && (
@@ -409,7 +412,7 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
               <span className="text-xl font-extrabold text-emerald-700 tracking-tight">
                 ₹{Number(domain.askingPrice).toLocaleString('en-IN')}
               </span>
-              <span className="text-[10px] text-emerald-400 font-semibold">asking price</span>
+              <span className="text-[10px] text-emerald-400 font-semibold">{t('domainsPage.askingPrice')}</span>
             </div>
           </div>
         )}
@@ -459,11 +462,11 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
             <>
               <button className="flex-1 py-2 bg-red-500 text-white text-xs font-bold rounded-lg transition-all hover:bg-red-600 inline-flex items-center justify-center gap-1.5"
                 onClick={e => { e.stopPropagation(); onDelete(); }}>
-                <Trash2 size={13} /> Remove
+                <Trash2 size={13} /> {t('domainsPage.remove')}
               </button>
               <button
                 className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full border-2 border-gray-200 bg-white text-gray-600 transition-all hover:border-indigo-400 hover:text-indigo-600 hover:shadow-md"
-                onClick={onView} title="View Details">
+                onClick={onView} title={t('domainsPage.viewDetails')}>
                 <ArrowUpRight size={16} />
               </button>
             </>
@@ -474,7 +477,7 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
                   <button
                     onClick={e => { e.stopPropagation(); onViewAuction(); }}
                     className={`flex-1 py-2 bg-gradient-to-r ${accentGrad} text-white text-xs font-bold rounded-lg transition-all hover:opacity-90 inline-flex items-center justify-center gap-1.5`}>
-                    <Gavel size={13} /> Bid Now
+                    <Gavel size={13} /> {t('domainsPage.bidNow')}
                   </button>
                 ) : (
                   <span className="flex-1 py-2 text-center text-[11px] text-gray-400 font-medium">
@@ -488,23 +491,23 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
                   <button
                     onClick={e => { e.stopPropagation(); onEnquire(); }}
                     className={`flex-1 py-2 bg-gradient-to-r ${accentGrad} text-white text-xs font-bold rounded-lg transition-all hover:opacity-90 inline-flex items-center justify-center gap-1.5`}>
-                    <MessageSquare size={13} /> Enquire
+                    <MessageSquare size={13} /> {t('domainsPage.enquire')}
                   </button>
                 ) : (
                   <button
                     onClick={e => { e.stopPropagation(); onBuy(); }}
                     className={`flex-1 py-2 bg-gradient-to-r ${accentGrad} text-white text-xs font-bold rounded-lg transition-all hover:opacity-90 inline-flex items-center justify-center gap-1.5`}>
-                    <ShoppingCart size={13} /> Buy Now
+                    <ShoppingCart size={13} /> {t('domainsPage.buyNow')}
                   </button>
                 )
               ) : (
                 <span className="flex-1 py-2 text-center text-[11px] text-gray-400 font-medium">
-                  {domain.domainStatus === 'SOLD' ? 'Sold' : 'Pending'}
+                  {domain.domainStatus === 'SOLD' ? t('domainsPage.sold') : t('domainsPage.pending')}
                 </span>
               )}
               <button
                 className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full border-2 border-gray-200 bg-white text-gray-600 transition-all hover:border-indigo-400 hover:text-indigo-600 hover:shadow-md"
-                onClick={onView} title="View Details">
+                onClick={onView} title={t('domainsPage.viewDetails')}>
                 <ArrowUpRight size={16} />
               </button>
             </>
@@ -517,6 +520,7 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
 
 // ─── Domain Form ──────────────────────────────────────────────────────────────
 function DomainForm({ onSaved, onCancel }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     domainName: '', domainExtension: '',
     askingPrice: '', pricingDemand: '',
@@ -706,8 +710,8 @@ function DomainForm({ onSaved, onCancel }) {
             <select className={inputCls} value={form.pricingDemand}
               onChange={e => setForm(f => ({ ...f, pricingDemand: e.target.value }))} required>
               <option value="">Select pricing type</option>
-              <option value="FIXED">Fixed Price</option>
-              <option value="NEGOTIABLE">Negotiable</option>
+              <option value="FIXED">{t('domainsPage.fixedPrice')}</option>
+              <option value="NEGOTIABLE">{t('domainsPage.negotiable')}</option>
             </select>
           </div>
         </div>
@@ -779,7 +783,7 @@ function DomainForm({ onSaved, onCancel }) {
             {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
               isAuction ? 'List for Auction →' : 'Add Logo →'}
           </button>
-          <button type="button" className="btn-glow" onClick={onCancel}>Cancel</button>
+          <button type="button" className="btn-glow" onClick={onCancel}>{t('confirm.cancel')}</button>
         </div>
       </form>
     </div>
@@ -788,6 +792,7 @@ function DomainForm({ onSaved, onCancel }) {
 
 // ─── Buy Domain Modal ─────────────────────────────────────────────────────────
 function BuyDomainModal({ domain, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
 
@@ -845,7 +850,7 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
             {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
               `Pay ₹${Number(domain.askingPrice).toLocaleString('en-IN')} →`}
           </button>
-          <button type="button" className="btn-glow" onClick={onClose}>Cancel</button>
+          <button type="button" className="btn-glow" onClick={onClose}>{t('confirm.cancel')}</button>
         </div>
       </div>
     </div>
@@ -1044,6 +1049,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
 
 // ─── Domain Enquiry Modal ─────────────────────────────────────────────────────
 function DomainEnquiryModal({ domain, user, onClose, onSuccess }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     fullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
     email:    user?.email || '',
@@ -1117,7 +1123,7 @@ function DomainEnquiryModal({ domain, user, onClose, onSuccess }) {
             <button type="submit" className="btn-glow flex-1" disabled={loading}>
               {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'Submit Enquiry →'}
             </button>
-            <button type="button" className="btn-glow" onClick={onClose}>Cancel</button>
+            <button type="button" className="btn-glow" onClick={onClose}>{t('confirm.cancel')}</button>
           </div>
         </form>
       </div>

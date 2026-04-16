@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { auctionAPI, ventureAuctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import AuctionImg from '../assets/Auction.png';
 // Live countdown per card
 function useCountdown(endTime) {
+  const { t } = useTranslation();
   const [timeLeft, setTimeLeft]   = useState('');
   const [isUrgent, setIsUrgent]   = useState(false);
   const [pct, setPct]             = useState(0); // % of time elapsed
@@ -15,7 +17,7 @@ function useCountdown(endTime) {
 
     const tick = () => {
       const diff = end - Date.now();
-      if (diff <= 0) { setTimeLeft('Ended'); setIsUrgent(false); return; }
+      if (diff <= 0) { setTimeLeft(t('auctions.ended', 'Ended')); setIsUrgent(false); return; }
       const d = Math.floor(diff / 86400000);
       const h = Math.floor((diff % 86400000) / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
@@ -28,13 +30,14 @@ function useCountdown(endTime) {
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [endTime]);
+  }, [endTime, t]);
 
   return { timeLeft, isUrgent };
 }
 
 export default function AuctionsPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [domainAuctions, setDomainAuctions]   = useState([]);
   const [ventureAuctions, setVentureAuctions] = useState([]);
   const [loading, setLoading]   = useState(true);
@@ -70,11 +73,11 @@ export default function AuctionsPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Live Auctions</h1>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('auctions.title', 'Live Auctions')}</h1>
             <p className="text-gray-600 mt-1">
               {totalLive > 0
-                ? `${totalLive} auction${totalLive !== 1 ? 's' : ''} live right now`
-                : 'No live auctions at the moment'}
+                ? t('auctions.liveCount', '{{count}} auction(s) live right now', { count: totalLive })
+                : t('auctions.noLiveAuctions', 'No live auctions at the moment')}
             </p>
           </div>
         </div>
@@ -82,14 +85,14 @@ export default function AuctionsPage() {
         {/* ── Section tabs ── */}
         <div className="flex gap-2 mb-3">
           {[
-            { id: 'all',      label: `All (${totalLive})` },
-            { id: 'ventures', label: `🔨 Ventures (${ventureAuctions.length})` },
-            { id: 'domains',  label: `◇ Domains (${domainAuctions.length})` },
-          ].map(t => (
-            <button key={t.id}
-              className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${section === t.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
-              onClick={() => setSection(t.id)}>
-              {t.label}
+            { id: 'all',      label: `${t('auctions.all', 'All')} (${totalLive})` },
+            { id: 'ventures', label: `🔨 ${t('auctions.ventures', 'Ventures')} (${ventureAuctions.length})` },
+            { id: 'domains',  label: `◇ ${t('auctions.domains', 'Domains')} (${domainAuctions.length})` },
+          ].map(tab => (
+            <button key={tab.id}
+              className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${section === tab.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
+              onClick={() => setSection(tab.id)}>
+              {tab.label}
             </button>
           ))}
         </div>
@@ -97,14 +100,14 @@ export default function AuctionsPage() {
         {/* ── Sub-filter tabs ── */}
         <div className="flex gap-2 mb-6">
           {[
-            { id: 'all',          label: 'All' },
-            { id: 'ending_soon',  label: '⚡ Ending Soon' },
-            { id: 'no_bids',      label: '🆕 No Bids Yet' },
-          ].map(t => (
-            <button key={t.id}
-              className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${filter === t.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
-              onClick={() => setFilter(t.id)}>
-              {t.label}
+            { id: 'all',          label: t('auctions.all', 'All') },
+            { id: 'ending_soon',  label: `⚡ ${t('auctions.endingSoon', 'Ending Soon')}` },
+            { id: 'no_bids',      label: `🆕 ${t('auctions.noBidsYet', 'No Bids Yet')}` },
+          ].map(tab => (
+            <button key={tab.id}
+              className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${filter === tab.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
+              onClick={() => setFilter(tab.id)}>
+              {tab.label}
             </button>
           ))}
         </div>
@@ -118,11 +121,11 @@ export default function AuctionsPage() {
             <div className="mb-4 flex justify-center">
               <img src={AuctionImg} alt="Auction" className="w-12 sm:w-20 md:w-24 lg:w-24 h-auto" />
             </div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No auctions match your filters</h3>
-            <p className="text-gray-600 mb-6">Check back soon — new auctions go live regularly.</p>
+            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('auctions.noMatch', 'No auctions match your filters')}</h3>
+            <p className="text-gray-600 mb-6">{t('auctions.checkBack', 'Check back soon — new auctions go live regularly.')}</p>
             {(section !== 'all' || filter !== 'all') && (
               <button className="btn-glow btn-glow-sm" onClick={() => { setSection('all'); setFilter('all'); }}>
-                View All Auctions
+                {t('auctions.viewAll', 'View All Auctions')}
               </button>
             )}
           </div>
@@ -132,9 +135,9 @@ export default function AuctionsPage() {
             {shownVentures.length > 0 && (
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-4">
-                  <h2 className="text-base font-bold text-purple-600 m-0">🔨 Venture Auctions</h2>
+                  <h2 className="text-base font-bold text-purple-600 m-0">🔨 {t('auctions.ventureAuctions', 'Venture Auctions')}</h2>
                   <span className="text-xs text-gray-500 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full font-semibold">
-                    {shownVentures.length} live
+                    {shownVentures.length} {t('auctions.live', 'live')}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -153,9 +156,9 @@ export default function AuctionsPage() {
             {shownDomains.length > 0 && (
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <h2 className="text-base font-bold text-blue-600 m-0">◇ Domain Auctions</h2>
+                  <h2 className="text-base font-bold text-blue-600 m-0">◇ {t('auctions.domainAuctions', 'Domain Auctions')}</h2>
                   <span className="text-xs text-gray-500 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full font-semibold">
-                    {shownDomains.length} live
+                    {shownDomains.length} {t('auctions.live', 'live')}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -178,6 +181,7 @@ export default function AuctionsPage() {
 
 // ─── Venture Auction Card ────────────────────────────────────────────────────────────
 function VentureAuctionCard({ auction, onClick }) {
+  const { t } = useTranslation();
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
   const venture  = auction.venture || {};
   const brand    = venture.brandDetails || {};
@@ -190,7 +194,7 @@ function VentureAuctionCard({ auction, onClick }) {
         background: isExtended ? 'rgba(200,169,110,0.15)' : 'rgba(110,200,150,0.15)',
         border: `1px solid ${isExtended ? 'rgba(200,169,110,0.35)' : 'rgba(110,200,150,0.35)'}`,
       }}>
-        {isExtended ? '⚡ EXTENDED' : '🟢 LIVEe'}
+        {isExtended ? `⚡ ${t('auctions.extended', 'EXTENDED')}` : `🟢 ${t('auctions.liveStatus', 'LIVE')}`}
       </div>
 
       <div className="flex items-center gap-3 mb-4 pr-20">
@@ -200,7 +204,7 @@ function VentureAuctionCard({ auction, onClick }) {
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-bold text-gray-900 m-0 truncate">{brand.brandName || '—'}</h3>
           <div className="flex gap-1.5 flex-wrap items-center">
-            <span className="text-xs text-purple-600 font-semibold">🔨 Equity Auction</span>
+            <span className="text-xs text-purple-600 font-semibold">🔨 {t('auctions.equityAuction', 'Equity Auction')}</span>
             {brand.industry && <span className="text-xs text-gray-500">· {brand.industry.replace(/_/g, ' ')}</span>}
           </div>
         </div>
@@ -209,7 +213,7 @@ function VentureAuctionCard({ auction, onClick }) {
       {venture.verified && (
         <div className="mb-2">
           <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-300 px-2 py-0.5 rounded">
-            ✓ GSTIN Verified
+            {t('auctions.gstinVerified', '✓ GSTIN Verified')}
           </span>
         </div>
       )}
@@ -217,34 +221,34 @@ function VentureAuctionCard({ auction, onClick }) {
       <div className="grid grid-cols-2 gap-3 my-3">
         <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
           <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
-            {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+            {auction.currentHighestBid > 0 ? t('auctions.highestBid', 'Highest Bid') : t('auctions.startingBid', 'Starting Bid')}
           </div>
           <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
             ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
           </div>
         </div>
         <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">Total Bids</div>
+          <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">{t('auctions.totalBids', 'Total Bids')}</div>
           <div className="font-display text-xl font-bold text-gray-900">{auction.totalBids}</div>
         </div>
       </div>
 
       {auction.currentHighestBid > 0 && (
         <div className="text-sm text-gray-700 mb-3 font-semibold">
-          Next bid: ≥ ₹{Number(auction.currentHighestBid * 1.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          {t('auctions.nextBid', 'Next bid')}: ≥ ₹{Number(auction.currentHighestBid * 1.05).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
         </div>
       )}
 
       <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-200">
         <div>
-          <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">Ends in</div>
+          <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">{t('auctions.endsIn', 'Ends in')}</div>
           <div className={`font-display font-bold text-lg ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`}>
             {timeLeft}
           </div>
         </div>
         <button onClick={e => { e.stopPropagation(); onClick(); }}
           className="btn-glow btn-glow-sm">
-          Bid Now →
+          {t('auctions.bidNow', 'Bid Now')} →
         </button>
       </div>
     </div>
@@ -253,6 +257,7 @@ function VentureAuctionCard({ auction, onClick }) {
 
 // ─── Domain Auction Card ────────────────────────────────────────────────────────────
 function DomainAuctionCard({ auction, onClick }) {
+  const { t } = useTranslation();
   const { timeLeft, isUrgent } = useCountdown(auction.endTime);
   const domain                  = auction.domain || {};
   const isExtended              = auction.status === 'EXTENDED';
@@ -268,7 +273,7 @@ function DomainAuctionCard({ auction, onClick }) {
         background: isExtended ? 'rgba(200,169,110,0.15)' : 'rgba(110,200,150,0.15)',
         border: `1px solid ${isExtended ? 'rgba(200,169,110,0.35)' : 'rgba(110,200,150,0.35)'}`,
       }}>
-        {isExtended ? '⚡ EXTENDED' : '🟢 LIVE'}
+        {isExtended ? `⚡ ${t('auctions.extended', 'EXTENDED')}` : `🟢 ${t('auctions.liveStatus', 'LIVE')}`}
       </div>
 
       {/* Domain info */}
@@ -279,7 +284,7 @@ function DomainAuctionCard({ auction, onClick }) {
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-bold text-gray-900 m-0 truncate">{domain.domainName}{domain.domainExtension}</h3>
           <span className="text-xs text-purple-600 font-semibold">
-            🔨 Auction
+            🔨 {t('auctions.auction', 'Auction')}
           </span>
         </div>
       </div>
@@ -288,7 +293,7 @@ function DomainAuctionCard({ auction, onClick }) {
       {domain.verified && (
         <div className="mb-2">
           <span className="text-xs font-bold text-green-600 bg-green-100 border border-green-300 px-2 py-0.5 rounded">
-            ✓ Verified
+            {t('auctions.verified', '✓ Verified')}
           </span>
         </div>
       )}
@@ -297,7 +302,7 @@ function DomainAuctionCard({ auction, onClick }) {
       <div className="grid grid-cols-2 gap-3 my-3">
         <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
           <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
-            {auction.currentHighestBid > 0 ? 'Highest Bid' : 'Starting Bid'}
+            {auction.currentHighestBid > 0 ? t('auctions.highestBid', 'Highest Bid') : t('auctions.startingBid', 'Starting Bid')}
           </div>
           <div className={`font-display text-xl font-bold ${auction.currentHighestBid > 0 ? 'text-green-600' : 'text-amber-500'}`}>
             ₹{Number(
@@ -309,7 +314,7 @@ function DomainAuctionCard({ auction, onClick }) {
         </div>
         <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
           <div className="text-xs text-gray-700 uppercase tracking-wider mb-1 font-bold">
-            Total Bids
+            {t('auctions.totalBids', 'Total Bids')}
           </div>
           <div className="font-display text-xl font-bold text-gray-900">
             {auction.totalBids}
@@ -320,7 +325,7 @@ function DomainAuctionCard({ auction, onClick }) {
       {/* Next bid minimum */}
       {auction.currentHighestBid > 0 && (
         <div className="text-sm text-gray-700 mb-3 font-semibold">
-          Next bid: ≥ ₹{Number(auction.currentHighestBid * 1.05).toLocaleString('en-IN',
+          {t('auctions.nextBid', 'Next bid')}: ≥ ₹{Number(auction.currentHighestBid * 1.05).toLocaleString('en-IN',
             { maximumFractionDigits: 0 })}
         </div>
       )}
@@ -329,7 +334,7 @@ function DomainAuctionCard({ auction, onClick }) {
       <div className="flex justify-between items-center mt-auto pt-3 border-t border-gray-200">
         <div>
           <div className="text-xs text-gray-600 uppercase tracking-wider font-semibold">
-            Ends in
+            {t('auctions.endsIn', 'Ends in')}
           </div>
           <div className={`font-display font-bold text-lg ${isUrgent ? 'text-red-500 animate-pulse' : 'text-amber-500'}`}>
             {timeLeft}
@@ -338,7 +343,7 @@ function DomainAuctionCard({ auction, onClick }) {
         <button
           onClick={e => { e.stopPropagation(); onClick(); }}
           className="btn-glow btn-glow-sm">
-          Bid Now →
+          {t('auctions.bidNow', 'Bid Now')} →
         </button>
       </div>
 

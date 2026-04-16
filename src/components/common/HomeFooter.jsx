@@ -55,7 +55,6 @@ export default function HomeFooter() {
   return (
     <footer className="bg-white border-t border-gray-200 py-6 md:py-8 mt-auto">
       <div className="max-w-[1200px] mx-auto flex flex-col items-center gap-2 md:gap-3 text-center px-4 sm:px-6 lg:px-8">
-        {/* Social Icons */}
         <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-center">
           {socials.map(({ href, label, Icon }) => (
             <a
@@ -72,73 +71,35 @@ export default function HomeFooter() {
         </div>
 
         <p className="text-gray-500 text-xs sm:text-sm my-0.5 font-body px-2">
-          {t('footerCopyright')}
+          {t('footer.copyright')}
         </p>
         <p className="text-gray-500 text-xs sm:text-sm my-0.5 font-body flex items-center justify-center gap-1.5 px-2">
-          Made with
+          {t('footer.madeWith')}
           <span className="relative inline-flex items-center justify-center group">
             <Heart size={20} fill="#fca5a5" stroke="none" className="text-red-300 inline-block align-middle" />
-            <Heart
-              size={14}
-              fill="#fca5a5"
-              stroke="none"
-              className="floating-heart heart-1"
-            />
-            <Heart
-              size={14}
-              fill="#fca5a5"
-              stroke="none"
-              className="floating-heart heart-2"
-            />
-            <Heart
-              size={14}
-              fill="#fca5a5"
-              stroke="none"
-              className="floating-heart heart-3"
-            />
+            <Heart size={14} fill="#fca5a5" stroke="none" className="floating-heart heart-1" />
+            <Heart size={14} fill="#fca5a5" stroke="none" className="floating-heart heart-2" />
+            <Heart size={14} fill="#fca5a5" stroke="none" className="floating-heart heart-3" />
           </span>
-          in India.
+          {t('footer.inIndia')}
         </p>
       </div>
       <style>{`
         .floating-heart {
-          position: absolute;
-          top: 0;
-          left: 50%;
+          position: absolute; top: 0; left: 50%;
           transform: translateX(-50%) translateY(0);
-          opacity: 0;
-          pointer-events: none;
+          opacity: 0; pointer-events: none;
         }
-
         .group:hover .floating-heart {
-          opacity: 1;
-          animation: heartFloat 1.4s ease-out infinite;
+          opacity: 1; animation: heartFloat 1.4s ease-out infinite;
         }
-
-        .heart-1 {
-          animation-delay: 0s;
-        }
-
-        .heart-2 {
-          animation-delay: 0.2s;
-        }
-
-        .heart-3 {
-          animation-delay: 0.4s;
-        }
-
+        .heart-1 { animation-delay: 0s; }
+        .heart-2 { animation-delay: 0.2s; }
+        .heart-3 { animation-delay: 0.4s; }
         @keyframes heartFloat {
-          0% {
-            transform: translateX(-50%) translateY(0) scale(1);
-            opacity: 0.8;
-          }
-          25% {
-            opacity: 1;
-          }
-          100% {
-            transform: translateX(-50%) translateY(-32px) scale(0.8);
-            opacity: 0;
-          }
+          0% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.8; }
+          25% { opacity: 1; }
+          100% { transform: translateX(-50%) translateY(-32px) scale(0.8); opacity: 0; }
         }
       `}</style>
     </footer>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { LayoutDashboard, Plus, Trash2, ShoppingCart, ArrowUpRight, Share2 } from 'lucide-react';
 import { cocreationAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import AppLayout from '../components/layout/AppLayout';
@@ -30,6 +31,7 @@ const STATUS_COLORS = {
 export default function CoCreationPage() {
   const { user }  = useAuth();
   const navigate  = useNavigate();
+  const { t } = useTranslation();
 
   const [allSoftware, setAllSoftware]       = useState([]);
   const [loading, setLoading]               = useState(true);
@@ -89,17 +91,17 @@ export default function CoCreationPage() {
           <div>
             <div className="flex items-center gap-3 mb-1">
               {/* <img src={''} alt="Technology" className="w-10 h-10 object-contain" /> */}
-              <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Technology</h1>
+              <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('technologyPage.title')}</h1>
             </div>
-            <p className="text-gray-600">Buy and sell software products built by the community.</p>
+            <p className="text-gray-600">{t('technologyPage.subtitle')}</p>
           </div>
           <div className="flex gap-3">
             <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => navigate('/cocreation/dashboard')}>
-              <LayoutDashboard size={16} /> Dashboard
+              <LayoutDashboard size={16} /> {t('technologyPage.dashboard')}
             </button>
             {user && (
               <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => setShowForm(true)}>
-                <Plus size={16} /> List Technology
+                <Plus size={16} /> {t('technologyPage.listTechnology')}
               </button>
             )}
           </div>
@@ -107,9 +109,9 @@ export default function CoCreationPage() {
 
         <div className="flex gap-2 mb-6">
           <button className={`btn-glow btn-glow-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('all')}>All Technology</button>
+            onClick={() => setFilterTab('all')}>{t('technologyPage.allTechnology')}</button>
           <button className={`btn-glow btn-glow-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('mine')}>My Listings</button>
+            onClick={() => setFilterTab('mine')}>{t('technologyPage.myListings')}</button>
         </div>
 
         {showForm && user && (
@@ -129,13 +131,13 @@ export default function CoCreationPage() {
           maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
           sortBy={sortBy}           onSort={handleSort}
           onClear={clearAll}        activeFilterCount={activeFilterCount}
-          placeholder="Search software by name, description or tech stack…"
+          placeholder={t('technologyPage.searchPlaceholder')}
           theme="light"
         />
 
         {!loading && allSoftware.length > 0 && (
           <div className="text-sm text-gray-600 mb-4">
-            {totalCount} software listing{totalCount !== 1 ? 's' : ''} found
+            {t('technologyPage.softwareFound', { count: totalCount })}
           </div>
         )}
 
@@ -149,17 +151,17 @@ export default function CoCreationPage() {
               <img src={TechnologyIcon} alt="No software" className="w-20 h-20 object-contain opacity-30" />
             </div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
-              {activeFilterCount > 0 ? 'No software matches your filters' :
-               filterTab === 'mine' ? 'You have no listings' :
-               'No Technology listed yet'}
+              {activeFilterCount > 0 ? t('technologyPage.noSoftwareMatch') :
+               filterTab === 'mine' ? t('technologyPage.noListings') :
+               t('technologyPage.noTechnologyYet')}
             </h3>
             <p className="text-gray-600 mb-6">
               {activeFilterCount > 0
-                ? 'Try adjusting your search or filters.'
-                : 'Check back soon for new software listings.'}
+                ? t('technologyPage.tryAdjusting')
+                : t('technologyPage.checkBack')}
             </p>
             {activeFilterCount > 0 && (
-              <button className="btn-glow btn-glow-sm" onClick={clearAll}>Clear Filters</button>
+              <button className="btn-glow btn-glow-sm" onClick={clearAll}>{t('technologyPage.clearFilters')}</button>
             )}
           </div>
         ) : (
@@ -216,9 +218,10 @@ export default function CoCreationPage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        title="Remove Software Listing?"
-        message="This will remove your software from the marketplace."
-        confirmLabel="Remove"
+        title={t('removeSoftware.title')}
+        message={t('removeSoftware.message')}
+        confirmLabel={t('removeSoftware.confirm')}
+        cancelLabel={t('confirm.cancel')}
         danger
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
@@ -228,89 +231,190 @@ export default function CoCreationPage() {
 }
 function SoftwareCard({ item, isOwner, onView, onBuy, onDelete, likeState, onLike }) {
   const { user } = useAuth();
+  const { t } = useTranslation();
+  const [shareOpen, setShareOpen] = useState(false);
+  const shareRef = useRef(null);
   const s = STATUS_COLORS[item.softwareStatus] || STATUS_COLORS.AVAILABLE;
+  const accentGrad = 'from-indigo-600 via-blue-500 to-cyan-400';
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (shareRef.current && !shareRef.current.contains(e.target)) {
+        setShareOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/cocreation` : 'https://cobrother.com/cocreation';
+  const shareText = `Check out this software: ${item.name} - Listed on CoBrother!`;
+  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+
+  const handleShare = (platform) => {
+    window.open(platform, '_blank', 'width=600,height=400');
+    setShareOpen(false);
+  };
 
   return (
-    <div className="card-glow-hover p-5 bg-white border border-gray-200 rounded-[14px] flex flex-col gap-2 overflow-hidden cursor-pointer transition-all duration-300" onClick={onView}>
-      <div className="flex items-start justify-between gap-2 mb-1">
-        <div className="w-[42px] h-[42px] bg-indigo-50 border border-indigo-200 rounded-[10px] flex items-center justify-center text-xl flex-shrink-0 overflow-hidden">
-          {item.imageUrl ? (
-            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-          ) : '⧁'}
-        </div>
-        <div className="flex flex-col gap-1 flex-1 min-w-0">
-          <span className="text-[0.72rem] font-semibold text-amber-600 uppercase tracking-wider">{item.category?.replace(/_/g, ' ')}</span>
-          <span className="text-xs text-gray-500 overflow-hidden text-ellipsis whitespace-nowrap">{item.pricingDemand}</span>
-        </div>
-        {item.listedBy?.id === user?.id && (
-          <div className="ml-auto px-2 py-0.5 bg-green-100 border border-green-300 rounded text-[0.7rem] font-semibold text-green-700 flex-shrink-0">
-            ✓ Owner
-          </div>
+    <div
+      className="group relative bg-white rounded-2xl overflow-hidden cursor-pointer flex flex-col border border-gray-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] hover:-translate-y-0.5 transition-all duration-300"
+      onClick={onView}
+    >
+      {/* Gradient header */}
+      <div className={`relative bg-gradient-to-r ${accentGrad} px-4 pt-3.5 pb-3.5 min-h-[90px] flex items-end`}>
+        {item.imageUrl && (
+          <img src={item.imageUrl} alt={item.name}
+            className="absolute top-0 right-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-300" />
         )}
-        {item.official && (
-          <div className="px-2 py-0.5 bg-amber-50 border border-amber-200 rounded text-[0.68rem] font-bold text-amber-600 flex-shrink-0">
-            ✦ Official
-          </div>
-        )}
-      </div>
-
-      <h3 className="font-display text-[1.15rem] font-semibold text-gray-900 leading-tight mt-1">{item.name}</h3>
-
-      <p className="text-[0.82rem] text-gray-500 my-1 leading-relaxed line-clamp-2">
-        {item.description}
-      </p>
-
-      {item.techStack && (
-        <div className="flex flex-wrap gap-1.5 mb-1">
-          {item.techStack.split(',').slice(0, 3).map(t => (
-            <span key={t} className="text-[0.7rem] px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 border border-indigo-200">
-              {t.trim()}
-            </span>
-          ))}
-        </div>
-      )}
-
-      <div className="mb-1">
-        <span style={{ padding: '0.25rem 0.6rem', borderRadius: 6, fontSize: '0.75rem',
-                       fontWeight: 600, color: s.color, background: s.bg,
-                       border: `1px solid ${s.border}` }}>
-          {item.softwareStatus}
-        </span>
-      </div>
-
-      <div className="font-display text-[1.1rem] font-bold text-indigo-600 mt-1">₹{Number(item.price).toLocaleString('en-IN')}</div>
-
-      <div className="flex items-center justify-between gap-2 flex-wrap mt-1">
-        <div className="flex gap-3 text-xs text-gray-400">
-          <span title="Views">👁 {item.views || 0}</span>
-          <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
-        </div>
-        <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-          {user?.role === 'ADMIN' ? (
-            <>
-              <button className="inline-flex items-center justify-center px-3 py-1.5 bg-red-50 border border-red-200 text-red-600 font-semibold text-xs rounded-lg cursor-pointer transition-colors hover:bg-red-100"
-                onClick={e => { e.stopPropagation(); onDelete(); }}>
-                Remove
-              </button>
-              {item.softwareStatus === 'AVAILABLE' && (
-                <button className="inline-flex items-center justify-center px-3 py-1.5 bg-indigo-600 text-white font-semibold text-xs rounded-lg cursor-pointer hover:bg-indigo-700"
-                  onClick={e => { e.stopPropagation(); onBuy(); }}>
-                  Buy Now →
-                </button>
+        <div className="relative z-10 flex items-end justify-between w-full">
+          <div className="flex items-center gap-2">
+            {item.imageUrl ? (
+              <img src={item.imageUrl} alt={item.name}
+                className="w-14 h-14 rounded-xl object-cover ring-[3px] ring-white/50 shadow-lg" />
+            ) : (
+              <div className="w-14 h-14 rounded-xl flex items-center justify-center font-display text-2xl font-extrabold text-white ring-[3px] ring-white/30 shadow-lg bg-white/15 backdrop-blur-sm">
+                ⧁
+              </div>
+            )}
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1.5">
+                <span className="px-2 py-[3px] text-[10px] font-bold rounded-md uppercase tracking-wide bg-white/25 backdrop-blur-sm text-white">
+                  {item.category?.replace(/_/g, ' ') || 'Technology'}
+                </span>
+                {item.official && (
+                  <span className="px-2 py-[3px] bg-yellow-400 text-gray-900 text-[10px] font-bold rounded-md uppercase tracking-wide">
+                    {t('technologyPage.official')}
+                  </span>
+                )}
+              </div>
+              {isOwner && (
+                <span className="px-2 py-[3px] bg-white text-indigo-600 text-[10px] font-extrabold rounded-md uppercase tracking-wide shadow-sm w-fit">
+                  {t('technologyPage.owner')}
+                </span>
               )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="relative px-4 pb-4 pt-3 flex flex-col flex-1">
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h3 className="font-display text-[0.95rem] font-extrabold text-gray-900 truncate leading-snug">
+            {item.name}
+          </h3>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <span
+              className="px-1.5 py-[2px] text-[9px] font-bold rounded uppercase tracking-wide border"
+              style={{ color: s.color, background: s.bg, borderColor: s.border }}
+            >
+              {item.softwareStatus}
+            </span>
+            <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
+              {item.pricingDemand || 'Fixed'}
+            </span>
+          </div>
+        </div>
+
+        <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-3">
+          {item.description || <span className="italic text-gray-300">No description</span>}
+        </p>
+
+        {item.techStack && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {item.techStack.split(',').slice(0, 3).map(tech => (
+              <span key={tech} className="text-[0.7rem] px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-200 font-semibold">
+                {tech.trim()}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Price block */}
+        <div className="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 px-3 py-2 mb-3">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-xl font-extrabold text-emerald-700 tracking-tight">
+              ₹{Number(item.price).toLocaleString('en-IN')}
+            </span>
+            <span className="text-[10px] text-emerald-400 font-semibold">{t('technologyPage.askingPrice')}</span>
+          </div>
+        </div>
+
+        {/* Stats row */}
+        <div className="flex items-center gap-2.5 text-[11px] text-gray-400 font-medium py-2 border-t border-gray-100 mt-auto">
+          <span className="flex items-center gap-1">👁 {item.views || 0}</span>
+          <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
+
+          <div className="relative ml-auto" ref={shareRef}>
+            <button
+              className="p-1 rounded-md hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
+              onClick={(e) => { e.stopPropagation(); setShareOpen(!shareOpen); }}
+              title="Share"
+            >
+              <Share2 size={13} />
+            </button>
+
+            {shareOpen && (
+              <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px]">
+                <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+                  <span className="text-[10px] font-semibold text-gray-500">Share via</span>
+                </div>
+                <button className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleShare(linkedinShare); }}>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                  LinkedIn
+                </button>
+                <button className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleShare(facebookShare); }}>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  Facebook
+                </button>
+                <button className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleShare(whatsappShare); }}>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                  WhatsApp
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2 mt-1 items-center" onClick={e => e.stopPropagation()}>
+          {isOwner ? (
+            <>
+              <button className="flex-1 py-2 bg-red-500 text-white text-xs font-bold rounded-lg transition-all hover:bg-red-600 inline-flex items-center justify-center gap-1.5"
+                onClick={e => { e.stopPropagation(); onDelete(); }}>
+                <Trash2 size={13} /> {t('technologyPage.remove')}
+              </button>
+              <button
+                className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full border-2 border-gray-200 bg-white text-gray-600 transition-all hover:border-indigo-400 hover:text-indigo-600 hover:shadow-md"
+                onClick={onView} title={t('technologyPage.viewDetails')}>
+                <ArrowUpRight size={16} />
+              </button>
             </>
-          ) : item.listedBy?.id === user?.id ? (
-            <button className="inline-flex items-center justify-center px-3 py-1.5 bg-red-50 border border-red-200 text-red-600 font-semibold text-xs rounded-lg cursor-pointer transition-colors hover:bg-red-100"
-              onClick={e => { e.stopPropagation(); onDelete(); }}>
-              Remove
-            </button>
-          ) : item.softwareStatus === 'AVAILABLE' ? (
-            <button className="inline-flex items-center justify-center px-3 py-1.5 bg-indigo-600 text-white font-semibold text-xs rounded-lg cursor-pointer hover:bg-indigo-700"
-              onClick={e => { e.stopPropagation(); onBuy(); }}>
-              Buy Now →
-            </button>
           ) : (
-            <span className="text-xs text-gray-400 italic">Sold</span>
+            <>
+              {item.softwareStatus === 'AVAILABLE' ? (
+                <button
+                  onClick={e => { e.stopPropagation(); onBuy(); }}
+                  className={`flex-1 py-2 bg-gradient-to-r ${accentGrad} text-white text-xs font-bold rounded-lg transition-all hover:opacity-90 inline-flex items-center justify-center gap-1.5`}>
+                  <ShoppingCart size={13} /> {t('technologyPage.buyNow')}
+                </button>
+              ) : (
+                <span className="flex-1 py-2 text-center text-[11px] text-gray-400 font-medium">
+                  {item.softwareStatus === 'SOLD' ? t('technologyPage.sold') : 'Pending'}
+                </span>
+              )}
+              <button
+                className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full border-2 border-gray-200 bg-white text-gray-600 transition-all hover:border-indigo-400 hover:text-indigo-600 hover:shadow-md"
+                onClick={onView} title={t('technologyPage.viewDetails')}>
+                <ArrowUpRight size={16} />
+              </button>
+            </>
           )}
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowUpRight, Share2 } from 'lucide-react';
 import { ventureAPI, ventureAuctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -28,6 +29,7 @@ const VENTURE_INDUSTRIES = [
 export default function VenturesPage() {
   const { user }  = useAuth();
   const navigate  = useNavigate();
+  const { t }     = useTranslation();
 
   const [allVentures, setAllVentures]       = useState([]);
   const [loading, setLoading]               = useState(true);
@@ -98,26 +100,26 @@ export default function VenturesPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Ventures</h1>
-            <p className="text-gray-600 mt-1">Discover and co-venture on exciting opportunities.</p>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('venturesPage.title')}</h1>
+            <p className="text-gray-600 mt-1">{t('venturesPage.subtitle')}</p>
           </div>
           <div className="flex gap-3 flex-wrap">
             <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => navigate('/ventures/dashboard')}>
-              <img src={DashboardIcon} alt="Dashboard" style={{width: '18px', height: '18px'}} /> Dashboard
+              <img src={DashboardIcon} alt="Dashboard" style={{width: '18px', height: '18px'}} /> {t('venturesPage.dashboard')}
             </button>
             <button className="btn-glow btn-glow-sm" onClick={() => navigate('/ventures/analytics')}>
-              📈 Analytics    
+              {t('venturesPage.analytics')}
             </button>
-            <Link to="/ventures/new" className="btn-glow btn-glow-sm">+ List Venture</Link>
+            <Link to="/ventures/new" className="btn-glow btn-glow-sm">{t('venturesPage.listVenture')}</Link>
           </div>
         </div>
 
         {/* ── Tabs ── */}
         <div className="flex gap-2 mb-6">
           <button className={`btn-glow btn-glow-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('all')}>All Ventures</button>
+            onClick={() => setFilterTab('all')}>{t('venturesPage.allVentures')}</button>
           <button className={`btn-glow btn-glow-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('mine')}>My Ventures</button>
+            onClick={() => setFilterTab('mine')}>{t('venturesPage.myVentures')}</button>
         </div>
 
         {/* ── Filter bar ── */}
@@ -129,14 +131,14 @@ export default function VenturesPage() {
           maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
           sortBy={sortBy}           onSort={handleSort}
           onClear={clearAll}        activeFilterCount={activeFilterCount}
-          placeholder="Search ventures by name or description…"
+          placeholder={t('venturesPage.searchPlaceholder')}
           theme="light"
         />
 
         {/* ── Result count ── */}
         {!loading && allVentures.length > 0 && (
           <div className="text-sm text-gray-600 mb-4">
-            {totalCount} venture{totalCount !== 1 ? 's' : ''} found
+            {t('venturesPage.venturesFound', { count: totalCount })}
           </div>
         )}
 
@@ -149,18 +151,18 @@ export default function VenturesPage() {
           <div className="text-center py-20">
             <div className="text-6xl mb-4">◈</div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
-              {activeFilterCount > 0 ? 'No ventures match your filters' :
-               filterTab === 'mine' ? "You haven't listed any ventures yet" :
-               'No ventures listed yet'}
+              {activeFilterCount > 0 ? t('venturesPage.noVenturesMatch') :
+               filterTab === 'mine' ? t('venturesPage.noVenturesYet') :
+               t('venturesPage.noVenturesListed')}
             </h3>
             <p className="text-gray-600 mb-6">
               {activeFilterCount > 0
-                ? 'Try adjusting your search or filters.'
-                : 'Be the first to list a venture and attract co-venturers.'}
+                ? t('venturesPage.tryAdjusting')
+                : t('venturesPage.beFirstVenture')}
             </p>
             {activeFilterCount > 0
-              ? <button className="btn-glow btn-glow-sm" onClick={clearAll}>Clear Filters</button>
-              : <Link to="/ventures/new" className="btn-glow btn-glow-sm">+ List Venture</Link>
+              ? <button className="btn-glow btn-glow-sm" onClick={clearAll}>{t('venturesPage.clearFilters')}</button>
+              : <Link to="/ventures/new" className="btn-glow btn-glow-sm">{t('venturesPage.listVenture')}</Link>
             }
           </div>
         ) : (
@@ -206,9 +208,10 @@ export default function VenturesPage() {
 
       <ConfirmDialog
         open={!!deleteTarget}
-        title="Delete Venture?"
-        message="This will permanently delete the venture and all associated applications. This cannot be undone."
-        confirmLabel="Delete"
+        title={t('deleteVenture.title')}
+        message={t('deleteVenture.message')}
+        confirmLabel={t('deleteVenture.confirm')}
+        cancelLabel={t('confirm.cancel')}
         danger
         onConfirm={handleDelete}
         onCancel={() => setDeleteTarget(null)}
@@ -220,6 +223,7 @@ export default function VenturesPage() {
 // ─── Venture Card ─────────────────────────────────────────────────────────────
 function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
                         likeState, onLike }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
@@ -278,7 +282,7 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
             }
             <div>
               <span className={`px-2 py-[3px] text-[10px] font-bold rounded-md uppercase tracking-wide ${isAuction ? 'bg-yellow-400 text-gray-900' : 'bg-white/25 backdrop-blur-sm text-white'}`}>
-                {isAuction ? '🔨 Auction' : '🤝 Regular'}
+                {isAuction ? '🔨 Auction' : t('venturesPage.regular')}
               </span>
               {isOwner && (
                 <span className="ml-1.5 px-2 py-[3px] bg-white text-indigo-600 text-[10px] font-extrabold rounded-md uppercase tracking-wide shadow-sm">
@@ -384,9 +388,9 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
         <div className="flex gap-2 mt-1" onClick={e => e.stopPropagation()}>
           {isOwner ? (
             <>
-              <button className="flex-1 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg transition-all hover:bg-gray-200" onClick={onView}>View</button>
-              <button className="flex-1 py-2 bg-gray-900 text-white text-xs font-bold rounded-lg transition-all hover:bg-gray-800" onClick={onEdit}>Edit</button>
-              <button className="px-3 py-2 bg-red-500 text-white text-xs font-bold rounded-lg transition-all hover:bg-red-600" onClick={onDelete}>Delete</button>
+              <button className="flex-1 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg transition-all hover:bg-gray-200" onClick={onView}>{t('venturesPage.view')}</button>
+              <button className="flex-1 py-2 bg-gray-900 text-white text-xs font-bold rounded-lg transition-all hover:bg-gray-800" onClick={onEdit}>{t('venturesPage.edit')}</button>
+              <button className="px-3 py-2 bg-red-500 text-white text-xs font-bold rounded-lg transition-all hover:bg-red-600" onClick={onDelete}>{t('venturesPage.delete')}</button>
               {b.website && (
                 <a href={b.website} target="_blank" rel="noreferrer"
                    className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center transition-all hover:bg-gray-200"
@@ -397,13 +401,13 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
             </>
           ) : (
             <>
-              <button className="flex-1 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg transition-all hover:bg-gray-200" onClick={onView}>View Details</button>
+              <button className="flex-1 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg transition-all hover:bg-gray-200" onClick={onView}>{t('venturesPage.viewDetails')}</button>
               {isAuction && auction?.id && auction.status !== 'DRAFT' ? (
                 <button className={`flex-1 py-2 bg-gradient-to-r ${accentGrad} text-white text-xs font-bold rounded-lg transition-all hover:opacity-90`}
-                  onClick={() => navigate(`/venture-auction/${auction.id}`)}>🔨 Bid Now</button>
+                  onClick={() => navigate(`/venture-auction/${auction.id}`)}>{t('venturesPage.bidNow')}</button>
               ) : !isAuction ? (
                 <button className={`flex-1 py-2 bg-gradient-to-r ${accentGrad} text-white text-xs font-bold rounded-lg transition-all hover:opacity-90`}
-                  onClick={onApply}>Co-Venture →</button>
+                  onClick={onApply}>{t('venturesPage.coVenture')}</button>
               ) : null}
               {b.website && (
                 <a href={b.website} target="_blank" rel="noreferrer"
