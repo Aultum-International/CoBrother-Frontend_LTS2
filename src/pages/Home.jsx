@@ -140,19 +140,39 @@ export default function Home() {
       <DomainSearchBar />
       <ExploreSection />
 
-      <section className="py-12 md:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
-            {features.map((feature, index) => (
-              <div key={index} className="card-glow-hover p-5 md:p-8 bg-white border border-gray-200 rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center">
-                <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-purple mb-4 md:mb-5">{feature.icon}</div>
-                <h3 className="font-display text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3">{t(feature.titleKey)}</h3>
-                <p className="text-lg text-gray-600 mb-5 md:mb-6 flex-1 leading-relaxed">{t(feature.descKey)}</p>
-                <ExploreButton onClick={() => navigate(feature.link)}>
-                  {t('home.explore')}
-                </ExploreButton>
+      <section className="py-16 md:py-24 px-4 sm:px-6 lg:px-8 bg-slate-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid gap-12 md:grid-cols-[1.1fr_.9fr] items-center">
+            <div className="space-y-8">
+              <div className="inline-flex rounded-full border border-indigo-200 bg-indigo-100/80 px-4 py-1 text-sm font-semibold uppercase tracking-[0.24em] text-indigo-700 shadow-sm">
+                CoBrother home for domains, ventures, creation and community
               </div>
-            ))}
+              <div className="space-y-5">
+                <h1 className="text-4xl sm:text-5xl xl:text-6xl font-display font-bold tracking-tight text-slate-950">
+                  Build your online identity, grow your venture, and connect with creators.
+                </h1>
+                <p className="max-w-2xl text-lg leading-8 text-slate-600">
+                  Discover domains, co-ventures, technology and community tools from a single polished homepage.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 rounded-[32px] border border-slate-200 bg-white p-6 shadow-[0_20px_80px_-40px_rgba(15,23,42,0.12)]">
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+              {features.map((feature, index) => (
+                <div key={index} className="group overflow-hidden rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-md">
+                  <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-indigo-50 text-indigo-700 shadow-sm">
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-xl font-semibold text-slate-950 mb-3">{t(feature.titleKey)}</h3>
+                  <p className="text-sm leading-7 text-slate-600 mb-6">{t(feature.descKey)}</p>
+                  <ExploreButton onClick={() => navigate(feature.link)}>
+                    {t('exploreBtn')}
+                  </ExploreButton>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
