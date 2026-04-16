@@ -141,12 +141,13 @@ export default function Home() {
       <DomainSearchBar />
       <ExploreSection />
 
+{/* Homepage Cards Section */}
    <section className="py-2 md:py-28 px-4 sm:px-6 lg:px-8 ">
 
-  {/* Heading */}
-  <div className="max-w-2xl mx-auto text-center mb-14 md:mb-20">
-    <span className="inline-block mb-4 px-4 py-1.5 text-xs font-semibold bg-gradient-to-r from-sky-100 to-emerald-100 text-sky-700 rounded-full shadow-sm">
-      FEATURED TOOLS
+      {/* Heading */}
+      <div className="max-w-2xl mx-auto text-center mb-14 md:mb-20">
+        <span className="inline-block mb-4 px-4 py-1.5 text-xs font-semibold bg-gradient-to-r from-sky-100 to-emerald-100 text-sky-700 rounded-full shadow-sm">
+          FEATURED TOOLS
     </span>
 
     <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight tracking-tight">
@@ -215,6 +216,7 @@ export default function Home() {
 
 </section>
 
+{/* Feedback Section */}
       <section className="py-2 ">
         <FeedbackSection />
       </section>
