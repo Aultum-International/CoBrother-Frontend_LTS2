@@ -70,92 +70,99 @@ export default function TechnologySection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
           {softwares.slice(0, 8).map((item) => {
             const s = STATUS_COLORS[item.softwareStatus] || STATUS_COLORS.AVAILABLE;
-            const accentGrad = 'from-indigo-600 via-blue-500 to-cyan-400';
+            const techTags = item.techStack
+              ? item.techStack.split(',').map(tech => tech.trim()).filter(Boolean).slice(0, 3)
+              : [];
 
             return (
               <div
                 key={item.id}
-                className="group relative bg-white rounded-2xl overflow-hidden cursor-pointer flex flex-col border border-gray-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] hover:-translate-y-0.5 transition-all duration-300"
+                className="group relative rounded-[24px] overflow-hidden cursor-pointer flex flex-col border border-sky-100 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.05)] hover:shadow-[0_20px_44px_rgba(59,130,246,0.12)] hover:-translate-y-1 transition-all duration-300"
                 onClick={handleCardClick}
               >
-                {/* Gradient header */}
-                <div className={`relative bg-gradient-to-r ${accentGrad} px-4 pt-3.5 pb-3.5 min-h-[90px] flex items-end`}>
+                <div className="relative overflow-hidden px-4 pt-4 pb-4 bg-gradient-to-br from-sky-50 via-white to-cyan-50">
+                  <div className="absolute inset-0 opacity-70" style={{ background: 'linear-gradient(135deg, rgba(56,189,248,0.07) 0%, rgba(99,102,241,0.025) 45%, rgba(255,255,255,0) 100%)' }} />
                   {item.imageUrl && (
                     <img src={item.imageUrl} alt={item.name}
-                      className="absolute top-0 right-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-300" />
+                      className="absolute top-0 right-0 w-full h-full object-cover opacity-[0.08] group-hover:opacity-[0.12] transition-opacity duration-300" />
                   )}
-                  <div className="relative z-10 flex items-end justify-between w-full">
-                    <div className="flex items-center gap-2">
-                      {item.imageUrl ? (
-                        <img src={item.imageUrl} alt={item.name}
-                          className="w-14 h-14 rounded-xl object-cover ring-[3px] ring-white/50 shadow-lg" />
-                      ) : (
-                        <div className="w-14 h-14 rounded-xl flex items-center justify-center font-display text-2xl font-extrabold text-white ring-[3px] ring-white/30 shadow-lg bg-white/15 backdrop-blur-sm">
-                          ⧁
+                  <div className="relative z-10">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {item.imageUrl ? (
+                          <img src={item.imageUrl} alt={item.name}
+                            className="w-12 h-12 rounded-2xl object-cover shadow-md ring-1 ring-white" />
+                        ) : (
+                          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-sm font-bold text-sky-700 bg-white border border-sky-100 shadow-sm">
+                            TECH
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <h3 className="font-display text-[1rem] font-bold text-gray-900 truncate leading-snug">
+                            {item.name}
+                          </h3>
+                          <span className="text-[11px] text-gray-500 font-medium">
+                            {item.category?.replace(/_/g, ' ') || 'Technology'}
+                          </span>
                         </div>
-                      )}
-                      <div className="flex items-center gap-1.5">
-                        <span className="px-2 py-[3px] text-[10px] font-bold rounded-md uppercase tracking-wide bg-white/25 backdrop-blur-sm text-white">
-                          {item.category?.replace(/_/g, ' ') || 'Technology'}
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
+                        <span
+                          className="px-2.5 py-1 text-[10px] font-bold rounded-full uppercase tracking-wide border"
+                          style={{ color: s.color, background: s.bg, borderColor: s.border }}
+                        >
+                          {item.softwareStatus}
                         </span>
                         {item.official && (
-                          <span className="px-2 py-[3px] bg-yellow-400 text-gray-900 text-[10px] font-bold rounded-md uppercase tracking-wide">
-                            ✦ Official
+                          <span className="px-2 py-[3px] bg-amber-50 text-amber-700 text-[9px] font-bold rounded-full uppercase tracking-wide border border-amber-200">
+                            {t('technologyPage.official')}
                           </span>
                         )}
                       </div>
                     </div>
+
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-2.5 py-1 bg-white text-sky-700 text-[10px] font-semibold rounded-full border border-sky-100 shadow-sm">
+                        Digital Product
+                      </span>
+                      {techTags.map(tech => (
+                        <span key={tech} className="text-[10px] px-2.5 py-1 rounded-full bg-sky-100 text-sky-700 border border-sky-200 font-medium">
+                          {tech}
+                        </span>
+                      ))}
+                      {item.techStack && item.techStack.split(',').map(tech => tech.trim()).filter(Boolean).length > 3 && (
+                        <span className="text-[10px] px-2.5 py-1 rounded-full bg-white text-gray-500 border border-gray-200 font-medium">
+                          +more
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Body */}
                 <div className="relative px-4 pb-4 pt-3 flex flex-col flex-1">
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <h3 className="font-display text-[0.95rem] font-extrabold text-gray-900 truncate leading-snug">
-                      {item.name}
-                    </h3>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <span
-                        className="px-1.5 py-[2px] text-[9px] font-bold rounded uppercase tracking-wide border"
-                        style={{ color: s.color, background: s.bg, borderColor: s.border }}
-                      >
-                        {item.softwareStatus}
-                      </span>
-                      <span className="px-1.5 py-[2px] bg-indigo-50 text-indigo-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
-                        {item.purchaseType}
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2 mb-3">
+                  <p className="text-[12px] text-gray-500 leading-relaxed line-clamp-2 mb-4 min-h-[36px]">
                     {item.description || <span className="italic text-gray-300">{t('common.noDescription')}</span>}
                   </p>
 
-                  {/* Tech stack chips */}
-                  {item.techStack && (
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      {item.techStack.split(',').slice(0, 3).map(tech => (
-                        <span key={tech} className="text-[0.7rem] px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-600 border border-indigo-200 font-semibold">
-                          {tech.trim()}
+                  <div className="rounded-2xl bg-gradient-to-r from-sky-50 via-white to-indigo-50 border border-sky-100 px-4 py-3 mb-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-[10px] uppercase tracking-[0.18em] text-sky-500 font-semibold mb-1">
+                          {t('home.askingPrice')}
+                        </div>
+                        <span className="text-[1.65rem] font-extrabold text-slate-900 tracking-tight">
+                          ₹{Number(item.price).toLocaleString('en-IN')}
                         </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Price block */}
-                  <div className="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 px-3 py-2 mb-3">
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-xl font-extrabold text-emerald-700 tracking-tight">
-                        ₹{Number(item.price).toLocaleString('en-IN')}
+                      </div>
+                      <span className="px-2.5 py-1 bg-white text-slate-600 text-[10px] font-bold rounded-full uppercase tracking-wide border border-sky-100 whitespace-nowrap">
+                        {item.purchaseType || item.pricingDemand || 'Fixed'}
                       </span>
-                      <span className="text-[10px] text-emerald-400 font-semibold">{t('home.askingPrice')}</span>
                     </div>
                   </div>
 
-                  {/* Stats + View Details */}
                   <div className="flex items-center gap-2.5 text-[11px] text-gray-400 font-medium py-2 border-t border-gray-100 mt-auto">
                     <span className="flex items-center gap-1">👁 {item.views || 0}</span>
-                    <button className={`ml-auto px-3 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[11px] font-bold rounded-lg transition-all hover:opacity-90`}>
+                    <button className="ml-auto px-3 py-1.5 bg-gradient-to-r from-sky-500 to-indigo-500 text-white text-[11px] font-bold rounded-lg transition-all hover:opacity-95">
                       {t('home.viewDetails')}
                     </button>
                   </div>
