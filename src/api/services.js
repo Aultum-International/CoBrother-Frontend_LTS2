@@ -189,6 +189,13 @@ export const joinUsAPI = {
   submit: (data) => api.post('/api/v1/becobrother', data),
 };
 
+export const careerAPI = {
+  getPublicJobs: () => api.get('/public/api/v1/careers'),
+  getAllJobs:    () => api.get('/api/v1/careers'),
+  createJob:     (data) => api.post('/api/v1/careers', data),
+  applyToJob:    (jobId, data) => api.post(`/api/v1/careers/${jobId}/apply`, data),
+};
+
 // ─── Public APIs (no auth required) ──────────────────────────────────────────
 export const publicAPI = {
   getDomains:   () => api.get('/public/api/v1/domains'),

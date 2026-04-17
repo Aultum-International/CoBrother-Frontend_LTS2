@@ -9,6 +9,7 @@ export default function HomeNavbar({
   openDropdown,
   setOpenDropdown,
   navigate,
+  firstNavbarVisible = true,
 }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -20,12 +21,15 @@ export default function HomeNavbar({
   };
 
   return (
-    <nav className="w-full bg-white border-b-0 sticky top-[40px] md:top-[45px] z-50" ref={navRef}>
+    <nav
+      className={`w-full bg-white border-b-0 sticky z-50 transition-[top] duration-300 ${firstNavbarVisible ? 'top-[40px] md:top-[45px]' : 'top-0'}`}
+      ref={navRef}
+    >
       <div className="px-4 sm:px-6 lg:px-8 h-[60px] md:h-[70px] flex items-center justify-between relative">
         <div className="flex items-center gap-3 md:gap-6">
           <img src={coBrotherLogo} alt="CoBrother" className="h-8 md:h-10 w-auto" />
 
-          <div className="hidden lg:flex items-center gap-1 lg:gap-4">
+          <div className="hidden xl:flex items-center gap-1 xl:gap-4">
             <div className="relative">
               <button
                 className={`flex items-center gap-2 px-3 lg:px-4 py-2 border-none rounded-lg text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 ${
@@ -193,14 +197,14 @@ export default function HomeNavbar({
 
         <div className="flex items-center gap-2 lg:gap-3">
           <button
-            className="lg:hidden bg-transparent border-none text-gray-900 cursor-pointer transition-colors duration-200 hover:text-gray-900"
+            className="xl:hidden bg-transparent border-none text-gray-900 cursor-pointer transition-colors duration-200 hover:text-gray-900"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
 
-          <div className="hidden lg:flex items-center gap-2 lg:gap-3">
+          <div className="hidden xl:flex items-center gap-2 xl:gap-3">
             <button className="btn-glow btn-glow-md" onClick={() => navigate('/join-form')}>
               {t('homeNav.joinUs')}
             </button>
@@ -226,10 +230,10 @@ export default function HomeNavbar({
       {mobileMenuOpen && (
         <>
           <div
-            className="lg:hidden fixed top-[100px] inset-x-0 bottom-0 bg-black/50 z-40 backdrop-blur-sm"
+            className="xl:hidden fixed top-[100px] inset-x-0 bottom-0 bg-black/50 z-40 backdrop-blur-sm"
             onClick={closeMobileMenu}
           />
-          <div className="lg:hidden fixed top-[100px] left-0 w-[290px] max-w-[90vw] h-[calc(100dvh-100px)] bg-white shadow-2xl z-50 animate-[slideInLeft_0.3s_ease-out] overflow-y-auto">
+          <div className="xl:hidden fixed top-[100px] left-0 w-[290px] max-w-[90vw] h-[calc(100dvh-100px)] bg-white shadow-2xl z-50 animate-[slideInLeft_0.3s_ease-out] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 m-0">{t('nav.menu')}</h3>
               <button

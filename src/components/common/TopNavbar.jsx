@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import cobrotherProfile from '../../assets/CoBrother_profileW.png';
 
-export default function TopNavbar({ homeMobileMenu = false }) {
+export default function TopNavbar({ homeMobileMenu = false, isVisible = true }) {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -65,7 +65,9 @@ export default function TopNavbar({ homeMobileMenu = false }) {
 
   return (
     <div
-      className="sticky top-0 w-full h-[40px] md:h-[45px] z-[1001] border-b border-purple/[0.18] font-body"
+      className={`sticky top-0 w-full h-[40px] md:h-[45px] z-[1001] border-b border-purple/[0.18] font-body transition-transform duration-300 ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
       style={{ background: 'linear-gradient(90deg, #0e0b1e 0%, #130d28 60%, #0f1225 100%)' }}
     >
       <div className="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-end">
@@ -100,7 +102,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
             )}
           </div>
 
-          <div className="relative hidden md:block">
+          <div className="relative hidden xl:block">
             <a
               href="/contact"
               className="text-white text-sm font-normal no-underline flex items-center gap-1 px-3 py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
@@ -109,14 +111,16 @@ export default function TopNavbar({ homeMobileMenu = false }) {
             </a>
           </div>
 
-          <div className="relative hidden md:block">
-            <a
-              href="/account"
-              className="text-white text-sm font-normal no-underline flex items-center gap-1 px-3 py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
-            >
-              {t('nav.myProfile')}
-            </a>
-          </div>
+          {user && (
+            <div className="relative hidden xl:block">
+              <a
+                href="/account"
+                className="text-white text-sm font-normal no-underline flex items-center gap-1 px-3 py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
+              >
+                {t('nav.myProfile')}
+              </a>
+            </div>
+          )}
 
           <div className="relative ml-1 md:ml-2">
             <button
@@ -151,7 +155,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
             </button>
 
             {profileDropdownOpen && (
-              <div className="md:hidden absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[140px] overflow-hidden z-[1001]">
+              <div className="xl:hidden absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[140px] overflow-hidden z-[1001]">
                 <a
                   href="/contact"
                   className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
@@ -159,13 +163,15 @@ export default function TopNavbar({ homeMobileMenu = false }) {
                 >
                   {t('nav.contactUs')}
                 </a>
-                <a
-                  href={user ? "/dashboard" : "/profile"}
-                  className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  onClick={() => setProfileDropdownOpen(false)}
-                >
-                  {t('nav.profile')}
-                </a>
+                {user && (
+                  <a
+                    href="/dashboard"
+                    className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setProfileDropdownOpen(false)}
+                  >
+                    {t('nav.profile')}
+                  </a>
+                )}
               </div>
             )}
           </div>

@@ -48,19 +48,33 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchError, setSearchError] = useState('');
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [isTopNavbarVisible, setIsTopNavbarVisible] = useState(true);
   const navRef = useRef(null);
+  const lastScrollYRef = useRef(0);
 
   useEffect(() => {
     document.body.classList.add('home-page-body');
+    lastScrollYRef.current = window.scrollY;
 
     const handleScroll = () => {
+      const currentY = window.scrollY;
+
       if (navRef.current) {
-        if (window.scrollY > 0) {
+        if (currentY > 0) {
           navRef.current.classList.add('scrolled');
         } else {
           navRef.current.classList.remove('scrolled');
         }
       }
+
+      if (currentY <= 4) {
+        setIsTopNavbarVisible(true);
+      } else {
+        const delta = currentY - lastScrollYRef.current;
+        if (delta > 6) setIsTopNavbarVisible(false);
+        else if (delta < -6) setIsTopNavbarVisible(true);
+      }
+      lastScrollYRef.current = currentY;
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -129,12 +143,13 @@ export default function Home() {
 
   return (
     <div className="bg-white">
-      <TopNavbar homeMobileMenu />
+      <TopNavbar homeMobileMenu isVisible={isTopNavbarVisible} />
       <HomeNavbar
         navRef={navRef}
         openDropdown={openDropdown}
         setOpenDropdown={setOpenDropdown}
         navigate={navigate}
+        firstNavbarVisible={isTopNavbarVisible}
       />
 
       <HeroGlow />
@@ -142,9 +157,8 @@ export default function Home() {
       <ExploreSection />
 
 {/* Homepage Cards Section */}
-   <section className="py-2 md:py-28 px-4 sm:px-6 lg:px-8 ">
-
-      {/* Heading */}
+   <section className="py-12 md:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+     {/* Heading */}
       <div className="max-w-2xl mx-auto text-center mb-14 md:mb-20">
         <span className="inline-block mb-4 px-4 py-1.5 text-xs font-semibold bg-gradient-to-r from-sky-100 to-emerald-100 text-sky-700 rounded-full shadow-sm">
           FEATURED TOOLS
@@ -165,56 +179,21 @@ export default function Home() {
       Discover powerful tools to build, scale, and dominate faster
     </p>
   </div>
-
-  {/* Cards */}
-  <div className="max-w-[1200px] mx-auto">
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-
-      {features.map((feature, index) => (
-        <div
-          key={index}
-          className="group relative p-[1px] rounded-2xl bg-gradient-to-br from-sky-200/40 via-transparent to-emerald-200/40 hover:from-sky-300/60 hover:to-emerald-300/60 transition-all duration-500"
-        >
-          {/* Inner Card */}
-          <div className="relative h-full bg-white rounded-2xl p-6 md:p-8 flex flex-col backdrop-blur-xl">
-
-            {/* Glow Effect */}
-            <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-br from-sky-100/40 to-emerald-100/40 blur-xl"></div>
-
-            {/* Icon */}
-            <div className="relative z-10 w-14 h-14 flex items-center justify-center rounded-xl bg-gradient-to-br from-sky-100 to-emerald-100 text-sky-600 mb-5 shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-              {feature.icon}
-            </div>
-
-            {/* Title */}
-            <h3 className="relative z-10 text-lg md:text-xl font-semibold text-gray-900 mb-2">
-              {t(feature.titleKey)}
-            </h3>
-
-            {/* Description */}
-            <p className="relative z-10 text-sm text-gray-500 mb-6 leading-relaxed flex-1">
-              {t(feature.descKey)}
-            </p>
-
-            {/* CTA */}
-            <button
-              onClick={() => navigate(feature.link)}
-              className="relative z-10 mt-auto inline-flex items-center gap-2 text-sm font-semibold text-sky-600"
-            >
-              {t('Explore')}
-              <span className="transition-transform duration-300 group-hover:translate-x-1">
-                →
-              </span>
-            </button>
-
+        <div className="max-w-[1200px] mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+            {features.map((feature, index) => (
+              <div key={index} className="card-glow-hover p-5 md:p-8 bg-white border border-gray-200 rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center">
+                <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-purple mb-4 md:mb-5">{feature.icon}</div>
+                <h3 className="font-display text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3">{t(feature.titleKey)}</h3>
+                <p className="text-lg text-gray-600 mb-5 md:mb-6 flex-1 leading-relaxed">{t(feature.descKey)}</p>
+                <ExploreButton onClick={() => navigate(feature.link)}>
+                  {t('home.explore')}
+                </ExploreButton>
+              </div>
+            ))}
           </div>
         </div>
-      ))}
-
-    </div>
-  </div>
-
-</section>
+      </section>
 
 {/* Feedback Section */}
       <section className="py-2 ">

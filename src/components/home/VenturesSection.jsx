@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { publicAPI } from '../../api/services';
+import HomeListingSkeleton from './HomeListingSkeleton';
 
 const TYPE_LABELS = {
   STARTUP: 'Startup',
@@ -46,8 +47,10 @@ export default function VenturesSection() {
           <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
             {t('home.coVentures')}
           </h3>
-          <div className="flex items-center justify-center py-20">
-            <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <HomeListingSkeleton key={`venture-skeleton-${idx}`} />
+            ))}
           </div>
         </div>
       </section>

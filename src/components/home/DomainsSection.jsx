@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { publicAPI } from '../../api/services';
+import HomeListingSkeleton from './HomeListingSkeleton';
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
@@ -39,8 +40,10 @@ export default function DomainsSection() {
           <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
             {t('home.premiumDomains')}
           </h3>
-          <div className="flex items-center justify-center py-20">
-            <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <HomeListingSkeleton key={`domain-skeleton-${idx}`} />
+            ))}
           </div>
         </div>
       </section>

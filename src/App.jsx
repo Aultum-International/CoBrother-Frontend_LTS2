@@ -41,6 +41,9 @@ import AuctionsPage from './pages/AuctionsPage';
 import Home from './pages/Home';
 import JoinForm from './pages/JoinForm';
 import ContactPage from './pages/ContactPage';
+import CareersPage from './pages/CareersPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
 
 
 export default function App() {
@@ -54,6 +57,9 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/join-form" element={<JoinForm />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/careers" element={<CareersPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           {/* OAuth callback — path MUST match app.oauth2.redirect-uri in application.properties */}

@@ -15,5 +15,99 @@
   "confirm": { "confirm": "Confirm", "cancel": "Cancel" },
   "share": { "shareVia": "Share via" },
   "time": { "justNow": "just now", "minutesAgo": "{{count}}m ago", "hoursAgo": "{{count}}h ago", "daysAgo": "{{count}}d ago" },
+  "joinForm": {
+    "backToHome": "Back to Home",
+    "brand": "CoBrother Elite",
+    "badgePrefix": "Be the",
+    "badgeHighlight": "Disruptive CoBrother",
+    "heroTitlePrefix": "Be the",
+    "heroTitleHighlight": "Disruptive CoBrother",
+    "heroDesc1": "Disruptive businesses are integrating",
+    "heroDescBold1": "AI and Technology",
+    "heroDesc2": "but struggling to implement it. We provide the technology -",
+    "heroDescBold2": "you deliver it to the doorstep",
+    "heroDesc3": "and earn up to 100%.",
+    "stats": { "earnings": "Earnings", "onboarding": "Onboarding", "joiningFee": "Joining fee" },
+    "workflow": {
+      "title": "The CoBrother Workflow",
+      "step1Title": "Claim a Lead",
+      "step1Desc": "Get notified of a business in your area ready for Aultum Technologies.",
+      "step2Title": "On-Site Setup",
+      "step2Desc": "Visit the Business, deliver and install Aultum Technologies.",
+      "step3Title": "Technology Handover",
+      "step3Desc": "Walk the business owner through their real time technology.",
+      "step4Title": "Instant Earning",
+      "step4Desc": "Your 100% Delivery Fees, Instant Earning, Clears the Moment Integration Goes Live."
+    },
+    "detailsTitle": "Everything you should know",
+    "cards": {
+      "deliverTitle": "What to deliver",
+      "deliverItem1": "Aultum Technologies",
+      "deliverItem2": "AI Technologies",
+      "deliverItem3": "Dashboard live + Integration",
+      "whoTitle": "Who you deliver",
+      "whoItem1": "Owners buying AI",
+      "whoItem2": "Teams in need of setup support",
+      "whoItem3": "Local Businesses and Startups",
+      "whoItem4": "Corporates buying AI tools",
+      "earnTitle": "What you Earn",
+      "earnItem1": "Lead notifications by area",
+      "earnItem2": "Clear setup workflow",
+      "earnItem3": "Commission on go-live",
+      "needTitle": "What you Need",
+      "needItem1": "Phone + WhatsApp active",
+      "needItem2": "Basic communication skills",
+      "needItem3": "Laptop/Tablet recommended"
+    },
+    "faqTitle": "Frequently Asked Questions",
+    "faq": {
+      "q1": "Do I need years of experience?",
+      "a1": "No. Skill + execution mindset matters. Choose a top skill and start.",
+      "q2": "When do I get paid?",
+      "a2": "Commission clears when the integration goes live - post setup and dashboard handover.",
+      "q3": "How will I receive leads?",
+      "a3": "Based on your city/pincode and selected skill. You'll get a WhatsApp notification.",
+      "q4": "Is there a joining fee?",
+      "a4": "No joining fee. No hidden charges. You only earn - we take nothing upfront."
+    },
+    "claimTitle": "Claim Your Territory",
+    "claimDesc": "Fill Once - We Route Leads to You by Area & Skill.",
+    "fields": {
+      "fullName": "Full Name",
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "cityPincode": "City / Pincode",
+      "topSkill": "Top Skill",
+      "equipment": "Equipment",
+      "equipmentHint": "Laptop / Tablet available"
+    },
+    "placeholders": {
+      "fullName": "Your full name",
+      "email": "your.email@example.com",
+      "whatsapp": "WhatsApp number",
+      "cityPincode": "Mumbai / 400065"
+    },
+    "processing": "Processing...",
+    "submit": "SUBMIT",
+    "messages": {
+      "success": "Thank you! Our team will contact you soon.",
+      "error": "Something went wrong. Please try again later.",
+      "territoryClaimed": "Territory Claimed!",
+      "errorTitle": "Error"
+    },
+    "errors": {
+      "fullNameRequired": "Full name is required",
+      "emailInvalid": "Enter a valid email address",
+      "whatsappInvalid": "Enter a valid WhatsApp number",
+      "cityPincodeRequired": "City / Pincode is required"
+    },
+    "footerNote": "Zero Spam · Zero Joining Fee · Matched Within 48h",
+    "trust": {
+      "zeroWait": "Zero wait time",
+      "upToCut": "Up to 100% cut",
+      "noFee": "No joining fee",
+      "instantCommission": "Instant commission"
+    }
+  },
   "common": { "views": "views", "applications": "applications", "bids": "bid", "bids_other": "bids", "loading": "Loading...", "error": "Error", "success": "Success", "save": "Save", "close": "Close", "back": "Back", "next": "Next", "previous": "Previous", "search": "Search", "noDescription": "No description", "noDescriptionYet": "No description yet" }
 }

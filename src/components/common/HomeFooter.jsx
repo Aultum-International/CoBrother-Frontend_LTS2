@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Heart } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const XIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -83,6 +84,17 @@ export default function HomeFooter() {
           </span>
           {t('footer.inIndia')}
         </p>
+        <div className="flex items-center gap-4 text-xs sm:text-sm text-gray-500 pt-1">
+          <Link to="/privacy-policy" className="hover:text-gray-700 transition-colors no-underline">
+            Privacy Policy
+          </Link>
+          <Link to="/terms-and-conditions" className="hover:text-gray-700 transition-colors no-underline">
+            Terms & Conditions
+          </Link>
+          <Link to="/careers" className="hover:text-gray-700 transition-colors no-underline">
+            Careers
+          </Link>
+        </div>
       </div>
       <style>{`
         .floating-heart {
