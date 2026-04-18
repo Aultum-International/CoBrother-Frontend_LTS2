@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { Heart } from 'lucide-react';
+import { Heart, Mail, MapPin, Phone, ArrowUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import coBrotherLogo from '../../assets/Cobrother_logo.png';
 
 const XIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-4 h-4 sm:w-5 sm:h-5">
     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
   </svg>
 );
@@ -18,7 +18,7 @@ const InstagramIcon = () => (
     strokeLinecap="round"
     strokeLinejoin="round"
     aria-hidden="true"
-    className="w-5 h-5"
+    className="w-4 h-4 sm:w-5 sm:h-5"
   >
     <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
     <circle cx="12" cy="12" r="4" />
@@ -27,19 +27,19 @@ const InstagramIcon = () => (
 );
 
 const FacebookIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-4 h-4 sm:w-5 sm:h-5">
     <path d="M24 12.073C24 5.404 18.629 0 12 0S0 5.404 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.313 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" />
   </svg>
 );
 
 const LinkedinIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-4 h-4 sm:w-5 sm:h-5">
     <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
   </svg>
 );
 
 const YoutubeIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-5 h-5">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-4 h-4 sm:w-5 sm:h-5">
     <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
   </svg>
 );
@@ -61,35 +61,72 @@ const socialHoverStyles = {
 };
 
 const linkClass =
-  'text-sm text-slate-400 hover:text-white transition-colors no-underline block py-1';
+  'text-sm text-slate-400 hover:text-white hover:translate-x-1 transition-all duration-200 no-underline block py-1.5';
 
-const headingClass = 'text-xs font-semibold uppercase tracking-wider text-slate-500 mb-4';
+// Full width gradient underline heading
+const headingClass =
+  'text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4 relative pb-3 after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-cyan-400 after:to-green-500/40';
 
 export default function HomeFooter() {
   const { t } = useTranslation();
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
-    <footer className="bg-slate-950 text-slate-300 mt-auto border-t border-slate-800/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-8 md:pt-16 md:pb-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 xl:gap-12">
+    <footer className="bg-gradient-to-b from-slate-950 to-slate-900 text-slate-300 mt-auto border-t border-slate-800/80 relative">
+      {/* Decorative top gradient line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-rose-400/50 to-transparent" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-12 md:pt-16 pb-6 md:pb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-12 gap-8 sm:gap-10 md:gap-10 lg:gap-8 xl:gap-12">
           {/* Brand */}
-          <div className="lg:col-span-4">
-            <Link to="/" className="inline-block mb-4">
+          <div className="sm:col-span-2 md:col-span-4 lg:col-span-4 flex flex-col items-start justify-start">
+            <Link to="/" className="inline-block mb-4 group">
               <img
                 src={coBrotherLogo}
                 alt="CoBrother"
-                className="h-9 md:h-10 w-auto brightness-0 invert opacity-90"
+                className="h-9 sm:h-10 md:h-11 w-auto brightness-0 invert opacity-90 group-hover:opacity-100 transition-opacity max-w-full"
               />
             </Link>
-            <p className="text-sm text-slate-400 leading-relaxed max-w-sm">
+            <p className="text-sm text-slate-400 leading-relaxed max-w-xs sm:max-w-md md:max-w-lg lg:max-w-sm xl:max-w-md">
               {t('footer.tagline')}
             </p>
+
+            {/* Contact Info - matches footer color scheme */}
+            <div className="mt-5 space-y-2.5 text-sm">
+              <a
+                href="mailto:cobrother.com@gmail.com"
+                className="flex items-center gap-2.5 group text-slate-400 hover:text-white hover:translate-x-1 transition-all duration-200 no-underline py-1.5"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-900/50 border border-slate-700/80 text-slate-400 group-hover:text-white group-hover:border-slate-500 transition-all">
+                  <Mail className="h-4 w-4" />
+                </span>
+                <span className="break-all">cobrother.com@gmail.com</span>
+              </a>
+              <a
+                href="tel:+911234567890"
+                className="flex items-center gap-2.5 group text-slate-400 hover:text-white hover:translate-x-1 transition-all duration-200 no-underline py-1.5"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-900/50 border border-slate-700/80 text-slate-400 group-hover:text-white group-hover:border-slate-500 transition-all">
+                  <Phone className="h-4 w-4" />
+                </span>
+                <span>+91 8088117744</span>
+              </a>
+              <div className="flex items-center gap-2.5 hover:text-white transition-colors duration-200 group cursor-default">
+                <span className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-900/50 border border-slate-700/80 text-slate-400 group-hover:text-white group-hover:border-slate-500 transition-all">
+                  <MapPin className="h-4 w-4" />
+                </span>
+                <span>India</span>
+              </div>
+            </div>
           </div>
 
           {/* Explore */}
-          <div className="lg:col-span-2">
+          <div className="md:col-span-1 lg:col-span-2">
             <h3 className={headingClass}>{t('footer.headingExplore')}</h3>
-            <nav className="flex flex-col gap-0.5">
+            <nav className="flex flex-col">
               <Link to="/" className={linkClass}>
                 {t('footer.home')}
               </Link>
@@ -100,9 +137,9 @@ export default function HomeFooter() {
           </div>
 
           {/* Company */}
-          <div className="lg:col-span-2">
+          <div className="md:col-span-1 lg:col-span-2">
             <h3 className={headingClass}>{t('footer.headingCompany')}</h3>
-            <nav className="flex flex-col gap-0.5">
+            <nav className="flex flex-col">
               <Link to="/about" className={linkClass}>
                 {t('footer.aboutUs')}
               </Link>
@@ -116,9 +153,9 @@ export default function HomeFooter() {
           </div>
 
           {/* Legal */}
-          <div className="lg:col-span-2">
+          <div className="md:col-span-1 lg:col-span-2">
             <h3 className={headingClass}>{t('footer.headingLegal')}</h3>
-            <nav className="flex flex-col gap-0.5">
+            <nav className="flex flex-col">
               <Link to="/privacy-policy" className={linkClass}>
                 {t('footer.privacyPolicy')}
               </Link>
@@ -126,15 +163,15 @@ export default function HomeFooter() {
                 {t('footer.terms')}
               </Link>
               <Link to="/cancellation-refund-policy" className={linkClass}>
-                Cancellation & Refund Policy
+                Cancellation & Refund
               </Link>
             </nav>
           </div>
 
           {/* Social */}
-          <div className="sm:col-span-2 lg:col-span-2">
+          <div className="sm:col-span-2 md:col-span-1 lg:col-span-2 flex flex-col">
             <h3 className={headingClass}>{t('footer.headingConnect')}</h3>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2 sm:gap-2.5">
               {socials.map(({ href, label, Icon }) => (
                 <a
                   key={label}
@@ -142,20 +179,30 @@ export default function HomeFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className={`flex h-10 w-10 items-center justify-center rounded-lg border border-slate-700/80 bg-slate-900/50 text-slate-400 transition-all duration-200 hover:border-slate-500 hover:scale-105 ${socialHoverStyles[label]}`}
+                  className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg border border-slate-700/80 bg-slate-900/50 text-slate-400 transition-all duration-300 hover:border-slate-500 hover:scale-110 hover:-translate-y-0.5 ${socialHoverStyles[label]}`}
                 >
                   <Icon />
                 </a>
               ))}
             </div>
+
+            {/* Trust badge */}
+            <div className="mt-5 sm:mt-6 p-3 rounded-lg bg-slate-900/50 border border-slate-700/80">
+              <p className="text-xs text-slate-400 leading-relaxed">
+                <span className="text-emerald-400 font-semibold">● </span>
+                Trusted by thousands across India
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col md:flex-row md:items-center md:justify-between gap-4 text-center md:text-left">
-          <p className="text-slate-500 text-xs sm:text-sm order-2 md:order-1">
+        {/* Bottom Bar */}
+        <div className="mt-10 sm:mt-12 pt-5 sm:pt-6 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-center sm:text-left">
+          <p className="text-slate-500 text-xs sm:text-sm order-2 sm:order-1">
             {t('footer.copyright')}
           </p>
-          <p className="text-slate-500 text-xs sm:text-sm flex items-center justify-center md:justify-end gap-1.5 order-1 md:order-2">
+
+          <p className="text-slate-500 text-xs sm:text-sm flex items-center justify-center sm:justify-end gap-1.5 order-1 sm:order-2">
             {t('footer.madeWith')}
             <span className="relative inline-flex items-center justify-center group">
               <Heart size={18} fill="#fb7185" stroke="none" className="text-rose-400 inline-block" />
@@ -167,6 +214,9 @@ export default function HomeFooter() {
           </p>
         </div>
       </div>
+
+     
+
       <style>{`
         .floating-heart {
           position: absolute; top: 0; left: 50%;

@@ -1,6 +1,7 @@
 import { Mail, Phone, MapPin, MessageCircle, Clock, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
+import HomeFooter from '../components/common/HomeFooter';
 
 export default function ContactPage() {
   const navigate = useNavigate();
@@ -9,8 +10,8 @@ export default function ContactPage() {
     {
       icon: Mail,
       title: 'Email Us',
-      details: 'support@cobrother.com',
-      link: 'mailto:support@cobrother.com',
+      details: 'cobrother.com@gmail.com',
+      link: 'mailto:cobrother.com@gmail.com',
       color: 'text-purple-600',
       bgColor: 'bg-purple-50'
     },
@@ -158,13 +159,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-4 border-t border-gray-200 text-center">
-        <div className="space-y-1">
-          <p className="text-gray-600 text-sm mb-0">© 2026 CoBrother™ Aultum International. All rights reserved.</p>
-          <p className="text-gray-500 text-sm mb-0">Made with <span className="text-red-300">❤️</span> in India.</p>
-        </div>
-      </footer>
+      <HomeFooter />
     </div>
   );
 }

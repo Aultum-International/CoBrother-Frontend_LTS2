@@ -133,7 +133,7 @@ export default function CareersPage() {
             {t('careers.title', 'Careers at CoBrother')}
           </h1>
           <p className="text-gray-600 max-w-3xl text-base md:text-lg">
-            {t('careers.subtitle', 'Explore open roles. Admin can post jobs, and logged-in users can apply directly.')}
+            Explore open roles and take the next step in your career.
           </p>
         </div>
       </section>

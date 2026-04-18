@@ -11,6 +11,7 @@ import {
   ChevronDown, Timer, BadgePercent, Check, AlertCircle, ArrowLeft,
   Loader2
 } from 'lucide-react';
+import HomeFooter from '../components/common/HomeFooter';
 
 const SKILL_ENUM_MAP = {
   'Web Development': 'WEB_DEV',
@@ -440,6 +441,7 @@ const JoinForm = () => {
           </div>
         </div>
       </section>
+      <HomeFooter />
     </div>
   );
 };

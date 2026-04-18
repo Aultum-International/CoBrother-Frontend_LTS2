@@ -49,7 +49,7 @@ export default function DisruptorsSection() {
 
   if (loading) {
     return (
-      <section className="bg-gradient-to-b from-violet-50/40 to-white py-4 md:py-6 px-4 sm:px-6 lg:px-8">
+      <section className=" py-4 md:py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1200px] mx-auto">
           <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
             {t('home.disruptorsHeading')}
@@ -66,7 +66,7 @@ export default function DisruptorsSection() {
 
   if (profiles.length === 0) {
     return (
-      <section className="bg-gradient-to-b from-violet-50/40 to-white py-4 md:py-6 px-4 sm:px-6 lg:px-8">
+      <section className=" py-4 md:py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1200px] mx-auto">
           <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
             {t('home.disruptorsHeading')}
@@ -78,7 +78,7 @@ export default function DisruptorsSection() {
   }
 
   return (
-    <section className="bg-gradient-to-b from-violet-50/40 to-white py-4 md:py-6 px-4 sm:px-6 lg:px-8">
+    <section className=" py-4 md:py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-[1200px] mx-auto">
         <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
           {t('home.disruptorsHeading')}

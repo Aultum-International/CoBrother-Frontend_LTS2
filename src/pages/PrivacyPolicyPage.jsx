@@ -39,36 +39,36 @@ export default function PrivacyPolicyPage() {
       <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900 pt-3">
         <div className="pointer-events-none absolute inset-0">
           <motion.div
-            className="absolute -top-24 left-1/4 h-96 w-96 rounded-full bg-indigo-300/30 blur-3xl"
+            className="absolute -top-24 left-1/4 h-72 sm:h-80 md:h-96 w-72 sm:w-80 md:w-96 rounded-full bg-indigo-300/30 blur-3xl"
             animate={{ x: [0, 40, -20, 0], y: [0, -20, 20, 0], scale: [1, 1.1, 0.95, 1] }}
             transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
           />
           <motion.div
-            className="absolute -bottom-24 right-1/4 h-96 w-96 rounded-full bg-sky-300/25 blur-3xl"
+            className="absolute -bottom-24 right-1/4 h-72 sm:h-80 md:h-96 w-72 sm:w-80 md:w-96 rounded-full bg-sky-300/25 blur-3xl"
             animate={{ x: [0, -30, 30, 0], y: [0, 20, -20, 0], scale: [1, 1.15, 0.9, 1] }}
             transition={{ duration: 10, delay: 2, repeat: Infinity, ease: 'easeInOut' }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-transparent to-slate-50/80" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+        <div className="relative mx-auto max-w-7xl px-2 sm:px-4 md:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="mx-auto max-w-3xl text-center mb-10 sm:mb-14"
+            className="mx-auto max-w-3xl text-center mb-8 sm:mb-10 md:mb-14"
           >
             <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200/80 bg-indigo-50 px-4 py-2 mb-5 shadow-sm">
               <Shield className="h-4 w-4 text-indigo-600" />
               <span className="text-sm font-semibold text-indigo-800">Privacy Policy</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4 font-display text-slate-900">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 font-display text-slate-900">
               <span className="text-slate-800">Your data,</span>{' '}
               <span className="text-indigo-600">handled with care</span>
             </h1>
 
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
               This Privacy Policy explains how <span className="text-slate-900 font-semibold">CoBrother?</span> (&apos;we&apos;, &apos;us&apos;) collects,
               uses, and protects your information when you use our website and services.
             </p>
@@ -83,14 +83,14 @@ export default function PrivacyPolicyPage() {
             </div>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mt-10">
             <div className="hidden lg:block lg:col-span-4">
-              <div className="sticky top-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/50">
+              <div className="sticky top-8 rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-lg shadow-slate-200/50">
                 <h2 className="text-sm font-semibold text-slate-900 mb-4">On this page</h2>
                 <ul className="space-y-2">
                   {sections.map((s) => (
                     <li key={s.id}>
-                      <button type="button" onClick={() => scrollTo(s.id)} className="group flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm text-slate-600 hover:text-indigo-700 hover:bg-indigo-50 transition">
+                      <button type="button" onClick={() => scrollTo(s.id)} className="group flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-600 hover:text-indigo-700 hover:bg-indigo-50 transition">
                         <span className="truncate">{s.title}</span>
                         <ChevronRight className="h-4 w-4 text-slate-400 opacity-80 group-hover:text-indigo-600 group-hover:opacity-100 transition" />
                       </button>
@@ -161,7 +161,7 @@ function PolicySection({ id, title, children }) {
     <section id={id} className="scroll-mt-24">
       <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-3 mt-10 first:mt-0">{title}</h2>
       {children}
-      <div className="mt-8 border-t border-slate-200" />
+      <div className="mt-8 mb-4 border-t border-slate-200" />
     </section>
   );
 }
