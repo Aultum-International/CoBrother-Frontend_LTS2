@@ -87,13 +87,78 @@ export default function DomainsPage() {
     <AppLayout>
       <Confetti show={showConfetti} />
       {showConfetti && (
-        <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/30 backdrop-blur-sm pointer-events-none animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl px-10 py-8 text-center max-w-sm mx-4 animate-slideUp">
-            <div className="text-5xl mb-3">🌐</div>
-            <h2 className="font-display text-2xl font-extrabold text-gray-900 mb-1">{t('domainsPage.domainListed')}</h2>
-            <p className="text-sm text-gray-500">{t('domainsPage.domainListedDesc')}</p>
+        <div
+            className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fadeIn"
+            onClick={() => setShowConfetti(false)}
+            role="presentation"
+          >
+            <div
+              className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-8 text-left pointer-events-auto animate-slideUp border border-gray-100 max-h-[min(90vh,640px)] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="domain-listed-success-title"
+            >
+              <div className="text-center mb-5">
+                <div className="text-5xl mb-2" aria-hidden>🌐</div>
+                <h2 id="domain-listed-success-title" className="font-display text-2xl font-extrabold text-gray-900 mb-1">
+                  {t('domainsPage.domainListed')}
+                </h2>
+                <p className="text-sm text-gray-500 m-0">{t('domainsPage.domainListedDesc')}</p>
+              </div>
+              <div className="border-t border-gray-100 pt-5">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
+                  {t('domainsPage.listedNextStepsTitle')}
+                </h3>
+                <ol className="space-y-4 m-0 p-0 list-none">
+                  {[1, 2, 3].map((n) => (
+                    <li key={n} className="flex gap-3">
+                      <span className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 text-indigo-800 text-sm font-bold flex items-center justify-center">
+                        {n}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 m-0">
+                          {t(`domainsPage.listedStep${n}Title`)}
+                        </p>
+                        <p className="text-xs text-gray-600 mt-1 m-0 leading-relaxed">
+                          {t(`domainsPage.listedStep${n}Desc`)}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div className="mt-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <button
+                  type="button"
+                  className="btn-glow btn-glow-sm flex-1 justify-center"
+                  onClick={() => {
+                    navigate('/domains/dashboard');
+                    setShowConfetti(false);
+                  }}
+                >
+                  {t('domainsPage.openDomainDashboard')}
+                </button>
+                <button
+                  type="button"
+                  className="btn-glow btn-glow-sm flex-1 justify-center bg-white !text-gray-900 border border-gray-300 hover:bg-gray-50"
+                  onClick={() => {
+                    setFilterTab('mine');
+                    setShowConfetti(false);
+                  }}
+                >
+                  {t('domainsPage.viewMyListings')}
+                </button>
+              </div>
+              <button
+                type="button"
+                className="mt-3 w-full text-sm text-gray-500 hover:text-gray-800 py-2 border-none bg-transparent cursor-pointer"
+                onClick={() => setShowConfetti(false)}
+              >
+                {t('domainsPage.listedGotIt')}
+              </button>
+            </div>
           </div>
-        </div>
       )}
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">

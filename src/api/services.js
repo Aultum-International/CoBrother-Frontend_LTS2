@@ -201,4 +201,9 @@ export const publicAPI = {
   getDomains:   () => api.get('/public/api/v1/domains'),
   getVentures:  () => api.get('/public/api/v1/ventures'),
   getSoftwares: () => api.get('/public/api/v1/softwares'),
+  /** Featured / admin-listed community profiles for marketing surfaces */
+  getCommunity: () => api.get('/public/api/v1/community'),
+  /** Optional `block` query: `disruptors` | `community` — backend may filter; falls back to getCommunity() */
+  getCommunityBlock: (block) =>
+    api.get('/public/api/v1/community', { params: { block } }),
 };

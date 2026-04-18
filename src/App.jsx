@@ -44,6 +44,8 @@ import ContactPage from './pages/ContactPage';
 import CareersPage from './pages/CareersPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
+import CancellationRefundPolicyPage from './pages/CancellationRefundPolicyPage';
+import AboutUsPage from './pages/AboutUsPage';
 
 
 export default function App() {
@@ -60,6 +62,8 @@ export default function App() {
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
+          <Route path="/cancellation-refund-policy" element={<CancellationRefundPolicyPage />} />
+          <Route path="/about" element={<AboutUsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           {/* OAuth callback — path MUST match app.oauth2.redirect-uri in application.properties */}

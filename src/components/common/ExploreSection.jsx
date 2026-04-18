@@ -1,6 +1,8 @@
 import DomainsSection from '../home/DomainsSection';
 import VenturesSection from '../home/VenturesSection';
 import TechnologySection from '../home/TechnologySection';
+import DisruptorsSection from '../home/DisruptorsSection';
+import CommunitySection from '../home/CommunitySection';
 
 export default function ExploreSection() {
   return (
@@ -19,6 +21,10 @@ export default function ExploreSection() {
           TECHNOLOGY SECTION (Separate Component)
       ═══════════════════════════════════════════════════════════════════ */}
       <TechnologySection />
+
+      <DisruptorsSection />
+
+      <CommunitySection />
 
     </>
   );

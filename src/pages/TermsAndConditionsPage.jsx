@@ -1,28 +1,151 @@
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { FileCheck, FileText, Mail, Clock, ChevronRight, AlertCircle } from 'lucide-react';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
-import { useState } from 'react';
 
 export default function TermsAndConditionsPage() {
   const navigate = useNavigate();
   const [openDropdown, setOpenDropdown] = useState(null);
+  const lastUpdated = '13 March 2026';
+
+  const sections = [
+    { id: 'acceptance', title: '1. Acceptance of terms' },
+    { id: 'services', title: '2. Services we provide' },
+    { id: 'user-obligations', title: '3. Your obligations' },
+    { id: 'intellectual-property', title: '4. Intellectual property' },
+    { id: 'payments', title: '5. Payments & refunds' },
+    { id: 'confidentiality', title: '6. Confidentiality' },
+    { id: 'disclaimers', title: '7. Disclaimers' },
+    { id: 'liability', title: '8. Limitation of liability' },
+    { id: 'termination', title: '9. Termination' },
+    { id: 'governing-law', title: '10. Governing law' },
+    { id: 'changes', title: '11. Changes to these terms' },
+    { id: 'contact', title: '12. Contact us' },
+  ];
+
+  const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white text-slate-900">
       <TopNavbar homeMobileMenu />
       <HomeNavbar openDropdown={openDropdown} setOpenDropdown={setOpenDropdown} navigate={navigate} />
 
-      <section className="px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-        <div className="max-w-[900px] mx-auto">
-          <h1 className="font-display text-4xl font-bold text-gray-900 mb-5">Terms & Conditions</h1>
-          <p className="text-gray-600 mb-4">By accessing and using CoBrother, you agree to comply with our terms, platform policies, and applicable laws.</p>
-          <p className="text-gray-600 mb-4">Users are responsible for the accuracy of content submitted, including listings, applications, and profile details.</p>
-          <p className="text-gray-600">CoBrother may update these terms at any time. Continued use of the platform indicates acceptance of revised terms.</p>
+      <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900 pt-24 md:pt-28">
+        <div className="pointer-events-none absolute inset-0">
+          <motion.div className="absolute -top-24 right-1/4 h-96 w-96 rounded-full bg-indigo-300/30 blur-3xl" animate={{ x: [0, -40, 20, 0], y: [0, 20, -20, 0], scale: [1, 1.1, 0.95, 1] }} transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }} />
+          <motion.div className="absolute -bottom-24 left-1/4 h-96 w-96 rounded-full bg-sky-300/25 blur-3xl" animate={{ x: [0, 30, -30, 0], y: [0, -20, 20, 0], scale: [1, 1.15, 0.9, 1] }} transition={{ duration: 10, delay: 2, repeat: Infinity, ease: 'easeInOut' }} />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-transparent to-slate-50/80" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mx-auto max-w-3xl text-center mb-10 sm:mb-14">
+            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200/80 bg-indigo-50 px-4 py-2 mb-5 shadow-sm">
+              <FileCheck className="h-4 w-4 text-indigo-600" />
+              <span className="text-sm font-semibold text-indigo-800">Terms & Conditions</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4 font-display text-slate-900">
+              <span className="text-slate-800">Simple rules,</span>{' '}
+              <span className="text-indigo-600">clear partnership</span>
+            </h1>
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
+              These Terms & Conditions govern your use of <span className="text-slate-900 font-semibold">CoBrother?</span> services. By using our platform, you agree to these terms.
+            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs sm:text-sm text-slate-600">
+              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm">
+                <Clock className="h-4 w-4 text-slate-500" /> Last updated: <span className="font-medium text-slate-900">{lastUpdated}</span>
+              </span>
+              <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm">
+                <FileText className="h-4 w-4 text-slate-500" /> Read time: ~6 minutes
+              </span>
+            </div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
+            <div className="hidden lg:block lg:col-span-4">
+              <div className="sticky top-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/50">
+                <h2 className="text-sm font-semibold text-slate-900 mb-4">On this page</h2>
+                <ul className="space-y-2">
+                  {sections.map((s) => (
+                    <li key={s.id}>
+                      <button
+                        type="button"
+                        onClick={() => scrollTo(s.id)}
+                        className="group flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm text-slate-600 hover:text-indigo-700 hover:bg-indigo-50 transition"
+                      >
+                        <span className="truncate text-left">{s.title}</span>
+                        <ChevronRight className="h-4 w-4 text-slate-400 opacity-80 group-hover:text-indigo-600 group-hover:opacity-100 transition" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50/90 p-4">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-amber-900/90 leading-relaxed">Replace placeholders with your actual company details before going live.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="lg:col-span-8">
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xl shadow-slate-200/40">
+                <TermsSection id="acceptance" title="1. Acceptance of terms"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">By accessing or using CoBrother? (the Service), you agree to be bound by these Terms & Conditions.</p></TermsSection>
+                <TermsSection id="services" title="2. Services we provide"><ul className="text-slate-600 text-sm sm:text-base leading-relaxed list-disc pl-5 space-y-2"><li>Domain registration and marketplace services</li><li>Business compliance and registration support</li><li>Co-venture, co-branding, and co-marketing solutions</li><li>Operational support</li></ul></TermsSection>
+                <TermsSection id="user-obligations" title="3. Your obligations"><ul className="text-slate-600 text-sm sm:text-base leading-relaxed list-disc pl-5 space-y-2"><li>Provide accurate information</li><li>Comply with applicable laws</li><li>Do not misuse the service</li><li>Maintain account security</li></ul></TermsSection>
+                <TermsSection id="intellectual-property" title="4. Intellectual property"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">All content, branding, software, and materials on CoBrother are owned by us or licensors and protected by IP laws.</p></TermsSection>
+                <TermsSection id="payments" title="5. Payments & refunds"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">Some services require payment. Refunds are handled case-by-case as per policy.</p></TermsSection>
+                <TermsSection id="confidentiality" title="6. Confidentiality"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">We keep confidential information shared during service delivery protected, except where disclosure is required by law.</p></TermsSection>
+                <TermsSection id="disclaimers" title="7. Disclaimers"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">Services are provided as-is and as-available without warranties.</p></TermsSection>
+                <TermsSection id="liability" title="8. Limitation of liability"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">Our liability is limited to the amount paid by you in the prior 12 months.</p></TermsSection>
+                <TermsSection id="termination" title="9. Termination"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">We may suspend or terminate access for policy violations, fraud, or legal requirements.</p></TermsSection>
+                <TermsSection id="governing-law" title="10. Governing law"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">These Terms are governed by laws of India, with jurisdiction in Dharwad, Hubballi Karnataka.</p></TermsSection>
+                <TermsSection id="changes" title="11. Changes to these terms"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">Changes will be posted on this page with an updated date.</p></TermsSection>
+                <TermsSection id="contact" title="12. Contact us">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Mail className="h-4 w-4 text-indigo-600" />
+                        <h3 className="text-sm font-semibold text-slate-900">Support contact</h3>
+                      </div>
+                      <p className="text-sm text-slate-600">
+                        Email: <span className="font-medium text-slate-900">cobrother.com@gmail.com</span>
+                      </p>
+                      <p className="text-sm text-slate-600 mt-1">
+                        Phone: <span className="font-medium text-slate-900">080 8575 8575</span>
+                      </p>
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                      <h3 className="text-sm font-semibold text-slate-900 mb-2">Company details</h3>
+                      <p className="text-sm text-slate-600">AULTUM INTERNATIONAL (Proprietor: Neminath Surendra Akkole)</p>
+                      <p className="text-sm text-slate-600 mt-1">Dharwad, Hubballi Karnataka, India</p>
+                    </div>
+                  </div>
+                </TermsSection>
+              </div>
+              <div className="h-10" />
+            </div>
+          </div>
         </div>
       </section>
 
       <HomeFooter />
     </div>
+  );
+}
+
+function TermsSection({ id, title, children }) {
+  return (
+    <section id={id} className="scroll-mt-24">
+      <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-3 mt-10 first:mt-0">{title}</h2>
+      {children}
+      <div className="mt-8 border-t border-slate-200" />
+    </section>
   );
 }

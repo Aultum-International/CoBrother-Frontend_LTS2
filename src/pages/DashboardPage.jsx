@@ -1,6 +1,9 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { domainAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import VentureIcon from '../assets/Coventure_logo.png';
 import CommunityIcon from '../assets/Community-profileicon.png';
@@ -10,6 +13,23 @@ import TechnologyIcon from '../assets/CoCreation.png';
 export default function DashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const [pendingDomainVerifyCount, setPendingDomainVerifyCount] = useState(0);
+
+  useEffect(() => {
+    domainAPI
+      .getMyListings()
+      .then(({ data }) => {
+        const list = Array.isArray(data) ? data : data?.data ?? [];
+        const n = list.filter(
+          (d) =>
+            d.domainStatus === 'AVAILABLE' &&
+            !d.takenDown &&
+            d.verified !== true
+        ).length;
+        setPendingDomainVerifyCount(n);
+      })
+      .catch(() => setPendingDomainVerifyCount(0));
+  }, []);
 
   const cards = [
     {
@@ -49,6 +69,33 @@ export default function DashboardPage() {
   return (
     <AppLayout>
       <div className="flex flex-col gap-6">
+        {pendingDomainVerifyCount > 0 && (
+          <div
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 bg-amber-50 border border-amber-200 rounded-[14px] shadow-sm"
+            role="status"
+          >
+            <div className="flex gap-3 min-w-0">
+              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-800">
+                <ShieldAlert className="w-5 h-5" aria-hidden />
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-display text-base font-bold text-amber-950 m-0">
+                  {t('dashboard.domainVerificationBannerTitle')}
+                </h2>
+                <p className="text-sm text-amber-900/90 mt-1 m-0 leading-relaxed">
+                  {t('dashboard.domainVerificationBannerBody', { count: pendingDomainVerifyCount })}
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/domains/dashboard"
+              className="btn-glow btn-glow-sm whitespace-nowrap flex-shrink-0 self-start sm:self-center"
+            >
+              {t('dashboard.domainVerificationBannerCta')} →
+            </Link>
+          </div>
+        )}
+
         <header className="p-6 bg-white border border-gray-200 rounded-[14px] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
             <span className="inline-block px-3 py-1 bg-indigo-50 text-indigo-600 text-xs font-semibold rounded-md mb-3">{t('dashboard.badge')}</span>
