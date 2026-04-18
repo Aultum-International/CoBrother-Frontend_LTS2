@@ -52,7 +52,7 @@ export default function CareersPage() {
         const { data } = await careerAPI.getAllJobs();
         setJobs(Array.isArray(data) ? data : (data?.data ?? []));
       } catch {
-        setError(t('careers.fetchError', 'Unable to load jobs right now. Please try again later.'));
+        setError(t('careers.fetchError', 'No jobs are available right now. But remember: "Opportunities don\'t happen, you create them!" \n\nStay sharp, keep building your skills, and check back soon—your next big break could be just around the corner.'));
       }
     } finally {
       setLoading(false);
@@ -202,7 +202,13 @@ export default function CareersPage() {
             {loading ? (
               <div className="text-center py-16 text-gray-500">{t('careers.loading', 'Loading jobs...')}</div>
             ) : error ? (
-              <div className="text-center py-16 text-red-500">{error}</div>
+              <div className="text-center py-16">
+                <div className="text-red-500 mb-6">No jobs are available right now.</div>
+                <div className="mx-auto max-w-md rounded-xl bg-yellow-50 border border-yellow-200 p-5 text-yellow-900 text-base font-medium shadow-sm">
+                  <span className="block mb-2 font-semibold">But remember:</span>
+                  <span>"Opportunities don't happen, you create them!"<br/>Stay sharp, keep building your skills, and check back soon—your next big break could be just around the corner.</span>
+                </div>
+              </div>
             ) : sortedJobs.length === 0 ? (
               <div className="text-center py-16 text-gray-500">{t('careers.noJobs', 'No openings available right now.')}</div>
             ) : (

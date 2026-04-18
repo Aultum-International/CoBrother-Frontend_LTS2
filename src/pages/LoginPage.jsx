@@ -105,10 +105,10 @@ export default function LoginPage() {
       <div className="relative z-10 w-full max-w-[420px] sm:max-w-[440px] bg-white/92 px-5 pt-16 pb-6 sm:px-8 sm:pt-16 sm:pb-8 md:p-10 rounded-[20px] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white/60 backdrop-blur-xl">
         <button
           onClick={() => navigate('/')}
-          className="absolute top-3 left-3 sm:top-4 sm:left-4 group flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 shadow-[0_4px_15px_rgba(147,51,234,0.4)] hover:shadow-[0_8px_25px_rgba(147,51,234,0.5)] hover:-translate-y-0.5 transition-all duration-300"
+          className="absolute top-3 left-3 sm:top-4 sm:left-4 group flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 shadow hover:bg-gray-100 hover:shadow-md transition-all duration-200"
         >
           <svg
-            className="w-5 h-5 text-white transition-transform duration-300 group-hover:-translate-x-0.5"
+            className="w-5 h-5 text-gray-700 group-hover:text-gray-900 transition-colors duration-200"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -189,8 +189,10 @@ export default function LoginPage() {
             <button type="submit" className="btn-primary full-width" disabled={busy}>
               {busy ? <span className="btn-spinner" /> : 'Verify & Sign In'}
             </button>
-            <button type="button" className="btn-ghost full-width"
-              onClick={() => { setStep(1); setInfo(''); setForm(f => ({ ...f, otpCode: '' })); }}>
+            <button
+              onClick={() => navigate('/')
+              className="btn-ghost full-width"
+            >
               ← Back
             </button>
           </form>

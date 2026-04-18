@@ -27,7 +27,7 @@ export default function HomeNavbar({
     >
       <div className="px-4 sm:px-6 lg:px-8 h-[60px] md:h-[70px] flex items-center justify-between relative">
         <div className="flex items-center gap-3 md:gap-6">
-          <img src={coBrotherLogo} alt="CoBrother" className="h-8 md:h-10 w-auto" />
+          <img src={coBrotherLogo} alt="CoBrother" className="h-8 md:h-10 w-auto cursor-pointer" onClick={() => navigate('/')} />
 
           <div className="hidden xl:flex items-center gap-1 xl:gap-4">
             <div className="relative">
