@@ -65,7 +65,7 @@ const linkClass =
 
 // Full width gradient underline heading
 const headingClass =
-  'text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4 relative pb-3 after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gradient-to-r after:from-cyan-400 after:to-green-500/40';
+  'text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4 relative pb-3 after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-12 sm:after:w-16 md:after:w-20 lg:after:w-24 after:h-px after:bg-gradient-to-r after:from-cyan-400 after:to-green-500/40';
 
 export default function HomeFooter() {
   const { t } = useTranslation();
