@@ -98,8 +98,17 @@ export default function DashboardPage() {
 
         <header className="p-6 bg-white border border-gray-200 rounded-[14px] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div>
-            <span className="inline-block px-3 py-1 bg-indigo-50 text-indigo-600 text-xs font-semibold rounded-md mb-3">{t('dashboard.badge')}</span>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('dashboard.hello', { name: user?.firstname || user?.email?.split('@')[0] })}</h1>
+            <div className="inline-flex items-center gap-3 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-fuchsia-50 px-4 py-2.5 shadow-sm shadow-indigo-100/60">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-fuchsia-500 text-white text-sm font-bold shadow-md">
+                {(user?.firstname?.[0] || user?.email?.[0] || '?').toUpperCase()}
+              </span>
+              <h1 className="font-display text-3xl font-bold m-0 leading-tight">
+                <span className="text-gray-900">Hello, </span>
+                <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
+                  {user?.firstname || user?.email?.split('@')[0]}
+                </span>
+              </h1>
+            </div>
             <p className="text-gray-600 mt-1">{t('dashboard.subtitle')}</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -144,9 +153,6 @@ export default function DashboardPage() {
             </Link>
           </div>
         </div>
-        <footer className="text-center py-4 text-sm text-gray-500">
-          <p>{t('dashboard.footerText')}</p>
-        </footer>
       </div>
     </AppLayout>
   );

@@ -190,7 +190,6 @@ export default function DomainsPage() {
                 setAllDomains(prev => [d, ...prev]);
                 setShowForm(false);
                 setShowConfetti(true);
-                setTimeout(() => setShowConfetti(false), 4000);
               }}
               onCancel={() => setShowForm(false)}
             />
@@ -602,6 +601,18 @@ function DomainForm({ onSaved, onCancel }) {
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError]         = useState('');
   const fileInputRef                        = useRef(null);
+  const logoStepRef                         = useRef(null);
+
+  const getScrollParent = (node) => {
+    let current = node?.parentElement;
+    while (current) {
+      const styles = window.getComputedStyle(current);
+      const canScroll = /(auto|scroll)/.test(styles.overflowY) && current.scrollHeight > current.clientHeight;
+      if (canScroll) return current;
+      current = current.parentElement;
+    }
+    return null;
+  };
 
   const setContact = (k, v) =>
     setForm(f => ({ ...f, contactInfo: { ...f.contactInfo, [k]: v } }));
@@ -667,9 +678,24 @@ function DomainForm({ onSaved, onCancel }) {
   const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-purple-500 transition-all w-full';
   const labelCls = 'text-sm font-medium text-gray-700';
 
+  useEffect(() => {
+    if (!savedDomain || !logoStepRef.current) return;
+    const scrollParent = getScrollParent(logoStepRef.current);
+    const scrollToAbsoluteTop = () => {
+      if (scrollParent) {
+        scrollParent.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(scrollToAbsoluteTop));
+  }, [savedDomain]);
+
   if (savedDomain) {
     return (
-      <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
+      <div ref={logoStepRef} className="scroll-mt-24 p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
         <h3 className="font-display text-2xl text-gray-900 font-semibold">
           Add a Logo <span className="text-sm text-gray-400 font-normal">(optional)</span>
         </h3>
@@ -950,6 +976,11 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
   const hasFetched            = useRef(false);
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoError, setLogoError] = useState('');
+  const logoInputRef = useRef(null);
 
   useEffect(() => {
     if (hasFetched.current) return;
@@ -967,6 +998,43 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
   const isHighValue = !isAuction && d.askingPrice >= 500000;
   const auction     = d.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
+  const currentLogo = logoPreview || d.logo || null;
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setLogoError('Only image files are allowed.');
+      return;
+    }
+    setLogoError('');
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setLogoPreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleLogoUpload = async () => {
+    if (!logoFile) {
+      setLogoError('Please choose a logo first.');
+      return;
+    }
+    setLogoUploading(true);
+    setLogoError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', logoFile);
+      const { data } = await domainAPI.uploadImage(d.id, formData);
+      setDetail((prev) => ({ ...(prev || d), logo: data.logoUrl }));
+      setLogoFile(null);
+      setLogoPreview(null);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    } catch (err) {
+      setLogoError(err.response?.data?.error || 'Failed to upload logo.');
+    } finally {
+      setLogoUploading(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -1062,6 +1130,63 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                 <div className="grid grid-cols-2 gap-3">
                   {c.email       && <DetailItem label="Email" value={c.email} />}
                   {c.phoneNumber && <DetailItem label="Phone" value={c.phoneNumber} />}
+                </div>
+              </Section>
+            )}
+
+            {isOwner && (
+              <Section title="Domain Logo">
+                <div className="border border-gray-200 rounded-xl p-3.5 bg-gray-50">
+                  <div
+                    onClick={() => logoInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all ${
+                      currentLogo ? 'border-indigo-300 bg-white' : 'border-gray-200 bg-white hover:border-indigo-300'
+                    }`}
+                  >
+                    {currentLogo ? (
+                      <img
+                        src={currentLogo}
+                        alt={`${d.domainName} logo`}
+                        className="max-h-[110px] max-w-full rounded-lg object-contain mx-auto"
+                      />
+                    ) : (
+                      <>
+                        <div className="text-3xl mb-2">🖼</div>
+                        <div className="text-sm text-gray-600 font-medium">Click to choose a logo</div>
+                        <div className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP</div>
+                      </>
+                    )}
+                  </div>
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleLogoChange}
+                  />
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button type="button" className="btn-glow btn-glow-sm" onClick={() => logoInputRef.current?.click()}>
+                      {d.logo ? 'Change Logo' : 'Choose Logo'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-glow btn-glow-sm"
+                      onClick={handleLogoUpload}
+                      disabled={!logoFile || logoUploading}
+                    >
+                      {logoUploading
+                        ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
+                        : (d.logo ? 'Update Logo' : 'Upload Logo')}
+                    </button>
+                  </div>
+
+                  {logoError && <div className="text-sm text-red-500 mt-2">{logoError}</div>}
+                  {!logoFile && (
+                    <div className="text-xs text-gray-500 mt-2">
+                      You can upload or replace the logo anytime from this details panel.
+                    </div>
+                  )}
                 </div>
               </Section>
             )}

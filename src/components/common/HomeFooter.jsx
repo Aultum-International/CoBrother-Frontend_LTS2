@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { Heart, Mail, MapPin, Phone, ArrowUp } from 'lucide-react';
+import { Heart, ArrowUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import coBrotherLogo from '../../assets/Cobrother_logo.png';
+import coBrotherLogo from '../../assets/CoBrother_Aultumlogo.png';
 
 const XIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-4 h-4 sm:w-5 sm:h-5">
@@ -87,40 +87,9 @@ export default function HomeFooter() {
               <img
                 src={coBrotherLogo}
                 alt="CoBrother"
-                className="h-9 sm:h-10 md:h-11 w-auto brightness-0 invert opacity-90 group-hover:opacity-100 transition-opacity max-w-full"
+                className="h-9 sm:h-10 md:h-11 w-auto opacity-95 group-hover:opacity-100 transition-opacity max-w-full"
               />
             </Link>
-            <p className="text-sm text-slate-400 leading-relaxed max-w-xs sm:max-w-md md:max-w-lg lg:max-w-sm xl:max-w-md">
-              {t('footer.tagline')}
-            </p>
-
-            {/* Contact Info - matches footer color scheme */}
-            <div className="mt-5 space-y-2.5 text-sm">
-              <a
-                href="mailto:cobrother.com@gmail.com"
-                className="flex items-center gap-2.5 group text-slate-400 hover:text-white hover:translate-x-1 transition-all duration-200 no-underline py-1.5"
-              >
-                <span className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-900/50 border border-slate-700/80 text-slate-400 group-hover:text-white group-hover:border-slate-500 transition-all">
-                  <Mail className="h-4 w-4" />
-                </span>
-                <span className="break-all">cobrother.com@gmail.com</span>
-              </a>
-              <a
-                href="tel:+911234567890"
-                className="flex items-center gap-2.5 group text-slate-400 hover:text-white hover:translate-x-1 transition-all duration-200 no-underline py-1.5"
-              >
-                <span className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-900/50 border border-slate-700/80 text-slate-400 group-hover:text-white group-hover:border-slate-500 transition-all">
-                  <Phone className="h-4 w-4" />
-                </span>
-                <span>+91 8088117744</span>
-              </a>
-              <div className="flex items-center gap-2.5 hover:text-white transition-colors duration-200 group cursor-default">
-                <span className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-900/50 border border-slate-700/80 text-slate-400 group-hover:text-white group-hover:border-slate-500 transition-all">
-                  <MapPin className="h-4 w-4" />
-                </span>
-                <span>India</span>
-              </div>
-            </div>
           </div>
 
           {/* Explore */}
@@ -186,13 +155,6 @@ export default function HomeFooter() {
               ))}
             </div>
 
-            {/* Trust badge */}
-            <div className="mt-5 sm:mt-6 p-3 rounded-lg bg-slate-900/50 border border-slate-700/80">
-              <p className="text-xs text-slate-400 leading-relaxed">
-                <span className="text-emerald-400 font-semibold">● </span>
-                Trusted by thousands across India
-              </p>
-            </div>
           </div>
         </div>
 

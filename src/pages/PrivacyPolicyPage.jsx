@@ -9,20 +9,22 @@ import HomeFooter from '../components/common/HomeFooter';
 export default function PrivacyPolicyPage() {
   const navigate = useNavigate();
   const [openDropdown, setOpenDropdown] = useState(null);
-  const lastUpdated = 'Feb 7, 2026';
+  const lastUpdated = '20-4-2026';
 
   const sections = [
-    { id: 'overview', title: 'Overview' },
-    { id: 'data-we-collect', title: 'Data we collect' },
-    { id: 'how-we-use', title: 'How we use data' },
-    { id: 'sharing', title: 'Sharing & disclosures' },
-    { id: 'cookies', title: 'Cookies & analytics' },
-    { id: 'retention', title: 'Retention' },
-    { id: 'security', title: 'Security' },
-    { id: 'rights', title: 'Your rights (India DPDP)' },
-    { id: 'children', title: "Children's data" },
-    { id: 'contact', title: 'Contact & grievances' },
-    { id: 'changes', title: 'Changes to this policy' },
+    { id: 'scope', title: '1. Scope of this policy' },
+    { id: 'personal-data', title: '2. Personal data we collect' },
+    { id: 'data-use', title: '3. How we use your data' },
+    { id: 'legal-basis', title: '4. Legal basis for processing' },
+    { id: 'sharing', title: '5. Sharing of personal data' },
+    { id: 'cookies', title: '6. Cookies and tracking technologies' },
+    { id: 'security', title: '7. Data storage and security' },
+    { id: 'retention', title: '8. Data retention' },
+    { id: 'rights', title: '9. Your privacy rights' },
+    { id: 'children', title: "10. Children's privacy" },
+    { id: 'transfers', title: '11. International data transfers' },
+    { id: 'changes', title: '12. Changes to this policy' },
+    { id: 'contact', title: '13. Contact us' },
   ];
 
   const scrollTo = (id) => {
@@ -64,13 +66,11 @@ export default function PrivacyPolicyPage() {
             </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 font-display text-slate-900">
-              <span className="text-slate-800">Your data,</span>{' '}
-              <span className="text-indigo-600">handled with care</span>
+              CoBrother <span className="text-indigo-600">Privacy Policy</span>
             </h1>
 
             <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-              This Privacy Policy explains how <span className="text-slate-900 font-semibold">CoBrother?</span> (&apos;we&apos;, &apos;us&apos;) collects,
-              uses, and protects your information when you use our website and services.
+              CoBrother (&apos;we&apos;, &apos;our&apos;, &apos;us&apos;) values your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and protect your information when you use our platform, website, and services.
             </p>
 
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs sm:text-sm text-slate-600">
@@ -102,48 +102,95 @@ export default function PrivacyPolicyPage() {
 
             <div className="lg:col-span-8">
               <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xl shadow-slate-200/40">
-                <PolicySection id="overview" title="1) Overview">
-                  <p className="text-slate-600 leading-relaxed text-sm sm:text-base">CoBrother? is a SaaS-enabled platform that helps founders and businesses with domains, compliance, and operational support. This policy applies to our website, our communications, and any forms you submit to us.</p>
+                <PolicySection id="scope" title="1. Scope of this policy">
+                  <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
+                    This Privacy Policy applies to all users of CoBrother, including visitors, registered users, and customers, regardless of location.
+                  </p>
+                  <p className="text-slate-600 leading-relaxed text-sm sm:text-base mt-2">
+                    It covers personal data collected when you create an account, use our platform or services, and contact or interact with us.
+                  </p>
                 </PolicySection>
-                <PolicySection id="data-we-collect" title="2) Data we collect">
+                <PolicySection id="personal-data" title="2. Personal data we collect">
                   <ul className="text-slate-600 text-sm sm:text-base leading-relaxed list-disc pl-5 space-y-2">
-                    <li>Contact data: name, email, phone number, company name.</li>
-                    <li>Communication data: messages you send through forms, email, or chat.</li>
-                    <li>Service data: details you provide to request startup/compliance/business support.</li>
-                    <li>Technical data: device/browser info, IP address, basic logs.</li>
+                    <li>Information you provide: full name, email address, phone number, profile details, business or listing information, and payment details (if applicable).</li>
+                    <li>Automatically collected data: IP address, device information, browser type, and usage behavior such as pages visited and clicks.</li>
+                    <li>Data from third parties: social media platforms (if login is integrated), analytics providers, and public sources.</li>
+                    <li>Data we generate: insights created using analytics and AI to improve services and personalize user experience.</li>
                   </ul>
                 </PolicySection>
-                <PolicySection id="how-we-use" title="3) How we use data">
+                <PolicySection id="data-use" title="3. How we use your data">
                   <ul className="text-slate-600 text-sm sm:text-base leading-relaxed list-disc pl-5 space-y-2">
-                    <li>To respond to inquiries and provide requested services.</li>
-                    <li>To schedule calls/meetings and support delivery.</li>
-                    <li>To improve our website, offerings, and user experience.</li>
-                    <li>To prevent fraud, abuse, and security incidents.</li>
+                    <li>Create and manage user accounts.</li>
+                    <li>Provide and improve our services.</li>
+                    <li>Enable listings, connections, and other platform features.</li>
+                    <li>Process transactions and provide customer support.</li>
+                    <li>Ensure security and prevent fraud.</li>
+                    <li>Send updates, notifications, and marketing communications.</li>
+                    <li>Analyze performance and improve user experience.</li>
                   </ul>
                 </PolicySection>
-                <PolicySection id="sharing" title="4) Sharing & disclosures">
-                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed">We may share personal data with trusted service providers only as needed to run our services.</p>
+                <PolicySection id="legal-basis" title="4. Legal basis for processing">
+                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                    We process your data based on your consent, contractual necessity, legal obligations, and legitimate business interests.
+                  </p>
                 </PolicySection>
-                <PolicySection id="cookies" title="5) Cookies & analytics"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">We may use cookies or similar technologies for basic site functionality, security, and analytics.</p></PolicySection>
-                <PolicySection id="retention" title="6) Retention"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">We keep personal data only as long as needed for the purposes described above unless retention is required by law.</p></PolicySection>
-                <PolicySection id="security" title="7) Security"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">We use reasonable safeguards to protect personal data.</p></PolicySection>
-                <PolicySection id="rights" title="8) Your rights (India DPDP)"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">You may request access, correction, or erasure and use grievance redressal mechanisms.</p></PolicySection>
-                <PolicySection id="children" title="9) Children's data"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">Our services are not intended for children.</p></PolicySection>
-                <PolicySection id="contact" title="10) Contact & grievances">
+                <PolicySection id="sharing" title="5. Sharing of personal data">
+                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                    We may share your data with service providers (hosting, payment, analytics), business partners (only when required for services), and legal authorities (if required by law).
+                  </p>
+                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed mt-2">
+                    We do not sell your personal data to third parties.
+                  </p>
+                </PolicySection>
+                <PolicySection id="cookies" title="6. Cookies and tracking technologies">
+                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                    We use cookies, web beacons, and scripts to improve performance, remember preferences, analyze usage, and deliver relevant content. You can manage cookies through your browser settings.
+                  </p>
+                </PolicySection>
+                <PolicySection id="security" title="7. Data storage and security">
+                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                    We store your data securely using trusted infrastructure providers and implement encryption, access controls, secure servers, and regular monitoring.
+                  </p>
+                </PolicySection>
+                <PolicySection id="retention" title="8. Data retention">
+                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                    We retain personal data as long as your account is active, as required by law, or for legitimate business purposes. When no longer needed, data is deleted or anonymized.
+                  </p>
+                </PolicySection>
+                <PolicySection id="rights" title="9. Your privacy rights">
+                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                    You have the right to access your data, correct inaccurate data, delete your data, request data portability, and control marketing preferences.
+                  </p>
+                </PolicySection>
+                <PolicySection id="children" title="10. Children's privacy">
+                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                    CoBrother does not knowingly collect data from individuals under 18 without parental consent.
+                  </p>
+                </PolicySection>
+                <PolicySection id="transfers" title="11. International data transfers">
+                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                    Your data may be processed in different countries. We ensure compliance with applicable data protection laws.
+                  </p>
+                </PolicySection>
+                <PolicySection id="changes" title="12. Changes to this policy">
+                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                    We may update this Privacy Policy periodically. Changes will be posted on this page.
+                  </p>
+                </PolicySection>
+                <PolicySection id="contact" title="13. Contact us">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                      <div className="flex items-center gap-2 mb-2"><Mail className="h-4 w-4 text-indigo-600" /><h3 className="text-sm font-semibold text-slate-900">Privacy contact</h3></div>
+                      <div className="flex items-center gap-2 mb-2"><Mail className="h-4 w-4 text-indigo-600" /><h3 className="text-sm font-semibold text-slate-900">CoBrother Team</h3></div>
                       <p className="text-sm text-slate-600">Email: <span className="font-medium text-slate-900">cobrother.com@gmail.com</span></p>
                       <p className="text-sm text-slate-600 mt-1">Phone: <span className="font-medium text-slate-900">080 8575 8575</span></p>
                     </div>
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                      <h3 className="text-sm font-semibold text-slate-900 mb-2">Company details</h3>
-                      <p className="text-sm text-slate-600">Legal name: <span className="font-medium text-slate-900">AULTUM INTERNATIONAL (Proprietor: Neminath Surendra Akkole)</span></p>
+                      <h3 className="text-sm font-semibold text-slate-900 mb-2">Address</h3>
+                      <p className="text-sm text-slate-600">Company: <span className="font-medium text-slate-900">AULTUM INTERNATIONAL</span></p>
                       <p className="text-sm text-slate-600 mt-1">Address: <span className="font-medium text-slate-900">Dharwad, Hubballi Karnataka, India</span></p>
                     </div>
                   </div>
                 </PolicySection>
-                <PolicySection id="changes" title="11) Changes to this policy"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">We may update this Privacy Policy from time to time and update the last updated date.</p></PolicySection>
               </div>
               <div className="h-10" />
             </div>

@@ -15,6 +15,7 @@ import AuctionIcon from '../../assets/Auction.png';
 import PurchaseIcon from '../../assets/purchase.png';
 import NotificationIcon from '../../assets/notification.png';
 import AdminIcon from '../../assets/Community-profileicon.png';
+import HomeFooter from '../common/HomeFooter';
 
 const TYPE_ICONS = {
   COVENTURE_APPLICATION_RECEIVED: '📋',
@@ -360,6 +361,7 @@ export default function AppLayout({ children }) {
       <main className="flex-1 p-8 max-w-none m-0 w-full bg-gray-50 max-md:p-4">
         {children}
       </main>
+      <HomeFooter />
     </div>
   );
 }

@@ -95,7 +95,7 @@
     "minBid": "min bid"
   },
   "footer": {
-    "copyright": "© 2026 CoBrother™ Aultum International. All rights reserved.",
+    "copyright": "© 2026 Aultum International. All rights reserved.",
     "madeWith": "Made with",
     "inIndia": "in India.",
     "tagline": "The marketplace for domains, ventures, and disruptive technology.",
@@ -104,7 +104,7 @@
     "joinUs": "Join Us",
     "headingCompany": "Company",
     "aboutUs": "About Us",
-    "contact": "Contact",
+    "contact": "Support 24*7",
     "careers": "Careers",
     "headingLegal": "Legal",
     "privacyPolicy": "Privacy Policy",
@@ -113,7 +113,7 @@
   },
   "aboutPage": {
     "heroBadge": "Our story",
-    "heroTitle": "Building tomorrow's marketplace, today",
+    "heroTitle": "Building Tomorrow's Marketplace, Today",
     "heroSubtitle": "CoBrother connects founders, investors, and creators across domains, ventures, and technology—so bold ideas find the right partners and capital.",
     "stat1Value": "Global",
     "stat1Label": "Community-first platform",
@@ -169,7 +169,7 @@
   "dashboard": {
     "badge": "Dashboard",
     "hello": "Hello, {{name}}",
-    "subtitle": "What are you building today?",
+    "subtitle": "Manage your domains, ventures, technologies, and community from one place.",
     "role": "Role",
     "profileComplete": "Complete ✓",
     "quickActions": "Quick Actions",

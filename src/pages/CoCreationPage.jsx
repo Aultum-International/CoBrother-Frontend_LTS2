@@ -428,6 +428,18 @@ function SoftwareForm({ onSaved, onCancel }) {
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError]         = useState('');
   const fileInputRef                        = useRef(null);
+  const imageStepRef                        = useRef(null);
+
+  const getScrollParent = (node) => {
+    let current = node?.parentElement;
+    while (current) {
+      const styles = window.getComputedStyle(current);
+      const canScroll = /(auto|scroll)/.test(styles.overflowY) && current.scrollHeight > current.clientHeight;
+      if (canScroll) return current;
+      current = current.parentElement;
+    }
+    return null;
+  };
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -472,9 +484,29 @@ function SoftwareForm({ onSaved, onCancel }) {
   const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all w-full';
   const labelCls = 'text-sm font-medium text-gray-700';
 
+  useEffect(() => {
+    if (!savedSoftware || !imageStepRef.current) return;
+    const stepEl = imageStepRef.current;
+    const scrollParent = getScrollParent(stepEl);
+
+    const scrollToTop = () => {
+      stepEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (scrollParent) {
+        const parentRect = scrollParent.getBoundingClientRect();
+        const stepRect = stepEl.getBoundingClientRect();
+        const parentTargetTop = stepRect.top - parentRect.top + scrollParent.scrollTop - 12;
+        scrollParent.scrollTo({ top: Math.max(parentTargetTop, 0), behavior: 'smooth' });
+      }
+      const viewportTargetTop = stepEl.getBoundingClientRect().top + window.scrollY - 88;
+      window.scrollTo({ top: Math.max(viewportTargetTop, 0), behavior: 'smooth' });
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(scrollToTop));
+  }, [savedSoftware]);
+
   if (savedSoftware) {
     return (
-      <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
+      <div ref={imageStepRef} className="scroll-mt-24 p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
         <h3 className="font-display text-2xl text-gray-900 font-semibold">
           Add an Image <span className="text-sm text-gray-400 font-normal">(optional)</span>
         </h3>

@@ -3,6 +3,7 @@ import { ChevronDown, Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import coBrotherLogo from '../../assets/Cobrother_logo.png';
+import coBrotherLogoHover from '../../assets/Cobrother_logo2.png';
 
 export default function HomeNavbar({
   navRef,
@@ -14,11 +15,22 @@ export default function HomeNavbar({
   const { t } = useTranslation();
   const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [logoHovered, setLogoHovered] = useState(false);
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
     setOpenDropdown(null);
   };
+
+  const getNavButtonClass = (menuKey) =>
+    `nav-pill-glow flex items-center gap-2 px-3 lg:px-4 py-2 border rounded-full text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-300 ${
+      openDropdown === menuKey
+        ? 'nav-pill-glow-active bg-white text-gray-900 border-[#1f2937]'
+        : 'bg-transparent text-gray-900 border-transparent'
+    }`;
+
+  const getNavTextClass = (menuKey) =>
+    `nav-pill-text ${openDropdown === menuKey ? 'nav-pill-text-active' : ''}`;
 
   return (
     <nav
@@ -27,36 +39,40 @@ export default function HomeNavbar({
     >
       <div className="px-4 sm:px-6 lg:px-8 h-[60px] md:h-[70px] flex items-center justify-between relative">
         <div className="flex items-center gap-3 md:gap-6">
-          <img src={coBrotherLogo} alt="CoBrother" className="h-8 md:h-10 w-auto cursor-pointer" onClick={() => navigate('/')} />
+          <img
+            src={logoHovered ? coBrotherLogoHover : coBrotherLogo}
+            alt="CoBrother"
+            className="h-8 md:h-10 w-auto cursor-pointer transition-all duration-200"
+            onMouseEnter={() => setLogoHovered(true)}
+            onMouseLeave={() => setLogoHovered(false)}
+            onClick={() => navigate('/')}
+          />
 
           <div className="hidden xl:flex items-center gap-1 xl:gap-4">
             <div className="relative">
               <button
-                className={`flex items-center gap-2 px-3 lg:px-4 py-2 border-none rounded-lg text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 ${
-                  openDropdown === 'domains'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'bg-transparent text-gray-900 hover:bg-gray-100 hover:text-gray-900'
-                }`}
+                className={getNavButtonClass('domains')}
                 onClick={() => setOpenDropdown(openDropdown === 'domains' ? null : 'domains')}
               >
-                {t('homeNav.domains')} <ChevronDown size={14} />
+                <span className={getNavTextClass('domains')}>{t('homeNav.domains')}</span>
+                <ChevronDown size={14} />
               </button>
               {openDropdown === 'domains' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="nav-dropdown-item block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => { navigate('/domains'); setOpenDropdown(null); }}
                   >
                     {t('homeNav.exploreDomains')}
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="nav-dropdown-item block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => { navigate('/domains/dashboard'); setOpenDropdown(null); }}
                   >
                     {t('homeNav.listDomains')}
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="nav-dropdown-item block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => { navigate('/auctions'); setOpenDropdown(null); }}
                   >
                     {t('homeNav.bidDomains')}
@@ -67,31 +83,28 @@ export default function HomeNavbar({
 
             <div className="relative">
               <button
-                className={`flex items-center gap-2 px-3 lg:px-4 py-2 border-none rounded-lg text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 ${
-                  openDropdown === 'venture'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'bg-transparent text-gray-900 hover:bg-gray-100 hover:text-gray-900'
-                }`}
+                className={getNavButtonClass('venture')}
                 onClick={() => setOpenDropdown(openDropdown === 'venture' ? null : 'venture')}
               >
-                {t('homeNav.ventures')} <ChevronDown size={14} />
+                <span className={getNavTextClass('venture')}>{t('homeNav.ventures')}</span>
+                <ChevronDown size={14} />
               </button>
               {openDropdown === 'venture' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="nav-dropdown-item block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => { navigate('/ventures'); setOpenDropdown(null); }}
                   >
                     {t('homeNav.exploreVenture')}
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="nav-dropdown-item block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => { navigate('/ventures/new'); setOpenDropdown(null); }}
                   >
                     {t('homeNav.listVenture')}
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="nav-dropdown-item block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => { navigate('/auctions'); setOpenDropdown(null); }}
                   >
                     {t('homeNav.bidVenture')}
@@ -102,31 +115,28 @@ export default function HomeNavbar({
 
             <div className="relative">
               <button
-                className={`flex items-center gap-2 px-3 lg:px-4 py-2 border-none rounded-lg text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 ${
-                  openDropdown === 'auctions'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'bg-transparent text-gray-900 hover:bg-gray-100 hover:text-gray-900'
-                }`}
+                className={getNavButtonClass('auctions')}
                 onClick={() => setOpenDropdown(openDropdown === 'auctions' ? null : 'auctions')}
               >
-                {t('homeNav.auctions')} <ChevronDown size={14} />
+                <span className={getNavTextClass('auctions')}>{t('homeNav.auctions')}</span>
+                <ChevronDown size={14} />
               </button>
               {openDropdown === 'auctions' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="nav-dropdown-item block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => { navigate('/auctions'); setOpenDropdown(null); }}
                   >
                     {t('homeNav.domainAuction')}
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="nav-dropdown-item block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => { navigate('/venture-auction'); setOpenDropdown(null); }}
                   >
                     {t('homeNav.ventureAuction')}
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="nav-dropdown-item block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => { navigate('/disruptors'); setOpenDropdown(null); }}
                   >
                     {t('homeNav.disruptorAuction')}
@@ -137,19 +147,16 @@ export default function HomeNavbar({
 
             <div className="relative">
               <button
-                className={`flex items-center gap-2 px-3 lg:px-4 py-2 border-none rounded-lg text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 ${
-                  openDropdown === 'technology'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'bg-transparent text-gray-900 hover:bg-gray-100 hover:text-gray-900'
-                }`}
+                className={getNavButtonClass('technology')}
                 onClick={() => setOpenDropdown(openDropdown === 'technology' ? null : 'technology')}
               >
-                {t('homeNav.technologies')} <ChevronDown size={14} />
+                <span className={getNavTextClass('technology')}>{t('homeNav.technologies')}</span>
+                <ChevronDown size={14} />
               </button>
               {openDropdown === 'technology' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="nav-dropdown-item block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => { navigate('/cocreation'); setOpenDropdown(null); }}
                   >
                     {t('homeNav.exploreTechnology')}
@@ -160,31 +167,28 @@ export default function HomeNavbar({
 
             <div className="relative">
               <button
-                className={`flex items-center gap-2 px-3 lg:px-4 py-2 border-none rounded-lg text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 ${
-                  openDropdown === 'disruptors'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'bg-transparent text-gray-900 hover:bg-gray-100 hover:text-gray-900'
-                }`}
+                className={getNavButtonClass('disruptors')}
                 onClick={() => setOpenDropdown(openDropdown === 'disruptors' ? null : 'disruptors')}
               >
-                {t('homeNav.disruptors')} <ChevronDown size={14} />
+                <span className={getNavTextClass('disruptors')}>{t('homeNav.disruptors')}</span>
+                <ChevronDown size={14} />
               </button>
               {openDropdown === 'disruptors' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px] z-50 overflow-hidden">
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="nav-dropdown-item block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => { navigate('/join-form'); setOpenDropdown(null); }}
                   >
                     {t('homeNav.beTheDisruptors')}
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="nav-dropdown-item block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => { navigate('/community'); setOpenDropdown(null); }}
                   >
                     {t('homeNav.exploreDisruptors')}
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="nav-dropdown-item block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
                     onClick={() => { navigate('/auctions'); setOpenDropdown(null); }}
                   >
                     {t('homeNav.bidDisruptors')}
