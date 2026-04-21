@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { feeAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import BrandWordmark from '../components/common/BrandWordmark';
 
 const STATUS_COLORS = {
   PAYMENT_PENDING:   { color: '#c8a96e', label: 'Payment Required' },
@@ -35,8 +36,10 @@ export default function FeeRequestsPage() {
     <AppLayout>
       <div className="mb-6">
         <div>
-          <h1 className="font-display text-3xl font-bold text-gray-900 m-0">CoBrother Fee Requests</h1>
-          <p className="text-gray-600 mt-1">Payment requests from admin for CoBrother services.</p>
+          <h1 className="font-display text-3xl font-bold text-gray-900 m-0">
+            <BrandWordmark inline className="h-9 w-auto mr-2" /> Fee Requests
+          </h1>
+          <p className="text-gray-600 mt-1">Payment requests from admin for <BrandWordmark inline className="h-4 w-auto mx-1" /> services.</p>
         </div>
       </div>
 
@@ -46,7 +49,7 @@ export default function FeeRequestsPage() {
         <div className="text-center py-20">
           <div className="text-6xl mb-4">◆</div>
           <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No fee requests</h3>
-          <p className="text-gray-600">No CoBrother service requests have been made for your listings.</p>
+          <p className="text-gray-600">No <BrandWordmark inline className="h-4 w-auto mx-1" /> service requests have been made for your listings.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
@@ -66,7 +69,7 @@ export default function FeeRequestsPage() {
 
                 {r.coBrotherNote && (
                   <div className="text-xs text-gray-400 mb-3">
-                    <strong>CoBrother Note:</strong> {r.coBrotherNote}
+                    <strong><BrandWordmark inline className="h-4 w-auto mr-1" /> Note:</strong> {r.coBrotherNote}
                   </div>
                 )}
 

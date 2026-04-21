@@ -2,6 +2,7 @@ import { Mail, Phone, MapPin, MessageCircle, Clock, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
 import HomeFooter from '../components/common/HomeFooter';
+import BrandWordmark from '../components/common/BrandWordmark';
 
 export default function ContactPage() {
   const navigate = useNavigate();
@@ -70,7 +71,7 @@ export default function ContactPage() {
             Get in <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">Touch</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto max-md:text-lg">
-            Have questions about CoBrother? We'd love to hear from you. Reach out to us through any of the channels below.
+            Have questions about <BrandWordmark inline className="h-6 w-auto mx-1" />We&apos;d love to hear from you. Reach out to us through any of the channels below.
           </p>
         </div>
       </section>
@@ -139,7 +140,7 @@ export default function ContactPage() {
               Ready to Get Started?
             </h2>
             <p className="text-purple-100 text-lg mb-8 max-md:text-base max-md:mb-6">
-              Join thousands of businesses already using CoBrother to grow their ventures.
+              Join thousands of businesses already using <BrandWordmark inline className="h-6 w-auto mx-1" /> to grow their ventures.
             </p>
             <div className="flex gap-4 justify-center max-md:flex-col">
               <button

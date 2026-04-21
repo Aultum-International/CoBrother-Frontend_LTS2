@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { coBrotherAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import BrandWordmark from '../components/common/BrandWordmark';
 
 const STATUS_COLORS = {
   PAYMENT_PENDING:   '#c8a96e',
@@ -43,7 +44,9 @@ export default function CoBrotherDashboardPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">CoBrother Dashboard</h1>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">
+              <BrandWordmark inline className="h-9 w-auto mr-2" /> Dashboard
+            </h1>
             <p className="text-gray-600 mt-1">Manage your assigned requests.</p>
           </div>
         </div>

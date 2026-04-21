@@ -5,6 +5,7 @@ import { FileCheck, FileText, Mail, Clock, ChevronRight, AlertCircle } from 'luc
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
+import BrandWordmark from '../components/common/BrandWordmark';
 
 export default function CancellationRefundPolicyPage() {
   const navigate = useNavigate();
@@ -59,7 +60,7 @@ export default function CancellationRefundPolicyPage() {
               <span className="text-indigo-600">our commitment</span>
             </h1>
             <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-              At <span className="text-slate-900 font-semibold">CoBrother</span>, we believe in helping customers as far as possible through a transparent and fair cancellation and refund process.
+              At <span className="text-slate-900 font-semibold"><BrandWordmark inline className="h-4 w-auto mx-1" /></span>, we believe in helping customers as far as possible through a transparent and fair cancellation and refund process.
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs sm:text-sm text-slate-600">
               <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm">

@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-do
 import { authAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
+import BrandWordmark from '../components/common/BrandWordmark';
 
 export default function LoginPage() {
   const { user, loading, login, refreshUser } = useAuth();
@@ -121,7 +122,9 @@ export default function LoginPage() {
         </button>
         <div className="text-center mb-6 sm:mb-8">
           <img src={coBrotherLogo} alt="CoBrother" className="w-[170px] sm:w-[190px] md:w-[200px] h-auto object-contain mx-auto mb-3 sm:mb-4 block" />
-          <h1 className="font-display text-[1.9rem] sm:text-[2rem] font-semibold text-gray-900 leading-tight">Welcome to CoBrother</h1>
+          <h1 className="font-display text-[1.9rem] sm:text-[2rem] font-semibold text-gray-900 leading-tight">
+            Welcome to <BrandWordmark inline className="h-8 sm:h-9 w-auto ml-1" />
+          </h1>
           {/* <p className="text-gray-600 text-[1rem] sm:text-[1.05rem] mt-2 sm:mt-2.5 max-w-[260px] sm:max-w-[300px] mx-auto">Where ventures f */}
         </div>
 

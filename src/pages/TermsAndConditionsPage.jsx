@@ -5,6 +5,7 @@ import { FileCheck, FileText, Mail, Clock, ChevronRight, AlertCircle } from 'luc
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
+import BrandWordmark from '../components/common/BrandWordmark';
 
 export default function TermsAndConditionsPage() {
   const navigate = useNavigate();
@@ -55,7 +56,7 @@ export default function TermsAndConditionsPage() {
               <span className="text-indigo-600">clear partnership</span>
             </h1>
             <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-              These Terms & Conditions govern your use of <span className="text-slate-900 font-semibold">CoBrother?</span> services. By using our platform, you agree to these terms.
+              These Terms & Conditions govern your use of <span className="text-slate-900 font-semibold"><BrandWordmark inline className="h-4 w-auto mx-1" /></span> services. By using our platform, you agree to these terms.
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs sm:text-sm text-slate-600">
               <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm">
@@ -96,10 +97,10 @@ export default function TermsAndConditionsPage() {
 
             <div className="lg:col-span-8">
               <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xl shadow-slate-200/40">
-                <TermsSection id="acceptance" title="1. Acceptance of terms"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">By accessing or using CoBrother? (the Service), you agree to be bound by these Terms & Conditions.</p></TermsSection>
+                <TermsSection id="acceptance" title="1. Acceptance of terms"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">By accessing or using <BrandWordmark inline className="h-4 w-auto mx-1" /> (the Service), you agree to be bound by these Terms & Conditions.</p></TermsSection>
                 <TermsSection id="services" title="2. Services we provide"><ul className="text-slate-600 text-sm sm:text-base leading-relaxed list-disc pl-5 space-y-2"><li>Domain registration and marketplace services</li><li>Business compliance and registration support</li><li>Co-venture, co-branding, and co-marketing solutions</li><li>Operational support</li></ul></TermsSection>
                 <TermsSection id="user-obligations" title="3. Your obligations"><ul className="text-slate-600 text-sm sm:text-base leading-relaxed list-disc pl-5 space-y-2"><li>Provide accurate information</li><li>Comply with applicable laws</li><li>Do not misuse the service</li><li>Maintain account security</li></ul></TermsSection>
-                <TermsSection id="intellectual-property" title="4. Intellectual property"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">All content, branding, software, and materials on CoBrother are owned by us or licensors and protected by IP laws.</p></TermsSection>
+                <TermsSection id="intellectual-property" title="4. Intellectual property"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">All content, branding, software, and materials on <BrandWordmark inline className="h-4 w-auto mx-1" /> are owned by us or licensors and protected by IP laws.</p></TermsSection>
                 <TermsSection id="payments" title="5. Payments & refunds"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">Some services require payment. Refunds are handled case-by-case as per policy.</p></TermsSection>
                 <TermsSection id="confidentiality" title="6. Confidentiality"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">We keep confidential information shared during service delivery protected, except where disclosure is required by law.</p></TermsSection>
                 <TermsSection id="disclaimers" title="7. Disclaimers"><p className="text-slate-600 text-sm sm:text-base leading-relaxed">Services are provided as-is and as-available without warranties.</p></TermsSection>

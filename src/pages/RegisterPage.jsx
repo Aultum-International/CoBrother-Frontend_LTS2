@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI } from '../api/services';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
+import BrandWordmark from '../components/common/BrandWordmark';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -56,7 +57,9 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <img src={coBrotherLogo} alt="CoBrother" className="w-[100px] h-auto object-contain mx-auto mb-4 block" />
           <h1 className="font-display text-[2rem] font-semibold text-gray-900">Create Account</h1>
-          <p className="text-gray-600 text-[0.95rem] mt-1.5">Join the CoBrother community</p>
+          <p className="text-gray-600 text-[0.95rem] mt-1.5">
+            Join the <BrandWordmark inline className="h-5 w-auto mx-1" /> community
+          </p>
         </div>
 
         {error && <div className="px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-[10px] text-red-400 text-sm mb-4">{error}</div>}

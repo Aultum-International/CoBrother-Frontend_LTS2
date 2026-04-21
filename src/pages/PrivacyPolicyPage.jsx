@@ -5,6 +5,7 @@ import { Shield, FileText, Mail, Clock, ChevronRight } from 'lucide-react';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HomeFooter from '../components/common/HomeFooter';
+import BrandWordmark from '../components/common/BrandWordmark';
 
 export default function PrivacyPolicyPage() {
   const navigate = useNavigate();
@@ -66,11 +67,12 @@ export default function PrivacyPolicyPage() {
             </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 font-display text-slate-900">
-              CoBrother <span className="text-indigo-600">Privacy Policy</span>
+              <BrandWordmark inline className="h-10 sm:h-11 md:h-12 w-auto mr-2" />
+              <span className="text-indigo-600">Privacy Policy</span>
             </h1>
 
             <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-              CoBrother (&apos;we&apos;, &apos;our&apos;, &apos;us&apos;) values your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and protect your information when you use our platform, website, and services.
+              <BrandWordmark inline className="h-5 w-auto mx-1" /> (&apos;we&apos;, &apos;our&apos;, &apos;us&apos;) values your privacy and is committed to protecting your personal data. This Privacy Policy explains how we collect, use, store, and protect your information when you use our platform, website, and services.
             </p>
 
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3 text-xs sm:text-sm text-slate-600">
@@ -104,7 +106,7 @@ export default function PrivacyPolicyPage() {
               <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-xl shadow-slate-200/40">
                 <PolicySection id="scope" title="1. Scope of this policy">
                   <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
-                    This Privacy Policy applies to all users of CoBrother, including visitors, registered users, and customers, regardless of location.
+                    This Privacy Policy applies to all users of <BrandWordmark inline className="h-4 w-auto mx-1" />, including visitors, registered users, and customers, regardless of location.
                   </p>
                   <p className="text-slate-600 leading-relaxed text-sm sm:text-base mt-2">
                     It covers personal data collected when you create an account, use our platform or services, and contact or interact with us.
@@ -164,7 +166,7 @@ export default function PrivacyPolicyPage() {
                 </PolicySection>
                 <PolicySection id="children" title="10. Children's privacy">
                   <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                    CoBrother does not knowingly collect data from individuals under 18 without parental consent.
+                    <BrandWordmark inline className="h-4 w-auto mx-1" /> does not knowingly collect data from individuals under 18 without parental consent.
                   </p>
                 </PolicySection>
                 <PolicySection id="transfers" title="11. International data transfers">
@@ -180,7 +182,7 @@ export default function PrivacyPolicyPage() {
                 <PolicySection id="contact" title="13. Contact us">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                      <div className="flex items-center gap-2 mb-2"><Mail className="h-4 w-4 text-indigo-600" /><h3 className="text-sm font-semibold text-slate-900">CoBrother Team</h3></div>
+                      <div className="flex items-center gap-2 mb-2"><Mail className="h-4 w-4 text-indigo-600" /><h3 className="text-sm font-semibold text-slate-900"><BrandWordmark inline className="h-4 w-auto mr-1" /> Team</h3></div>
                       <p className="text-sm text-slate-600">Email: <span className="font-medium text-slate-900">cobrother.com@gmail.com</span></p>
                       <p className="text-sm text-slate-600 mt-1">Phone: <span className="font-medium text-slate-900">080 8575 8575</span></p>
                     </div>

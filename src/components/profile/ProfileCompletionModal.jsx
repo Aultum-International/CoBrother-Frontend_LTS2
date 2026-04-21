@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { profileAPI } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
+import BrandWordmark from '../common/BrandWordmark';
 
 export default function ProfileCompletionModal({ forceOpen = false }) {
   const { refreshUser } = useAuth();
@@ -48,7 +49,9 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
         <div className="relative z-10 p-8 pb-6">
           <div className="inline-block px-2.5 py-1 bg-purple-50 text-purple-600 text-xs font-semibold rounded-md mb-4">Welcome aboard</div>
           <h2 className="font-display text-2xl font-bold text-gray-900 m-0 mb-2">Complete Your Profile</h2>
-          <p className="text-gray-500 text-sm m-0 mb-6">Just a few details to get you started on CoBrother.</p>
+          <p className="text-gray-500 text-sm m-0 mb-6">
+            Just a few details to get you started on <BrandWordmark inline className="h-4 w-auto mx-1" />.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="relative z-10 px-8 flex flex-col gap-4">

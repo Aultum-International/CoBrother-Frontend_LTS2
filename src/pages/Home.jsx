@@ -16,6 +16,7 @@ import DomainSearchBar from '../components/common/DomainSearchBar';
 import HomeFooter from '../components/common/HomeFooter';
 import FeedbackSection from '../components/home/FeedbackSection';
 import ExploreButton from '../components/common/ExploreButton';
+import BrandWordmark from '../components/common/BrandWordmark';
 
 export const searchDomainRedirect = (domainQuery, selectedExtension = '.com') => {
   const value = domainQuery.trim().toLowerCase();
@@ -167,9 +168,7 @@ export default function Home() {
     <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight tracking-tight">
       Explore the{" "}
       <span className="relative inline-block">
-        <span className="bg-gradient-to-r from-sky-500 to-emerald-500 bg-clip-text text-transparent">
-          CoBrother
-        </span>
+        <BrandWordmark inline className="h-8 md:h-10 w-auto" />
         <span className="absolute -bottom-1 left-0 w-full h-[6px] bg-gradient-to-r from-sky-200 to-emerald-200 blur-md opacity-70"></span>
       </span>{" "}
       pathways
