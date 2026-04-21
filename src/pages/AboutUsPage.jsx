@@ -42,7 +42,7 @@ function Reveal({ children, delay = 0, direction = 'up', className = '' }) {
 /* Label chip */
 function Chip({ children }) {
   return (
-    <span className="cb-body inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3.5 py-1 text-[0.68rem] font-bold uppercase tracking-[.18em] text-blue-700">
+    <span className="cb-body inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-50 px-3.5 py-1 text-[0.68rem] font-bold uppercase tracking-[.18em] text-[#9440dd]">
       {children}
     </span>
   );
@@ -89,14 +89,14 @@ export default function AboutUsPage() {
         .cb-hover:hover {
           transform: translateY(-4px);
           box-shadow: 0 18px 50px -10px rgba(15,23,42,.10);
-          border-color: rgba(37,99,235,.22);
+          border-color: rgba(148,64,221,.22);
         }
 
         /* Shimmer underline on hero word */
         .cb-accent-word {
           position: relative;
           display: inline;
-          background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+          background: linear-gradient(135deg, #9440dd, #7c3aed);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -171,7 +171,7 @@ export default function AboutUsPage() {
             <motion.a
               href="/join-form"
               whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}
-              className="cb-display inline-flex items-center gap-2 rounded-xl bg-blue-600 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/25 hover:bg-blue-700 transition-colors no-underline"
+              className="cb-display inline-flex items-center gap-2 rounded-xl bg-[#9440dd] px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple-500/25 hover:bg-[#7c3aed] transition-colors no-underline"
             >
               Join CoBrother <ArrowRight className="h-4 w-4" />
             </motion.a>
@@ -250,10 +250,10 @@ export default function AboutUsPage() {
               { icon: Users,   title: 'Collaboration is underused',    desc: 'The best growth happens together. We build the space for that.',            color: 'emerald' },
             ].map(({ icon: Icon, title, desc, color }, i) => {
               const c = {
-                blue:    { bg: 'bg-blue-50',    border: 'border-blue-100',    icon: 'text-blue-600',    iconBg: 'bg-blue-100'    },
-                teal:    { bg: 'bg-teal-50',    border: 'border-teal-100',    icon: 'text-teal-600',    iconBg: 'bg-teal-100'    },
-                violet:  { bg: 'bg-violet-50',  border: 'border-violet-100',  icon: 'text-violet-600',  iconBg: 'bg-violet-100'  },
-                emerald: { bg: 'bg-emerald-50', border: 'border-emerald-100', icon: 'text-emerald-600', iconBg: 'bg-emerald-100' },
+                blue:    { bg: 'bg-purple-50', border: 'border-purple-100', icon: 'text-[#9440dd]', iconBg: 'bg-purple-100' },
+                teal:    { bg: 'bg-purple-50', border: 'border-purple-100', icon: 'text-[#9440dd]', iconBg: 'bg-purple-100' },
+                violet:  { bg: 'bg-purple-50', border: 'border-purple-100', icon: 'text-[#9440dd]', iconBg: 'bg-purple-100' },
+                emerald: { bg: 'bg-purple-50', border: 'border-purple-100', icon: 'text-[#9440dd]', iconBg: 'bg-purple-100' },
               }[color];
               return (
                 <Reveal key={title} delay={i * 0.09}>
@@ -290,7 +290,7 @@ export default function AboutUsPage() {
           <div className="text-center mb-14">
             <Reveal><Chip>Our Purpose</Chip></Reveal>
             <Reveal delay={0.1}>
-              <h2 className="cb-display mt-5 text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">
+            <h2 className="cb-display mt-5 text-3xl sm:text-4xl md:text-5xl font-bold text-[#f3e8ff] leading-tight">
                 Vision & Mission
               </h2>
             </Reveal>
@@ -306,8 +306,8 @@ export default function AboutUsPage() {
               >
                 <div className="absolute top-0 right-0 h-48 w-48 rounded-bl-full"
                   style={{ background: 'radial-gradient(circle at 100% 0%, rgba(37,99,235,.14), transparent 65%)' }} />
-                <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-500/20 border border-blue-500/30 mb-6">
-                  <Globe className="h-5 w-5 text-blue-400" strokeWidth={2} />
+                <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-purple-500/20 border border-purple-500/30 mb-6">
+                  <Globe className="h-5 w-5 text-purple-300" strokeWidth={2} />
                 </div>
                 <h3 className="cb-display text-xl font-bold text-white mb-4">Our Vision</h3>
                 <p className="text-slate-300 leading-relaxed">
@@ -327,8 +327,8 @@ export default function AboutUsPage() {
               >
                 <div className="absolute top-0 right-0 h-48 w-48 rounded-bl-full"
                   style={{ background: 'radial-gradient(circle at 100% 0%, rgba(20,184,166,.12), transparent 65%)' }} />
-                <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-teal-500/20 border border-teal-500/30 mb-6">
-                  <Target className="h-5 w-5 text-teal-400" strokeWidth={2} />
+                <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-purple-500/20 border border-purple-500/30 mb-6">
+                  <Target className="h-5 w-5 text-purple-300" strokeWidth={2} />
                 </div>
                 <h3 className="cb-display text-xl font-bold text-white mb-4">Our Mission</h3>
                 <p className="text-slate-300 leading-relaxed mb-6">
@@ -342,8 +342,8 @@ export default function AboutUsPage() {
                     'Accessible, ready-to-use technology',
                     'A collaborative growth environment',
                   ].map((item) => (
-                    <li key={item} className="flex items-start gap-3 text-sm text-slate-400">
-                      <CheckCircle className="h-4 w-4 text-teal-400 mt-0.5 flex-shrink-0" strokeWidth={2.5} />
+                    <li key={item} className="flex items-start gap-3 text-sm text-slate-300">
+                      <CheckCircle className="h-4 w-4 text-purple-300 mt-0.5 flex-shrink-0" strokeWidth={2.5} />
                       {item}
                     </li>
                   ))}
@@ -383,28 +383,28 @@ export default function AboutUsPage() {
                 sub: 'Turning ideas into scalable businesses',
                 body: 'Ideas are plentiful. Execution is rare. Venture is our startup studio and co-creation arm — where we build alongside founders from the ground up. We provide ready-to-deploy infrastructure, scalable business models, and hands-on support from concept to market launch.',
                 points: ['Build from the ground up', 'Ready-to-deploy infrastructure', 'Scalable business models', 'Concept to launch support'],
-                accent: { border: 'border-blue-100',   num: 'text-blue-300',   chip: 'bg-blue-600',   icon: 'text-blue-600',   iconBg: 'bg-blue-50 border-blue-100',   check: 'text-blue-600',   ptBg: 'bg-blue-50/70 border-blue-100'   },
+                accent: { border: 'border-purple-100', num: 'text-purple-300', chip: 'bg-[#9440dd]', icon: 'text-[#9440dd]', iconBg: 'bg-purple-50 border-purple-100', check: 'text-[#9440dd]', ptBg: 'bg-purple-50/70 border-purple-100' },
               },
               {
                 num: '02', icon: Palette, title: 'Domains',
                 sub: 'Your domain, your identity',
                 body: "In today's digital market, a strong domain is your foundation. Our Domains pillar helps you register, manage, and leverage domains to build a distinct, market-ready presence — while CoBrother powers the engine behind the scenes. You leverage our ecosystem. You own your domain — completely.",
                 points: ['Premium domain registration', 'Domain management systems', 'Identity-ready domains', 'Complete ownership & control'],
-                accent: { border: 'border-violet-100', num: 'text-violet-300', chip: 'bg-violet-600', icon: 'text-violet-600', iconBg: 'bg-violet-50 border-violet-100', check: 'text-violet-600', ptBg: 'bg-violet-50/70 border-violet-100' },
+                accent: { border: 'border-purple-100', num: 'text-purple-300', chip: 'bg-[#9440dd]', icon: 'text-[#9440dd]', iconBg: 'bg-purple-50 border-purple-100', check: 'text-[#9440dd]', ptBg: 'bg-purple-50/70 border-purple-100' },
               },
               {
                 num: '03', icon: Users, title: 'Disruptors',
                 sub: 'A community that challenges the norm',
                 body: "Growth doesn't come from comfort zones. Disruptors is our community of builders, innovators, and forward-thinkers. They collaborate, share real opportunities, and solve genuine problems together. This isn't just a network — it's a movement.",
                 points: ['Challenge conventional models', 'Collaborate on real problems', 'Share insights & resources', 'Be part of a movement'],
-                accent: { border: 'border-emerald-100', num: 'text-emerald-300', chip: 'bg-emerald-600', icon: 'text-emerald-600', iconBg: 'bg-emerald-50 border-emerald-100', check: 'text-emerald-600', ptBg: 'bg-emerald-50/70 border-emerald-100' },
+                accent: { border: 'border-purple-100', num: 'text-purple-300', chip: 'bg-[#9440dd]', icon: 'text-[#9440dd]', iconBg: 'bg-purple-50 border-purple-100', check: 'text-[#9440dd]', ptBg: 'bg-purple-50/70 border-purple-100' },
               },
               {
                 num: '04', icon: Cpu, title: 'Technology',
                 sub: 'Delivered directly to your doorstep',
                 body: "Technology should be an advantage, not a barrier. We bring ready-to-use, scalable tech directly to businesses — eliminating the need to build from scratch. Pre-built systems, plug-and-play infrastructure, and customizable solutions. You focus on growth. We handle the foundation.",
                 points: ['Pre-built systems on day one', 'Fully customizable solutions', 'Plug-and-play infrastructure', 'No deep technical knowledge needed'],
-                accent: { border: 'border-orange-100', num: 'text-orange-300', chip: 'bg-orange-600', icon: 'text-orange-600', iconBg: 'bg-orange-50 border-orange-100', check: 'text-orange-600', ptBg: 'bg-orange-50/70 border-orange-100' },
+                accent: { border: 'border-purple-100', num: 'text-purple-300', chip: 'bg-[#9440dd]', icon: 'text-[#9440dd]', iconBg: 'bg-purple-50 border-purple-100', check: 'text-[#9440dd]', ptBg: 'bg-purple-50/70 border-purple-100' },
               },
             ].map(({ num, icon: Icon, title, sub, body, points, accent }, i) => (
               <Reveal key={num} delay={i * 0.07}>
@@ -470,7 +470,7 @@ export default function AboutUsPage() {
             </Reveal>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { icon: Building2,   title: 'We deliver outcomes, not just services',   desc: "Other companies hand you tools and walk away. We stay in — combining venture building, domains, and tech into one unified outcome." },
               { icon: Zap,         title: 'Speed is a core feature',                  desc: 'Our execution-first approach means founders launch faster, iterate sooner, and grow without getting stuck in setup mode.' },
@@ -481,15 +481,15 @@ export default function AboutUsPage() {
             ].map(({ icon: Icon, title, desc }, i) => (
               <Reveal key={title} delay={i * 0.07}>
                 <motion.div
-                  whileHover={{ y: -5, boxShadow: '0 16px 44px -8px rgba(15,23,42,.10)', borderColor: 'rgba(37,99,235,.2)' }}
+                  whileHover={{ y: -6, boxShadow: '0 24px 56px -10px rgba(15,23,42,.14)', borderColor: 'rgba(148,64,221,.34)' }}
                   transition={{ duration: 0.2 }}
-                  className="rounded-2xl border border-slate-200 bg-white p-6 h-full group"
+                  className="rounded-3xl border-2 border-purple-200 bg-white p-8 sm:p-10 h-full min-h-[270px] group shadow-md"
                 >
-                  <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 border border-slate-200 mb-5 group-hover:bg-blue-50 group-hover:border-blue-200 transition-colors duration-200">
-                    <Icon className="h-5 w-5 text-slate-500 group-hover:text-blue-600 transition-colors duration-200" strokeWidth={2} />
+                  <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 border border-slate-200 mb-7 group-hover:bg-purple-50 group-hover:border-purple-200 transition-colors duration-200">
+                    <Icon className="h-7 w-7 text-slate-500 group-hover:text-[#9440dd] transition-colors duration-200" strokeWidth={2} />
                   </div>
-                  <h3 className="cb-display text-sm font-bold text-slate-900 mb-2 leading-snug">{title}</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
+                  <h3 className="cb-display text-xl sm:text-2xl font-bold text-slate-900 mb-4 leading-snug">{title}</h3>
+                  <p className="text-lg text-slate-600 leading-relaxed">{desc}</p>
                 </motion.div>
               </Reveal>
             ))}
@@ -540,11 +540,11 @@ export default function AboutUsPage() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
                 transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: i * 0.08 }}
-                whileHover={{ x: 4, borderColor: 'rgba(37,99,235,.25)', backgroundColor: '#fff' }}
+                whileHover={{ x: 4, borderColor: 'rgba(148,64,221,.25)', backgroundColor: '#fff' }}
                 className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm transition-colors cursor-default group"
               >
-                <div className="h-8 w-8 flex-shrink-0 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-                  <CheckCircle className="h-4 w-4 text-blue-600" strokeWidth={2.5} />
+                <div className="h-8 w-8 flex-shrink-0 rounded-full bg-purple-50 border border-purple-100 flex items-center justify-center group-hover:bg-purple-100 transition-colors">
+                  <CheckCircle className="h-4 w-4 text-[#9440dd]" strokeWidth={2.5} />
                 </div>
                 <div>
                   <p className="cb-display text-sm font-bold text-slate-900">{label}</p>
@@ -553,73 +553,6 @@ export default function AboutUsPage() {
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      <Divider />
-
-      {/* ══════════════════════════════════════════════════════
-          § 7  PHILOSOPHY
-      ══════════════════════════════════════════════════════ */}
-      <section className="relative px-4 sm:px-6 lg:px-8 py-20 sm:py-28 bg-white overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 cb-glow-center" />
-
-        <div className="relative max-w-7xl mx-auto">
-          <div className="text-center mb-14 max-w-2xl mx-auto">
-            <Reveal><Chip>Philosophy</Chip></Reveal>
-            <Reveal delay={0.1}>
-              <h2 className="cb-display mt-5 text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight">
-                How we think. How we build.
-              </h2>
-            </Reveal>
-            <Reveal delay={0.18}>
-              <p className="mt-4 text-slate-600 text-base sm:text-lg leading-relaxed">
-                The future belongs to those who build together and execute faster. These
-                are the principles behind every decision we make.
-              </p>
-            </Reveal>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
-            {[
-              { num: '01', color: 'blue',   title: 'Disruption requires collaboration', desc: "No one builds something great alone. The best outcomes come when the right people work together with shared purpose." },
-              { num: '02', color: 'teal',   title: 'Technology should be accessible',  desc: "Advanced tools should not be gated behind complexity or cost. We believe technology belongs in everyone's hands." },
-              { num: '03', color: 'violet', title: 'Speed of execution defines success', desc: "In modern markets, how fast you move matters as much as where you're going. We are built for velocity." },
-            ].map(({ num, color, title, desc }, i) => {
-              const c = {
-                blue:   { num: 'text-blue-400',   border: 'border-blue-100',   bg: 'bg-blue-50/40'   },
-                teal:   { num: 'text-teal-400',   border: 'border-teal-100',   bg: 'bg-teal-50/40'   },
-                violet: { num: 'text-violet-400', border: 'border-violet-100', bg: 'bg-violet-50/40' },
-              }[color];
-              return (
-                <Reveal key={num} delay={i * 0.1}>
-                  <motion.div
-                    whileHover={{ y: -4, boxShadow: '0 16px 40px -8px rgba(15,23,42,.09)' }}
-                    transition={{ duration: 0.2 }}
-                    className={`rounded-2xl border ${c.border} ${c.bg} p-7 h-full`}
-                  >
-                    <span className={`cb-display cb-mono text-5xl font-black ${c.num} opacity-50 leading-none block mb-5`}>{num}</span>
-                    <h3 className="cb-display text-sm font-bold text-slate-900 mb-3 leading-snug">{title}</h3>
-                    <p className="text-sm text-slate-600 leading-relaxed">{desc}</p>
-                  </motion.div>
-                </Reveal>
-              );
-            })}
-          </div>
-
-          {/* Manifesto strip */}
-          <Reveal delay={0.2}>
-            <div className="rounded-2xl bg-slate-950 px-8 sm:px-14 py-12 text-center overflow-hidden relative">
-              <div className="pointer-events-none absolute inset-0"
-                style={{ background: 'radial-gradient(ellipse 70% 60% at 50% 50%, rgba(37,99,235,.09), transparent)' }} />
-              <p className="relative cb-display text-3xl sm:text-4xl md:text-[2.6rem] font-extrabold text-white leading-tight max-w-3xl mx-auto">
-                "Build. Brand. Disrupt. Scale."
-              </p>
-              <p className="relative mt-4 text-slate-400 text-base">
-                Not just a process — a framework for modern business growth.
-              </p>
-            </div>
-          </Reveal>
         </div>
       </section>
 
@@ -637,7 +570,7 @@ export default function AboutUsPage() {
           <Reveal delay={0.1}>
             <h2 className="cb-display mt-5 text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight max-w-3xl">
               We're not building a company.{' '}
-              <span className="text-blue-600">We're building a generation.</span>
+              <span className="text-[#9440dd]">We're building a generation.</span>
             </h2>
           </Reveal>
           <div className="mt-7 space-y-4 max-w-2xl">
@@ -691,7 +624,7 @@ export default function AboutUsPage() {
               <motion.a
                 href="/join-form"
                 whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-                className="cb-display inline-flex items-center justify-center gap-2.5 rounded-xl bg-blue-600 px-9 py-4 text-base font-semibold text-white shadow-2xl shadow-blue-900/50 hover:bg-blue-500 transition-colors no-underline w-full sm:w-auto"
+                className="cb-display inline-flex items-center justify-center gap-2.5 rounded-xl bg-[#9440dd] px-9 py-4 text-base font-semibold text-white shadow-2xl shadow-purple-900/40 hover:bg-[#7c3aed] transition-colors no-underline w-full sm:w-auto"
               >
                 Join CoBrother <ArrowRight className="h-4 w-4" />
               </motion.a>
