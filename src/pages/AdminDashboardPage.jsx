@@ -92,13 +92,13 @@ export default function AdminDashboardPage() {
   };
 
   const tabs = [
-    { id: 'coventures',         label: 'CoVentures', icon: VentureIcon       },
+    { id: 'coventures',         label: 'Venture', icon: VentureIcon       },
+    { id: 'venture-auctions', label: 'Venture Auctions', icon: AuctionIcon },
     { id: 'domains',            label: 'Domains', icon: DomainsIcon           },
     { id: 'domain-enquiries',   label: 'Domain Enquiries', icon: EnquireIcon },
-    { id: 'cocreations',        label: 'CoCreations', icon: TechnologyIcon       },
-    { id: 'requests',           label: 'CoBrother Requests', icon: RequestIcon},
     { id: 'auctions', label: 'Domain Auctions', icon: AuctionIcon },
-    { id: 'venture-auctions', label: 'Venture Auctions', icon: AuctionIcon },
+    { id: 'cocreations',        label: 'Technology', icon: TechnologyIcon       },
+    { id: 'requests',           label: 'CoBrother Requests', icon: RequestIcon},
     { id: 'homepage-features',  label: 'Homepage Features', icon: PurchaseIcon },
   ];
 
@@ -112,10 +112,10 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="flex gap-4 mb-6">
+        <div className="admin-dashboard-tabs flex gap-4 mb-6">
           {tabs.map(t => (
             <button key={t.id}
-              className={`filter-tab ${tab === t.id ? 'active' : ''}`}
+              className={`filter-tab admin-dashboard-tab ${tab === t.id ? 'active' : ''}`}
               onClick={() => setTab(t.id)}>
               {t.icon && <img src={t.icon} alt="" className="inline-block w-4 h-4 mr-1.5 object-contain" />}
               {t.label}
@@ -137,6 +137,7 @@ export default function AdminDashboardPage() {
             <HomepageFeatureSelector type="domain" />
             <HomepageFeatureSelector type="venture" />
             <HomepageFeatureSelector type="software" />
+            <HomepageFeatureSelector type="community" />
           </div>
         ) : tab === 'requests' ? (
           <RequestsTable requests={requests} />

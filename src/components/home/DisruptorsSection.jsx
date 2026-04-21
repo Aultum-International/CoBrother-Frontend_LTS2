@@ -10,9 +10,16 @@ function normalizeProfiles(raw) {
   const flagged = list.filter(
     (p) =>
       p.featuredOnHomepage === true ||
+      p.featured_on_homepage === true ||
       p.featuredOnHome === true ||
       p.homeFeatured === true ||
       p.showOnHome === true ||
+      p.communityHomeFeatured === true ||
+      p.featuredOnCommunityHome === true ||
+      p.showOnCommunityHome === true ||
+      p.disruptorHomeFeatured === true ||
+      p.featuredOnDisruptorHome === true ||
+      p.showOnDisruptorHome === true ||
       p.featured === true
   );
   return flagged.length ? flagged : list;

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { joinUsAPI } from '../api/services';
 import TopNavbar from '../components/common/TopNavbar';
+import HomeNavbar from '../components/common/HomeNavbar';
 import Confetti from '../components/common/Confetti';
 import {
   Sparkles, Package, Store, ShieldCheck,
@@ -43,6 +45,8 @@ const SKILL_ENUM_MAP = {
 
 const JoinForm = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [openDropdown, setOpenDropdown] = useState(null);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -149,7 +153,12 @@ const JoinForm = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
-      <TopNavbar />
+      <TopNavbar homeMobileMenu />
+      <HomeNavbar
+        openDropdown={openDropdown}
+        setOpenDropdown={setOpenDropdown}
+        navigate={navigate}
+      />
       <Confetti show={showConfetti} />
       {/* Hero Section */}
       <section className="py-10 sm:py-14 md:py-16 px-4">

@@ -137,7 +137,7 @@ export default function CommunityPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('community.title', 'Community')}</h1>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('community.title', 'Disruptor')}</h1>
             <p className="text-gray-600 mt-1">{t('community.subtitle', 'Connect with founders, investors, and operators.')}</p>
           </div>
           <div className="flex gap-3 flex-wrap items-center">
@@ -357,7 +357,7 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
       )}
 
       <h3 className="font-display text-2xl text-gray-900 font-semibold">
-        {t('community.completeProfile', 'Complete Your Community Profile')}
+        {t('community.completeProfile', 'Complete Your Disruptor Profile')}
       </h3>
       <p className="text-gray-500 text-sm mt-1">{t('community.completeProfileDesc', 'Help others understand what you bring to the table.')}</p>
 

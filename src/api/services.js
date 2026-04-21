@@ -138,6 +138,7 @@ export const adminAPI = {
   getVentures:          ()              => api.get('/api/v1/admin/ventures'),
   getDomains:           ()              => api.get('/api/v1/admin/domains'),
   getCoCreations:       ()              => api.get('/api/v1/admin/cocreations'),
+  getCommunities:       ()              => api.get('/api/v1/admin/community'),
   getCoBrotherRequests: ()              => api.get('/api/v1/admin/cobrother-requests'),
   getCoBrothers:        ()              => api.get('/api/v1/admin/cobrothers'),
   forward:              (data)          => api.post('/api/v1/admin/forward', data),
@@ -150,6 +151,7 @@ export const adminAPI = {
   toggleDomainHomepage:   (id)  => api.post(`/api/v1/admin/domain/${id}/toggle-homepage`),
   toggleVentureHomepage:  (id)  => api.post(`/api/v1/admin/venture/${id}/toggle-homepage`),
   toggleSoftwareHomepage: (id)  => api.post(`/api/v1/admin/software/${id}/toggle-homepage`),
+  toggleCommunityHomepage:(id)  => api.post(`/api/v1/admin/community/${id}/toggle-homepage`),
 
 };
 

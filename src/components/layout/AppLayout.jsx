@@ -4,6 +4,7 @@ import { LogOut, Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import TopNavbar from '../common/TopNavbar';
 import coBrotherLogo from '../../assets/Cobrother_logo.png';
+import coBrotherLogoHover from '../../assets/Cobrother_logo2.png';
 import { useAuth } from '../../context/AuthContext';
 import { notificationAPI } from '../../api/services';
 import DashboardIcon from '../../assets/Dashboard.png';
@@ -57,6 +58,7 @@ export default function AppLayout({ children }) {
   const [bellOpen, setBellOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [logoHovered, setLogoHovered] = useState(false);
   const bellRef = useRef(null);
 
   const navLinks = [
@@ -158,9 +160,11 @@ export default function AppLayout({ children }) {
       <nav className="sticky top-[40px] md:top-[45px] z-[100] flex items-center gap-3 md:gap-5 px-4 sm:px-6 xl:px-8 h-[60px] md:h-16 bg-white border-b border-gray-200 min-w-0">
         <Link to="/" className="flex items-center gap-0 no-underline shrink-0">
           <img
-            src={coBrotherLogo}
+            src={logoHovered ? coBrotherLogoHover : coBrotherLogo}
             alt="CoBrother"
             className="w-[122px] h-9 object-contain md:w-[140px] md:h-[42px]"
+            onMouseEnter={() => setLogoHovered(true)}
+            onMouseLeave={() => setLogoHovered(false)}
           />
         </Link>
 

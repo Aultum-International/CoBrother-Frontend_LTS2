@@ -894,7 +894,61 @@ select:focus {
   border-radius: 7px; transition: all 0.2s;
   font-family: var(--font-body);
 }
-.filter-tab.active { background: #eef2ff; color: #4f46e5; }
+.filter-tab:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #f7f2ff 100%);
+  color: #7c3aed;
+  box-shadow: 0 8px 24px rgba(148, 64, 221, 0.14);
+}
+.filter-tab.active {
+  background: linear-gradient(180deg, #ffffff 0%, #f4edff 100%);
+  color: #7c3aed;
+  border: 1px solid rgba(148, 64, 221, 0.18);
+  box-shadow: 0 10px 28px rgba(148, 64, 221, 0.18);
+}
+
+.admin-dashboard-tabs {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.admin-dashboard-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-height: 58px;
+  padding: 0.95rem 1.65rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #7b7890;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1;
+  box-shadow: none;
+}
+
+.admin-dashboard-tab img {
+  width: 24px;
+  height: 24px;
+  margin-right: 0 !important;
+  flex-shrink: 0;
+}
+
+.admin-dashboard-tab:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7ff 100%);
+  color: #7c3aed;
+  border-color: rgba(204, 192, 226, 0.9);
+  box-shadow: 0 10px 30px rgba(185, 147, 255, 0.18);
+}
+
+.admin-dashboard-tab.active {
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7ff 100%);
+  color: #6d4df2;
+  border-color: #d6cedf;
+  box-shadow:
+    0 12px 34px rgba(196, 168, 255, 0.22),
+    0 0 0 1px rgba(255, 255, 255, 0.85) inset;
+}
 
 /* ─── Venture card footer ────────────────────────────── */
 .venture-card-footer {
