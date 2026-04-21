@@ -96,6 +96,26 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const revealElements = Array.from(document.querySelectorAll('.reveal-on-scroll'));
+    if (!revealElements.length) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.16, rootMargin: '0px 0px -10% 0px' }
+    );
+
+    revealElements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   const handleSearch = (e) => {
     e.preventDefault();
     setSearchError('');
@@ -153,12 +173,18 @@ export default function Home() {
         firstNavbarVisible={isTopNavbarVisible}
       />
 
-      <HeroGlow />
-      <DomainSearchBar />
-      <ExploreSection />
+      <div className="reveal-on-scroll reveal-soft">
+        <HeroGlow />
+      </div>
+      <div className="reveal-on-scroll reveal-up" style={{ transitionDelay: '80ms' }}>
+        <DomainSearchBar />
+      </div>
+      <div className="reveal-on-scroll reveal-up" style={{ transitionDelay: '120ms' }}>
+        <ExploreSection />
+      </div>
 
 {/* Homepage Cards Section */}
-   <section className="py-12 md:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+   <section className="reveal-on-scroll reveal-up py-12 md:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
      {/* Heading */}
       <div className="max-w-2xl mx-auto text-center mb-14 md:mb-20">
         <span className="inline-block mb-4 px-4 py-1.5 text-xs font-semibold bg-gradient-to-r from-sky-100 to-emerald-100 text-sky-700 rounded-full shadow-sm">
@@ -181,7 +207,11 @@ export default function Home() {
         <div className="max-w-[1200px] mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
             {features.map((feature, index) => (
-              <div key={index} className="card-glow-hover p-5 md:p-8 bg-white border border-gray-200 rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center">
+              <div
+                key={index}
+                className="reveal-on-scroll reveal-up card-glow-hover p-5 md:p-8 bg-white border border-gray-200 rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center"
+                style={{ transitionDelay: `${80 + index * 90}ms` }}
+              >
                 <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-purple mb-4 md:mb-5">{feature.icon}</div>
                 <h3 className="font-display text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3">{t(feature.titleKey)}</h3>
                 <p className="text-lg text-gray-600 mb-5 md:mb-6 flex-1 leading-relaxed">{t(feature.descKey)}</p>
@@ -195,7 +225,7 @@ export default function Home() {
       </section>
 
 {/* Feedback Section */}
-      <section className="py-2 ">
+      <section className="reveal-on-scroll reveal-soft py-2" style={{ transitionDelay: '120ms' }}>
         <FeedbackSection />
       </section>
 

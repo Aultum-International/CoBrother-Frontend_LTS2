@@ -4396,3 +4396,23 @@ body.home-page-body {
 .nav-dropdown-item:hover::after {
   transform: scaleX(1);
 }
+
+/* Home page scroll reveal animations */
+.reveal-on-scroll {
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: opacity 650ms ease, transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal-up {
+  transform: translate3d(0, 26px, 0);
+}
+
+.reveal-soft {
+  transform: translate3d(0, 14px, 0) scale(0.985);
+}
+
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}

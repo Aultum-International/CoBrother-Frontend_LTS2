@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { joinUsAPI } from '../api/services';
 import TopNavbar from '../components/common/TopNavbar';
 import Confetti from '../components/common/Confetti';
 import {
-  Network, Sparkles, Package, Store, ShieldCheck,
+  Sparkles, Package, Store, ShieldCheck,
   Smartphone, MessageCircle, Laptop, MapPin, Workflow,
   Bell, MonitorCheck, Rocket, BadgeIndianRupee,
-  ChevronDown, Timer, BadgePercent, Check, AlertCircle, ArrowLeft,
+  ChevronDown, Timer, BadgePercent, Check, AlertCircle,
   Loader2
 } from 'lucide-react';
 import HomeFooter from '../components/common/HomeFooter';
+import BrandWordmark from '../components/common/BrandWordmark';
 
 const SKILL_ENUM_MAP = {
   'Web Development': 'WEB_DEV',
@@ -42,7 +42,6 @@ const SKILL_ENUM_MAP = {
 };
 
 const JoinForm = () => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     fullName: '',
@@ -152,29 +151,15 @@ const JoinForm = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
       <TopNavbar />
       <Confetti show={showConfetti} />
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <button onClick={() => navigate('/')} className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100">
-            <ArrowLeft size={18} />
-            <span className="font-semibold">{t('joinForm.backToHome', 'Back to Home')}</span>
-          </button>
-          <div className="flex items-center gap-2 text-purple-600 font-bold text-lg">
-            <Network size={20} />
-            <span>{t('joinForm.brand', 'CoBrother Elite')}</span>
-          </div>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="py-10 sm:py-14 md:py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-2 bg-green-100 border border-green-300 rounded-full text-xs sm:text-sm font-semibold text-green-700 mb-5 sm:mb-6">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            {t('joinForm.badgePrefix', 'Be the')} <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-bold">{t('joinForm.badgeHighlight', 'Disruptive CoBrother')}</span>
+            {t('joinForm.badgePrefix', 'Be the')} <span className="inline-flex items-center gap-1.5 font-bold"><span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">{t('joinForm.badgeHighlightPrefix', 'Disruptive')}</span> <BrandWordmark className="h-4 sm:h-5 w-auto" inline alt="CoBrother" /></span>
           </div>
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
-            {t('joinForm.heroTitlePrefix', 'Be the')} <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">{t('joinForm.heroTitleHighlight', 'Disruptive CoBrother')}</span>
+            {t('joinForm.heroTitlePrefix', 'Be the')} <span className="inline-flex items-center gap-2 align-middle"><span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">{t('joinForm.heroTitleHighlightPrefix', 'Disruptive')}</span> <BrandWordmark className="h-8 sm:h-10 md:h-12 w-auto" inline alt="CoBrother" /></span>
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8 sm:mb-10 md:mb-12 max-w-3xl mx-auto leading-relaxed">
             {t('joinForm.heroDesc1', 'Disruptive businesses are integrating')} <strong className="text-gray-900">{t('joinForm.heroDescBold1', 'AI and Technology')}</strong> {t('joinForm.heroDesc2', 'but struggling to implement it. We provide the technology -')} <strong className="text-gray-900">{t('joinForm.heroDescBold2', 'you deliver it to the doorstep')}</strong> {t('joinForm.heroDesc3', 'and earn up to 100%.')}
@@ -208,7 +193,11 @@ const JoinForm = () => {
               <div className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5 sm:p-7 lg:p-8">
                 <h3 className="flex items-center gap-3 text-xl sm:text-2xl font-bold text-gray-900 mb-5 sm:mb-6">
                   <Workflow size={20} className="text-purple-600" />
-                  {t('joinForm.workflow.title', 'The CoBrother Workflow')}
+                  <span className="inline-flex items-center gap-2">
+                    {t('joinForm.workflow.titlePrefix', 'The')}
+                    <BrandWordmark className="h-6 sm:h-7 w-auto" inline alt="CoBrother" />
+                    {t('joinForm.workflow.titleSuffix', 'Workflow')}
+                  </span>
                 </h3>
                 <div className="space-y-4">
                   {[
