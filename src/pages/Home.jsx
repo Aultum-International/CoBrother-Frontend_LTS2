@@ -8,6 +8,7 @@ import coBrandingIcon from '../assets/CoBranding.png';
 import coVentureIcon from '../assets/Coventure_logo.png';
 import coCreationIcon from '../assets/CoCreation.png';
 import auctionIcon from '../assets/Auction.png';
+import cobrotherGreenLogo from '../assets/Cobrother_Green.png';
 import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 import HeroGlow from '../components/common/HeroGlow';
@@ -16,7 +17,6 @@ import DomainSearchBar from '../components/common/DomainSearchBar';
 import HomeFooter from '../components/common/HomeFooter';
 import FeedbackSection from '../components/home/FeedbackSection';
 import ExploreButton from '../components/common/ExploreButton';
-import BrandWordmark from '../components/common/BrandWordmark';
 
 export const searchDomainRedirect = (domainQuery, selectedExtension = '.com') => {
   const value = domainQuery.trim().toLowerCase();
@@ -165,10 +165,10 @@ export default function Home() {
           FEATURED TOOLS
     </span>
 
-    <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight tracking-tight">
+    <h2 className="text-2xl md:text-4xl font-bold text-gray-900 leading-tight tracking-tight">
       Explore the{" "}
       <span className="relative inline-block">
-        <BrandWordmark inline className="h-8 md:h-10 w-auto" />
+        <img src={cobrotherGreenLogo} alt="Cobrother" className="h-10 md:h-12 w-auto inline" />
         <span className="absolute -bottom-1 left-0 w-full h-[6px] bg-gradient-to-r from-sky-200 to-emerald-200 blur-md opacity-70"></span>
       </span>{" "}
       pathways
