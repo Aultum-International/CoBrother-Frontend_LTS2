@@ -16,12 +16,12 @@ export default function FilterBar({
   const debounceRef = useRef(null);
 
   const DEFAULT_SORT_OPTIONS = [
-    { value: 'newest',     label: t('filter.sortNewest', 'Sort by: Newest')  },
-    { value: 'oldest',     label: t('filter.sortOldest', 'Sort by: Oldest')  },
-    { value: 'price_asc',  label: t('filter.sortPriceLowHigh', 'Sort by: Price low to high') },
-    { value: 'price_desc', label: t('filter.sortPriceHighLow', 'Sort by: Price high to low') },
-    { value: 'most_liked', label: t('filter.sortMostLiked', 'Sort by: Most liked')    },
-    { value: 'most_viewed',label: t('filter.sortMostViewed', 'Sort by: Most viewed')   },
+    { value: 'newest',     label: t('filter.sortNewest', 'Newest')  },
+    { value: 'oldest',     label: t('filter.sortOldest', 'Oldest')  },
+    { value: 'price_asc',  label: t('filter.sortPriceLowHigh', 'Price low to high') },
+    { value: 'price_desc', label: t('filter.sortPriceHighLow', 'Price high to low') },
+    { value: 'most_liked', label: t('filter.sortMostLiked', 'Most liked')    },
+    { value: 'most_viewed',label: t('filter.sortMostViewed', 'Most viewed')   },
   ];
 
   useEffect(() => {
