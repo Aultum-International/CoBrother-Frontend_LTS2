@@ -362,7 +362,7 @@ export default function AppLayout({ children }) {
         </>
       )}
 
-      <main className="flex-1 p-8 max-w-none m-0 w-full bg-gray-50 max-md:p-4">
+      <main className="flex-1 p-8 pb-32 md:pb-40 max-w-none m-0 w-full bg-gray-50 max-md:p-4">
         {children}
       </main>
       <HomeFooter />

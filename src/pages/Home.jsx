@@ -209,7 +209,7 @@ export default function Home() {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="reveal-on-scroll reveal-up card-glow-hover p-5 md:p-8 bg-white border border-gray-200 rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center"
+                className="reveal-on-scroll reveal-up card-glow-hover home-feature-card p-5 md:p-8 bg-white border border-gray-200 rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center"
                 style={{ transitionDelay: `${80 + index * 90}ms` }}
               >
                 <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-purple mb-4 md:mb-5">{feature.icon}</div>

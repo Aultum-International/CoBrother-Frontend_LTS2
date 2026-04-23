@@ -14,6 +14,12 @@ export default function DashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [pendingDomainVerifyCount, setPendingDomainVerifyCount] = useState(0);
+  const displayName = user?.firstname || user?.email?.split('@')[0] || '?';
+  const formattedDisplayName = displayName
+    .split(/[\s._-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
 
   useEffect(() => {
     domainAPI
@@ -105,7 +111,7 @@ export default function DashboardPage() {
               <h1 className="font-display text-3xl font-bold m-0 leading-tight">
                 <span className="text-gray-900">Hello, </span>
                 <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
-                  {user?.firstname || user?.email?.split('@')[0]}
+                  {formattedDisplayName}
                 </span>
               </h1>
             </div>

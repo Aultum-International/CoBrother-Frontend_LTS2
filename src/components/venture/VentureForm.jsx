@@ -28,7 +28,7 @@ const AUCTION_ELIGIBLE_STAGES = ['REVENUE_GENERATING', 'SCALING'];
 
 const EMPTY = {
   brandDetails: {
-    brandName: '', description: '', website: 'https://', videoUrl: '',
+    brandName: '', description: '', website: '', videoUrl: '',
     industry: '', dealValue: '', referenceImageUrl: '', ventureType: '',
   },
   contactInfo: { email: '', phoneNumber: '' },
@@ -65,6 +65,8 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
 
   const isAuction = form.saleType === 'AUCTION';
   const isAuctionEligible = AUCTION_ELIGIBLE_STAGES.includes(form.stage);
+  const websiteValue = form.brandDetails.website || '';
+  const websiteInputValue = websiteValue.replace(/^https?:\/\//, '');
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -116,7 +118,7 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
         <p className="text-sm text-gray-500 mb-2">Choose how you want to list your venture before filling in the details.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {[
-            { value: 'REGULAR', icon: '🤝', title: 'Regular Listing', desc: 'Standard co-venture listing — people apply to collaborate.', selectedBorder: 'border-blue-400', selectedBg: 'bg-blue-50', selectedText: 'text-blue-600' },
+            { value: 'REGULAR', icon: '🤝', title: 'Regular Listing', desc: 'Standard venture listing where people apply to collaborate.', selectedBorder: 'border-blue-400', selectedBg: 'bg-blue-50', selectedText: 'text-blue-600' },
             { value: 'AUCTION', icon: '🔨', title: 'Equity Auction', desc: 'Auction equity/stake to the highest bidder. Requires GSTIN verification.', selectedBorder: 'border-purple-400', selectedBg: 'bg-purple-50', selectedText: 'text-purple-600', badge: 'Revenue Generating / Scaling only' },
           ].map(opt => {
             const selected = form.saleType === opt.value;
@@ -224,7 +226,18 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">Website</label>
-            <input value={form.brandDetails.website} onChange={(e) => setBrand('website', e.target.value)} placeholder="https://..." type="url" className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]" />
+            <div className="flex items-center overflow-hidden bg-white border border-gray-300 rounded-[10px] transition-all duration-200 focus-within:border-indigo-500 focus-within:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]">
+              <span className="px-4 py-2.5 text-sm text-gray-500 bg-gray-50 border-r border-gray-200 select-none">
+                https://
+              </span>
+              <input
+                value={websiteInputValue}
+                onChange={(e) => setBrand('website', e.target.value ? `https://${e.target.value}` : '')}
+                placeholder="example.com"
+                type="text"
+                className="w-full px-4 py-2.5 border-0 bg-transparent text-gray-900 text-sm placeholder:text-gray-400 outline-none"
+              />
+            </div>
           </div>
           {!isAuction && (
             <div className="flex flex-col gap-1.5">
@@ -238,7 +251,7 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">Venture Type <span className="text-red-400">*</span></label>
             <select value={form.brandDetails.ventureType} onChange={(e) => setBrand('ventureType', e.target.value)} required className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none transition-all duration-200 cursor-pointer focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]">
-              <option value="">Select type</option>
+              <option value="">Select a type</option>
               {VENTURE_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
           </div>
@@ -301,7 +314,7 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Current Stage <span className="text-red-400">*</span></label>
           <select value={form.stage} onChange={e => setField('stage', e.target.value)} required className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none transition-all duration-200 cursor-pointer focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]">
-            <option value="">Select stage</option>
+            <option value="">Select a stage</option>
             {STAGES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
           {isAuction && form.stage && !isAuctionEligible && (
@@ -325,7 +338,7 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
           <textarea
             value={form.currentProblem}
             onChange={e => setField('currentProblem', e.target.value)}
-            placeholder="What's the biggest problem you're facing right now? e.g. Struggling with user acquisition, need help with GTM strategy..."
+            placeholder="What’s the biggest problem you’re facing right now? e.g., struggling with user acquisition or needing help with GTM strategy"
             rows={3}
             className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 resize-none focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]"
           />
@@ -350,7 +363,7 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
           <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-focus-visible:ring-2 peer-focus-visible:ring-purple-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)] overflow-hidden">
             <span className="absolute left-[6px] top-[1px] w-[5px] h-[10px] border-r-[2.5px] border-b-[2.5px] border-white rotate-45 opacity-0 scale-75 transition-all duration-150 peer-checked:opacity-100 peer-checked:scale-100 z-10" aria-hidden="true"></span>
           </span>
-          <span className="leading-snug">I agree to the Terms & Conditions and confirm the information provided is accurate.</span>
+          <span className="leading-snug">I agree to the Terms and Conditions and confirm that the information provided is accurate.</span>
         </label>
       </section>
 

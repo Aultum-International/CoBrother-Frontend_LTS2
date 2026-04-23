@@ -551,7 +551,7 @@ function SoftwareForm({ onSaved, onCancel }) {
   return (
     <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
       <h3 className="font-display text-2xl text-gray-900 font-semibold">List Technology</h3>
-      <p className="text-gray-500 text-sm mt-1">Add a new technology product to the CoCreation marketplace.</p>
+      <p className="text-gray-500 text-sm mt-1">Add a new product to the Technology marketplace.</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
         <div className="flex flex-col gap-1.5">
@@ -607,7 +607,7 @@ function SoftwareForm({ onSaved, onCancel }) {
             <label className={labelCls}>Pricing Type <span className="text-red-500">*</span></label>
             <select className={inputCls} value={form.pricingDemand}
               onChange={e => set('pricingDemand', e.target.value)} required>
-              <option value="">Select type</option>
+              <option value="">Select a type</option>
               <option value="FIXED">Fixed Price</option>
               <option value="NEGOTIABLE">Negotiable</option>
             </select>
@@ -629,9 +629,9 @@ function SoftwareForm({ onSaved, onCancel }) {
 
         <div className="flex flex-col gap-1.5">
           <label className={labelCls}>
-            GitHub Link <span className="text-red-500">*</span>
+            GitHub link <span className="text-red-500">*</span>
             <span className="text-[0.72rem] text-gray-400 ml-2 font-normal">
-              🔒 Not shared until buyer confirms purchase
+              🔒 Not shared until the buyer confirms the purchase
             </span>
           </label>
           <input className={inputCls} value={form.githubLink} onChange={e => set('githubLink', e.target.value)}
@@ -645,7 +645,7 @@ function SoftwareForm({ onSaved, onCancel }) {
           <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-focus-visible:ring-2 peer-focus-visible:ring-purple-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)] overflow-hidden">
             <span className="absolute left-[6px] top-[1px] w-[5px] h-[10px] border-r-[2.5px] border-b-[2.5px] border-white rotate-45 opacity-0 scale-75 transition-all duration-150 peer-checked:opacity-100 peer-checked:scale-100 z-10" aria-hidden="true"></span>
           </span>
-          <span className="text-sm text-gray-700 leading-snug">I confirm this software is ready for sale and agree to the Terms & Conditions.</span>
+          <span className="text-sm text-gray-700 leading-snug">I confirm that this software is ready for sale and agree to the Terms and Conditions.</span>
         </label>
 
         {error && <div className="text-sm text-red-500">{error}</div>}

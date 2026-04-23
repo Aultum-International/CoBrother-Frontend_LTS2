@@ -766,8 +766,8 @@ function DomainForm({ onSaved, onCancel }) {
           <label className={labelCls}>Sale Type <span className="text-red-500">*</span></label>
           <div className="grid grid-cols-2 gap-3 mt-1.5">
             {[
-              { value: 'ONE_TIME', label: '🛒 One-Time Sale', desc: 'Set a fixed price. Buyer pays and gets the domain.' },
-              { value: 'AUCTION',  label: '🔨 Auction',       desc: 'Bidders compete. Highest bid wins after your chosen duration.' },
+              { value: 'ONE_TIME', label: '🛒 One-Time Sale', desc: 'Set a fixed price. The buyer pays and receives the domain' },
+              { value: 'AUCTION',  label: '🔨 Auction',       desc: 'Bidders compete. The highest bid wins after your chosen duration' },
             ].map(opt => (
               <div key={opt.value}
                 onClick={() => setForm(f => ({ ...f, saleType: opt.value }))}
@@ -800,7 +800,7 @@ function DomainForm({ onSaved, onCancel }) {
             <label className={labelCls}>Pricing Type <span className="text-red-500">*</span></label>
             <select className={inputCls} value={form.pricingDemand}
               onChange={e => setForm(f => ({ ...f, pricingDemand: e.target.value }))} required>
-              <option value="">Select pricing type</option>
+              <option value="">Select a pricing type</option>
               <option value="FIXED">{t('domainsPage.fixedPrice')}</option>
               <option value="NEGOTIABLE">{t('domainsPage.negotiable')}</option>
             </select>
@@ -864,7 +864,7 @@ function DomainForm({ onSaved, onCancel }) {
           <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-focus-visible:ring-2 peer-focus-visible:ring-purple-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)] overflow-hidden">
             <span className="absolute left-[6px] top-[1px] w-[5px] h-[10px] border-r-[2.5px] border-b-[2.5px] border-white rotate-45 opacity-0 scale-75 transition-all duration-150 peer-checked:opacity-100 peer-checked:scale-100 z-10" aria-hidden="true"></span>
           </span>
-          <span className="text-sm text-gray-700 leading-snug">I confirm I own this domain and agree to the Terms & Conditions.</span>
+          <span className="text-sm text-gray-700 leading-snug">I confirm that I own this domain and agree to the Terms and Conditions</span>
         </label>
 
         {error && <div className="text-sm text-red-500">{error}</div>}
@@ -872,7 +872,7 @@ function DomainForm({ onSaved, onCancel }) {
         <div className="flex gap-3 mt-2">
           <button type="submit" className="btn-glow flex-1" disabled={loading}>
             {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
-              isAuction ? 'List for Auction →' : 'Add Logo →'}
+              isAuction ? 'List for Auction →' : 'Continue'}
           </button>
           <button type="button" className="btn-glow" onClick={onCancel}>{t('confirm.cancel')}</button>
         </div>

@@ -45,7 +45,7 @@ export default function NewVenturePage() {
       <div className="max-w-full w-full">
         <div className="mb-8">
           <h1 className="font-display text-[2rem] font-bold text-purple m-0 mb-2">List a New Venture</h1>
-          <p className="text-gray-600">Fill in the details to attract the right co-venturers.</p>
+          <p className="text-gray-600">Add details to attract the right venturers.</p>
         </div>
         <VentureForm
           onSubmit={handleSubmit}

@@ -154,7 +154,7 @@ export default function CommunityPage() {
               <button className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleConnectLinkedIn} disabled={linkedInLoading}>
                 {linkedInLoading
                   ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> {t('community.connecting', 'Connecting…')}</>
-                  : <><LinkedInIcon /> {t('community.connectLinkedIn', 'Connect with LinkedIn')}</>
+                  : <><LinkedInIcon /> {t('community.connectLinkedIn', 'Connect your LinkedIn')}</>
                 }
               </button>
             )}
@@ -190,7 +190,7 @@ export default function CommunityPage() {
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('community.noMembersTitle', 'No community members yet')}</h3>
             <p className="text-gray-600 mb-6">{t('community.noMembersDesc', 'Connect your LinkedIn to join the community and be discovered.')}</p>
             <button className="px-5 py-2 bg-[#0077B5] text-white rounded-full text-sm font-semibold transition-all duration-200 hover:bg-[#006399] flex items-center gap-2 mx-auto" onClick={handleConnectLinkedIn}>
-              <LinkedInIcon /> {t('community.connectLinkedIn', 'Connect with LinkedIn')}
+              <LinkedInIcon /> {t('community.connectLinkedIn', 'Connect your LinkedIn')}
             </button>
           </div>
         ) : (
