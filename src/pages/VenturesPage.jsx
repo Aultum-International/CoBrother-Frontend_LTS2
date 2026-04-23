@@ -23,7 +23,9 @@ const TYPE_LABELS = {
 const VENTURE_INDUSTRIES = [
   'TECH','FINANCE','HEALTHCARE','EDUCATION','FOOD_AND_BEVERAGE',
   'RETAIL','REAL_ESTATE','MEDIA','MANUFACTURING','LOGISTICS',
-  'AGRICULTURE','OTHER'
+  'AGRICULTURE','AI_AUTOMATION','SAAS','ECOMMERCE','MARKETPLACE',
+  'CONSUMER','B2B','FINTECH','HEALTHTECH','EDTECH','CLIMATE',
+  'HOSPITALITY','TRAVEL','SPORTS','ENTERTAINMENT','OTHER'
 ].map(v => ({ value: v, label: v.replace(/_/g, ' ') }));
 
 export default function VenturesPage() {
@@ -160,10 +162,9 @@ export default function VenturesPage() {
                 ? t('venturesPage.tryAdjusting')
                 : t('venturesPage.beFirstVenture')}
             </p>
-            {activeFilterCount > 0
-              ? <button className="btn-glow btn-glow-sm" onClick={clearAll}>{t('venturesPage.clearFilters')}</button>
-              : <Link to="/ventures/new" className="btn-glow btn-glow-sm">{t('venturesPage.listVenture')}</Link>
-            }
+            {activeFilterCount > 0 && (
+              <button className="btn-glow btn-glow-sm" onClick={clearAll}>{t('venturesPage.clearFilters')}</button>
+            )}
           </div>
         ) : (
           <>

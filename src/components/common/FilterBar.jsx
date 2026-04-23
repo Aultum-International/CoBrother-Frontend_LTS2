@@ -16,12 +16,12 @@ export default function FilterBar({
   const debounceRef = useRef(null);
 
   const DEFAULT_SORT_OPTIONS = [
-    { value: 'newest',     label: t('filter.newestFirst')  },
-    { value: 'oldest',     label: t('filter.oldestFirst')  },
-    { value: 'price_asc',  label: t('filter.priceLowHigh') },
-    { value: 'price_desc', label: t('filter.priceHighLow') },
-    { value: 'most_liked', label: t('filter.mostLiked')    },
-    { value: 'most_viewed',label: t('filter.mostViewed')   },
+    { value: 'newest',     label: t('filter.sortNewest', 'Sort by: Newest')  },
+    { value: 'oldest',     label: t('filter.sortOldest', 'Sort by: Oldest')  },
+    { value: 'price_asc',  label: t('filter.sortPriceLowHigh', 'Sort by: Price low to high') },
+    { value: 'price_desc', label: t('filter.sortPriceHighLow', 'Sort by: Price high to low') },
+    { value: 'most_liked', label: t('filter.sortMostLiked', 'Sort by: Most liked')    },
+    { value: 'most_viewed',label: t('filter.sortMostViewed', 'Sort by: Most viewed')   },
   ];
 
   useEffect(() => {
@@ -35,6 +35,7 @@ export default function FilterBar({
   const sorts = sortOptions || DEFAULT_SORT_OPTIONS;
   const showPrice = onMinPrice !== undefined && onMinPrice !== null;
   const isLight = theme === 'light';
+  const defaultSortLabel = t('filter.defaultSort', 'Default');
 
   return (
     <div className={`rounded-[14px] p-4 px-5 mb-6 flex flex-col gap-3.5 ${
@@ -67,6 +68,7 @@ export default function FilterBar({
               : 'bg-bg-input border-border-dark text-text focus:border-gold'
           }`}
         >
+          <option value="">{defaultSortLabel}</option>
           {sorts.map(s => (
             <option key={s.value} value={s.value}>{s.label}</option>
           ))}

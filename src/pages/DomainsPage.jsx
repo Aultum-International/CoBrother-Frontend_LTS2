@@ -61,6 +61,11 @@ export default function DomainsPage() {
     categoryField: 'pricingDemand',
     dateField:     'createdAt',
   }, 20);
+  const changeTab = (tab) => {
+    setFilterTab(tab);
+    setPage(1);
+    setShowForm(false);
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -143,7 +148,7 @@ export default function DomainsPage() {
                   type="button"
                   className="btn-glow btn-glow-sm flex-1 justify-center bg-white !text-gray-900 border border-gray-300 hover:bg-gray-50"
                   onClick={() => {
-                    setFilterTab('mine');
+                    changeTab('mine');
                     setShowConfetti(false);
                   }}
                 >
@@ -178,9 +183,9 @@ export default function DomainsPage() {
 
         <div className="flex gap-2 mb-6">
           <button className={`btn-glow btn-glow-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('all')}>{t('domainsPage.allDomains')}</button>
+            onClick={() => changeTab('all')}>{t('domainsPage.allDomains')}</button>
           <button className={`btn-glow btn-glow-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('mine')}>{t('domainsPage.myListings')}</button>
+            onClick={() => changeTab('mine')}>{t('domainsPage.myListings')}</button>
         </div>
 
         {showForm && (
@@ -594,6 +599,7 @@ function DomainForm({ onSaved, onCancel }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
+  const sanitizePhone = (value) => value.replace(/\D/g, '').slice(0, 10);
 
   const [savedDomain, setSavedDomain]       = useState(null);
   const [imageFile, setImageFile]           = useState(null);
@@ -621,6 +627,10 @@ function DomainForm({ onSaved, onCancel }) {
     e.preventDefault();
     if (form.saleType === 'AUCTION' && (!form.minBidPrice || parseFloat(form.minBidPrice) <= 0)) {
       setError('Please enter a valid minimum bid price.');
+      return;
+    }
+    if (form.contactInfo.phoneNumber && form.contactInfo.phoneNumber.length !== 10) {
+      setError('Please enter a valid 10-digit phone number.');
       return;
     }
     setLoading(true); setError('');
@@ -675,7 +685,7 @@ function DomainForm({ onSaved, onCancel }) {
 
   const isAuction = form.saleType === 'AUCTION';
 
-  const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-purple-500 transition-all w-full';
+  const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white placeholder:text-gray-400 outline-none focus:border-purple-500 transition-all w-full';
   const labelCls = 'text-sm font-medium text-gray-700';
 
   useEffect(() => {
@@ -843,13 +853,13 @@ function DomainForm({ onSaved, onCancel }) {
             <label className={labelCls}>Contact Email <span className="text-red-500">*</span></label>
             <input className={inputCls} type="email" value={form.contactInfo.email}
               onChange={e => setContact('email', e.target.value)}
-              placeholder="your@email.com" required />
+              placeholder="Enter your contact email" required />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>Phone</label>
             <input className={inputCls} value={form.contactInfo.phoneNumber}
-              onChange={e => setContact('phoneNumber', e.target.value)}
-              placeholder="10-digit number" maxLength={10} />
+              onChange={e => setContact('phoneNumber', sanitizePhone(e.target.value))}
+              placeholder="10-digit number" inputMode="numeric" pattern="[0-9]{10}" maxLength={10} />
           </div>
         </div>
 
@@ -861,8 +871,8 @@ function DomainForm({ onSaved, onCancel }) {
             required
             className="peer sr-only"
           />
-          <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-focus-visible:ring-2 peer-focus-visible:ring-purple-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)] overflow-hidden">
-            <span className="absolute left-[6px] top-[1px] w-[5px] h-[10px] border-r-[2.5px] border-b-[2.5px] border-white rotate-45 opacity-0 scale-75 transition-all duration-150 peer-checked:opacity-100 peer-checked:scale-100 z-10" aria-hidden="true"></span>
+          <span className={`relative w-5 h-5 rounded-[7px] border-2 flex items-center justify-center flex-shrink-0 transition-all peer-focus-visible:ring-2 peer-focus-visible:ring-purple-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)] overflow-hidden ${form.agreement.terms ? 'bg-purple-600 border-purple-600' : 'bg-white border-purple-300'}`}>
+            <span className={`absolute left-[6px] top-[1px] w-[5px] h-[10px] border-r-[2.5px] border-b-[2.5px] border-white rotate-45 transition-all duration-150 z-10 ${form.agreement.terms ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} aria-hidden="true"></span>
           </span>
           <span className="text-sm text-gray-700 leading-snug">I confirm that I own this domain and agree to the Terms and Conditions</span>
         </label>

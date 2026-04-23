@@ -323,7 +323,7 @@ function StatCard({ label, value, iconSrc, color = '#111827' }) {
       <div className="w-8 h-8 mb-2">
         <img src={iconSrc} alt={label} className="w-full h-full object-contain" />
       </div>
-      <div className="text-2xl font-bold font-display" style={{ color }}>{value}</div>
+      <div className="text-2xl font-extrabold font-sans tabular-nums tracking-tight" style={{ color }}>{Number(value).toLocaleString('en-IN')}</div>
       <div className="text-xs text-gray-600 font-semibold mt-1">{label}</div>
     </div>
   );

@@ -18,7 +18,7 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
   const [category,    setCategory]    = useState('');
   const [minPrice,    setMinPrice]    = useState('');
   const [maxPrice,    setMaxPrice]    = useState('');
-  const [sortBy,      setSortBy]      = useState('newest');
+  const [sortBy,      setSortBy]      = useState('');
   const [page,        setPage]        = useState(1);
 
   // Reset to page 1 whenever filters change
@@ -33,7 +33,7 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
   const clearAll = useCallback(() => {
     setSearch(''); setCategory('');
     setMinPrice(''); setMaxPrice('');
-    setSortBy('newest'); setPage(1);
+    setSortBy(''); setPage(1);
   }, []);
 
   // Count active filters (excluding sort)

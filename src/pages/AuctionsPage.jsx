@@ -41,8 +41,7 @@ export default function AuctionsPage() {
   const [domainAuctions, setDomainAuctions]   = useState([]);
   const [ventureAuctions, setVentureAuctions] = useState([]);
   const [loading, setLoading]   = useState(true);
-  const [section, setSection]   = useState('all'); // all | ventures | domains
-  const [filter, setFilter]     = useState('all'); // all | ending_soon | no_bids
+  const [activeFilter, setActiveFilter] = useState('all'); // all | ventures | domains | ending_soon | no_bids
 
   useEffect(() => {
     setLoading(true);
@@ -56,16 +55,16 @@ export default function AuctionsPage() {
   }, []);
 
   const applyFilter = (list) => list.filter(a => {
-    if (filter === 'ending_soon') {
+    if (activeFilter === 'ending_soon') {
       const diff = new Date(a.endTime?.endsWith('Z') ? a.endTime : a.endTime + 'Z') - Date.now();
       return diff < 86400000;
     }
-    if (filter === 'no_bids') return a.totalBids === 0;
+    if (activeFilter === 'no_bids') return a.totalBids === 0;
     return true;
   });
 
-  const shownDomains  = (section === 'ventures') ? [] : applyFilter(domainAuctions);
-  const shownVentures = (section === 'domains')  ? [] : applyFilter(ventureAuctions);
+  const shownDomains  = (activeFilter === 'ventures') ? [] : applyFilter(domainAuctions);
+  const shownVentures = (activeFilter === 'domains')  ? [] : applyFilter(ventureAuctions);
   const totalLive     = domainAuctions.length + ventureAuctions.length;
 
   return (
@@ -82,31 +81,18 @@ export default function AuctionsPage() {
           </div>
         </div>
 
-        {/* ── Section tabs ── */}
-        <div className="flex gap-2 mb-3">
+        {/* Unified auction filters */}
+        <div className="flex gap-2 mb-6 flex-wrap">
           {[
             { id: 'all',      label: `${t('auctions.all', 'All')} (${totalLive})` },
             { id: 'ventures', label: `🔨 ${t('auctions.ventures', 'Ventures')} (${ventureAuctions.length})` },
             { id: 'domains',  label: `◇ ${t('auctions.domains', 'Domains')} (${domainAuctions.length})` },
-          ].map(tab => (
-            <button key={tab.id}
-              className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${section === tab.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
-              onClick={() => setSection(tab.id)}>
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* ── Sub-filter tabs ── */}
-        <div className="flex gap-2 mb-6">
-          {[
-            { id: 'all',          label: t('auctions.all', 'All') },
             { id: 'ending_soon',  label: `⚡ ${t('auctions.endingSoon', 'Ending Soon')}` },
             { id: 'no_bids',      label: `🆕 ${t('auctions.noBidsYet', 'No Bids Yet')}` },
           ].map(tab => (
             <button key={tab.id}
-              className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${filter === tab.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
-              onClick={() => setFilter(tab.id)}>
+              className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${activeFilter === tab.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
+              onClick={() => setActiveFilter(tab.id)}>
               {tab.label}
             </button>
           ))}
@@ -123,8 +109,8 @@ export default function AuctionsPage() {
             </div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('auctions.noMatch', 'No auctions match your filters')}</h3>
             <p className="text-gray-600 mb-6">{t('auctions.checkBack', 'Check back soon — new auctions go live regularly.')}</p>
-            {(section !== 'all' || filter !== 'all') && (
-              <button className="btn-glow btn-glow-sm" onClick={() => { setSection('all'); setFilter('all'); }}>
+            {activeFilter !== 'all' && (
+              <button className="btn-glow btn-glow-sm" onClick={() => setActiveFilter('all')}>
                 {t('auctions.viewAll', 'View All Auctions')}
               </button>
             )}

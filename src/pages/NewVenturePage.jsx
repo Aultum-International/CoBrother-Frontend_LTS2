@@ -24,7 +24,8 @@ export default function NewVenturePage() {
         setShowConfetti(true);
         setTimeout(() => navigate('/ventures'), 2200);
       } catch (err) {
-          setError(err.response?.data?.error || 'Failed to create venture.');
+          const details = err.response?.data?.message || err.response?.data?.error || err.response?.data;
+          setError(typeof details === 'string' ? details : 'Failed to create venture. Please check the highlighted fields and try again.');
       } finally { setLoading(false); }
   };
 

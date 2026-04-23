@@ -16,11 +16,14 @@ import ConfirmDialog from '../components/common/ConfirmDialog';
 
 const COCREATION_CATEGORIES = [
   'SAAS','MOBILE_APP','DESKTOP','API_TOOL',
-  'AUTOMATION','ECOMMERCE','EDUCATION','OTHER'
+  'AI_TOOL','CRM','ERP','ANALYTICS','AUTOMATION','ECOMMERCE','EDUCATION',
+  'FINTECH','HEALTHTECH','MARKETING','PRODUCTIVITY','SECURITY','DEVOPS','OTHER'
 ].map(v => ({ value: v, label: v.replace(/_/g, ' ') }));
 
 const CATEGORIES = [
-  'SAAS','MOBILE_APP','DESKTOP','API_TOOL','AUTOMATION','ECOMMERCE','EDUCATION','OTHER'
+  'SAAS','MOBILE_APP','DESKTOP','API_TOOL','AI_TOOL','CRM','ERP','ANALYTICS',
+  'AUTOMATION','ECOMMERCE','EDUCATION','FINTECH','HEALTHTECH','MARKETING',
+  'PRODUCTIVITY','SECURITY','DEVOPS','OTHER'
 ];
 
 const STATUS_COLORS = {
@@ -62,6 +65,11 @@ export default function CoCreationPage() {
     },
     20
   );
+  const changeTab = (tab) => {
+    setFilterTab(tab);
+    setPage(1);
+    setShowForm(false);
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -109,9 +117,9 @@ export default function CoCreationPage() {
 
         <div className="flex gap-2 mb-6">
           <button className={`btn-glow btn-glow-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('all')}>{t('technologyPage.allTechnology')}</button>
+            onClick={() => changeTab('all')}>{t('technologyPage.allTechnology')}</button>
           <button className={`btn-glow btn-glow-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('mine')}>{t('technologyPage.myListings')}</button>
+            onClick={() => changeTab('mine')}>{t('technologyPage.myListings')}</button>
         </div>
 
         {showForm && user && (
@@ -419,6 +427,8 @@ function SoftwareForm({ onSaved, onCancel }) {
     category: '', pricingDemand: '', price: '',
     agreement: { terms: false },
   });
+  const [liveDemoProtocol, setLiveDemoProtocol] = useState('https://');
+  const [githubProtocol, setGithubProtocol] = useState('https://');
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
 
@@ -429,6 +439,31 @@ function SoftwareForm({ onSaved, onCancel }) {
   const [imageError, setImageError]         = useState('');
   const fileInputRef                        = useRef(null);
   const imageStepRef                        = useRef(null);
+  const isValidUrl = (value) => {
+    if (!value) return true;
+    try {
+      const url = new URL(value);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+  const isValidGithubUrl = (value) => {
+    if (!isValidUrl(value)) return false;
+    try {
+      return new URL(value).hostname.toLowerCase().endsWith('github.com');
+    } catch {
+      return false;
+    }
+  };
+  const isValidVideoUrl = (value) => {
+    if (!value) return true;
+    if (!isValidUrl(value)) return false;
+    const hostname = new URL(value).hostname.toLowerCase();
+    return ['youtube.com', 'youtu.be', 'loom.com', 'vimeo.com'].some((domain) =>
+      hostname === domain || hostname.endsWith(`.${domain}`)
+    );
+  };
 
   const getScrollParent = (node) => {
     let current = node?.parentElement;
@@ -442,9 +477,26 @@ function SoftwareForm({ onSaved, onCancel }) {
   };
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const stripProtocol = (value) => value.replace(/^https?:\/\//i, '');
+  const setUrlWithProtocol = (key, protocol, value) => {
+    const rest = stripProtocol(value);
+    set(key, rest ? `${protocol}${rest}` : '');
+  };
 
   const handleSubmit = async e => {
     e.preventDefault();
+    if (!isValidVideoUrl(form.videoLink)) {
+      setError('Please enter a valid demo video URL from YouTube, Loom, or Vimeo.');
+      return;
+    }
+    if (!isValidUrl(form.liveDemoLink)) {
+      setError('Please enter a valid live demo URL.');
+      return;
+    }
+    if (!isValidGithubUrl(form.githubLink)) {
+      setError('Please enter a valid GitHub URL.');
+      return;
+    }
     setLoading(true); setError('');
     try {
       const { data } = await cocreationAPI.create(form);
@@ -481,7 +533,7 @@ function SoftwareForm({ onSaved, onCancel }) {
 
   const handleSkip = () => onSaved(savedSoftware);
 
-  const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all w-full';
+  const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white placeholder:text-gray-400 outline-none focus:border-indigo-500 transition-all w-full';
   const labelCls = 'text-sm font-medium text-gray-700';
 
   useEffect(() => {
@@ -617,13 +669,26 @@ function SoftwareForm({ onSaved, onCancel }) {
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>Demo Video Link</label>
-            <input className={inputCls} value={form.videoLink} onChange={e => set('videoLink', e.target.value)}
+            <input className={inputCls} type="url" value={form.videoLink} onChange={e => set('videoLink', e.target.value)}
               placeholder="YouTube / Loom URL" />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>Live Demo Link</label>
-            <input className={inputCls} value={form.liveDemoLink} onChange={e => set('liveDemoLink', e.target.value)}
-              placeholder="https://yourdemo.com" />
+            <div className="flex overflow-hidden border border-gray-300 rounded-[8px] bg-white focus-within:border-indigo-500">
+              <select
+                value={liveDemoProtocol}
+                onChange={(e) => {
+                  setLiveDemoProtocol(e.target.value);
+                  setUrlWithProtocol('liveDemoLink', e.target.value, form.liveDemoLink);
+                }}
+                className="px-3 py-2 bg-gray-50 border-0 border-r border-gray-200 text-gray-700 outline-none cursor-pointer"
+              >
+                <option value="https://">https://</option>
+                <option value="http://">http://</option>
+              </select>
+              <input className="px-3 py-2 text-gray-900 bg-white placeholder:text-gray-400 outline-none transition-all w-full" type="text" value={stripProtocol(form.liveDemoLink)} onChange={e => setUrlWithProtocol('liveDemoLink', liveDemoProtocol, e.target.value)}
+                placeholder="yourdemo.com" />
+            </div>
           </div>
         </div>
 
@@ -634,16 +699,29 @@ function SoftwareForm({ onSaved, onCancel }) {
               🔒 Not shared until the buyer confirms the purchase
             </span>
           </label>
-          <input className={inputCls} value={form.githubLink} onChange={e => set('githubLink', e.target.value)}
-            placeholder="https://github.com/you/repo" required />
+          <div className="flex overflow-hidden border border-gray-300 rounded-[8px] bg-white focus-within:border-indigo-500">
+            <select
+              value={githubProtocol}
+              onChange={(e) => {
+                setGithubProtocol(e.target.value);
+                setUrlWithProtocol('githubLink', e.target.value, form.githubLink);
+              }}
+              className="px-3 py-2 bg-gray-50 border-0 border-r border-gray-200 text-gray-700 outline-none cursor-pointer"
+            >
+              <option value="https://">https://</option>
+              <option value="http://">http://</option>
+            </select>
+            <input className="px-3 py-2 text-gray-900 bg-white placeholder:text-gray-400 outline-none transition-all w-full" type="text" value={stripProtocol(form.githubLink)} onChange={e => setUrlWithProtocol('githubLink', githubProtocol, e.target.value)}
+              placeholder="github.com/you/repo" required />
+          </div>
         </div>
 
         <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 max-w-full">
           <input type="checkbox" className="peer sr-only" checked={form.agreement.terms}
             onChange={e => setForm(f => ({ ...f, agreement: { terms: e.target.checked } }))}
             required />
-          <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-focus-visible:ring-2 peer-focus-visible:ring-purple-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)] overflow-hidden">
-            <span className="absolute left-[6px] top-[1px] w-[5px] h-[10px] border-r-[2.5px] border-b-[2.5px] border-white rotate-45 opacity-0 scale-75 transition-all duration-150 peer-checked:opacity-100 peer-checked:scale-100 z-10" aria-hidden="true"></span>
+          <span className={`relative w-5 h-5 rounded-[7px] border-2 flex items-center justify-center flex-shrink-0 transition-all peer-focus-visible:ring-2 peer-focus-visible:ring-purple-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)] overflow-hidden ${form.agreement.terms ? 'bg-purple-600 border-purple-600' : 'bg-white border-purple-300'}`}>
+            <span className={`absolute left-[6px] top-[1px] w-[5px] h-[10px] border-r-[2.5px] border-b-[2.5px] border-white rotate-45 transition-all duration-150 z-10 ${form.agreement.terms ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} aria-hidden="true"></span>
           </span>
           <span className="text-sm text-gray-700 leading-snug">I confirm that this software is ready for sale and agree to the Terms and Conditions.</span>
         </label>
