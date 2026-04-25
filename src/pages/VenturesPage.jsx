@@ -14,6 +14,7 @@ import Pagination from '../components/common/Pagination';
 import SkeletonCard from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import DashboardIcon from '../assets/Dashboard.png';
+import VentureIcon from '../assets/Coventure_logo.png';
 
 const TYPE_LABELS = {
   FIFTY_FIFTY: '50:50', SIXTY_FORTY: '60:40', SEVENTY_THIRTY: '70:30',
@@ -99,43 +100,50 @@ export default function VenturesPage() {
 
   return (
     <AppLayout>
-      <div>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('venturesPage.title')}</h1>
-            <p className="text-gray-600 mt-1">{t('venturesPage.subtitle')}</p>
-          </div>
-          <div className="flex gap-3 flex-wrap">
-            <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => navigate('/ventures/dashboard')}>
-              <img src={DashboardIcon} alt="Dashboard" style={{width: '18px', height: '18px'}} /> {t('venturesPage.dashboard')}
-            </button>
-            <button className="btn-glow btn-glow-sm" onClick={() => navigate('/ventures/analytics')}>
-              {t('venturesPage.analytics')}
-            </button>
-            <Link to="/ventures/new" className="btn-glow btn-glow-sm">{t('venturesPage.listVenture')}</Link>
-          </div>
-        </div>
+      <div className="space-y-6">
+        <section className="relative overflow-hidden rounded-[28px] border border-indigo-100 bg-gradient-to-r from-[#f4f1ff] via-[#f7f6ff] to-[#eef2ff] px-6 py-7 md:min-h-[170px] md:px-8 md:py-8">
+          <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-indigo-200/30 blur-3xl" />
+          <img src={VentureIcon} alt="" className="pointer-events-none absolute right-7 top-7 hidden h-24 w-24 opacity-15 md:block" />
+          <div className="relative flex flex-col gap-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('venturesPage.title')}</h1>
+                <p className="text-gray-600 mt-1">{t('venturesPage.subtitle')}</p>
+              </div>
+              <div className="flex gap-3 flex-wrap">
+                <button className="inline-flex items-center gap-2 rounded-xl border border-white/70 bg-white/90 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md" onClick={() => navigate('/ventures/dashboard')}>
+                  <img src={DashboardIcon} alt="Dashboard" style={{width: '18px', height: '18px'}} /> {t('venturesPage.dashboard')}
+                </button>
+                <button className="inline-flex items-center rounded-xl border border-white/70 bg-white/90 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md" onClick={() => navigate('/ventures/analytics')}>
+                  {t('venturesPage.analytics')}
+                </button>
+                <Link to="/ventures/new" className="inline-flex items-center rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(99,102,241,0.35)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(99,102,241,0.42)]">{t('venturesPage.listVenture')}</Link>
+              </div>
+            </div>
 
-        {/* ── Tabs ── */}
-        <div className="flex gap-2 mb-6">
-          <button className={`btn-glow btn-glow-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('all')}>{t('venturesPage.allVentures')}</button>
-          <button className={`btn-glow btn-glow-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('mine')}>{t('venturesPage.myVentures')}</button>
-        </div>
+            <div className="inline-flex w-fit gap-2 rounded-2xl border border-white/70 bg-white/80 p-1.5">
+              <button className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${filterTab === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                onClick={() => setFilterTab('all')}>{t('venturesPage.allVentures')}</button>
+              <button className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${filterTab === 'mine' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                onClick={() => setFilterTab('mine')}>{t('venturesPage.myVentures')}</button>
+            </div>
+          </div>
+        </section>
 
         {/* ── Filter bar ── */}
-        <FilterBar
-          search={search}           onSearch={handleSearch}
-          category={category}       onCategory={handleCategory}
-          categoryOptions={VENTURE_INDUSTRIES}
-          minPrice={minPrice}       onMinPrice={handleMinPrice}
-          maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
-          sortBy={sortBy}           onSort={handleSort}
-          onClear={clearAll}        activeFilterCount={activeFilterCount}
-          placeholder={t('venturesPage.searchPlaceholder')}
-          theme="light"
-        />
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+          <FilterBar
+            search={search}           onSearch={handleSearch}
+            category={category}       onCategory={handleCategory}
+            categoryOptions={VENTURE_INDUSTRIES}
+            minPrice={minPrice}       onMinPrice={handleMinPrice}
+            maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
+            sortBy={sortBy}           onSort={handleSort}
+            onClear={clearAll}        activeFilterCount={activeFilterCount}
+            placeholder={t('venturesPage.searchPlaceholder')}
+            theme="light"
+          />
+        </div>
 
         {/* ── Result count ── */}
         {!loading && allVentures.length > 0 && (

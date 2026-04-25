@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { domainAPI } from '../api/services';
+import { communityAPI, cocreationAPI, domainAPI, ventureAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import VentureIcon from '../assets/Coventure_logo.png';
 import CommunityIcon from '../assets/Community-profileicon.png';
@@ -14,6 +14,12 @@ export default function DashboardPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [pendingDomainVerifyCount, setPendingDomainVerifyCount] = useState(0);
+  const [quickCounts, setQuickCounts] = useState({
+    ventures: 0,
+    disruptors: 0,
+    domains: 0,
+    technology: 0,
+  });
   const displayName = user?.firstname || user?.email?.split('@')[0] || '?';
   const formattedDisplayName = displayName
     .split(/[\s._-]+/)
@@ -21,21 +27,80 @@ export default function DashboardPage() {
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
     .join(' ');
 
+  const toList = (raw) => (
+    Array.isArray(raw)
+      ? raw
+      : raw?.data?.content ?? raw?.data?.data ?? raw?.data ?? raw?.content ?? []
+  );
+
+  const isInactiveStatus = (status) => {
+    const value = String(status || '').toUpperCase();
+    return value === 'DELETED' || value === 'REMOVED' || value === 'ARCHIVED' || value === 'INACTIVE';
+  };
+
+  const isActiveListing = (item, statusKey) =>
+    !item?.takenDown &&
+    !item?.isDeleted &&
+    item?.deleted !== true &&
+    item?.active !== false &&
+    item?.isActive !== false &&
+    !item?.deletedAt &&
+    !isInactiveStatus(item?.[statusKey]);
+
   useEffect(() => {
-    domainAPI
-      .getMyListings()
-      .then(({ data }) => {
-        const list = Array.isArray(data) ? data : data?.data ?? [];
-        const n = list.filter(
-          (d) =>
-            d.domainStatus === 'AVAILABLE' &&
-            !d.takenDown &&
-            d.verified !== true
+    let isMounted = true;
+
+    const loadQuickStats = async () => {
+      try {
+        const [venturesRes, communityRes, domainsRes, techRes] = await Promise.all([
+          ventureAPI.getMyVentures().catch(() => ({ data: [] })),
+          communityAPI.getAll().catch(() => ({ data: [] })),
+          domainAPI.getMyListings().catch(() => ({ data: [] })),
+          cocreationAPI.getMyListings().catch(() => ({ data: [] })),
+        ]);
+
+        if (!isMounted) return;
+
+        const ventures = toList(venturesRes?.data).filter((v) => isActiveListing(v, 'ventureStatus'));
+        const community = toList(communityRes?.data).filter((p) => !p?.takenDown);
+        const domains = toList(domainsRes?.data).filter((d) => isActiveListing(d, 'domainStatus'));
+        const technology = toList(techRes?.data).filter((s) => isActiveListing(s, 'softwareStatus'));
+
+        const myDisruptors = community.filter((p) =>
+          p?.appUser?.id === user?.id || p?.listedBy?.id === user?.id || p?.createdBy?.id === user?.id
+        );
+
+        setQuickCounts({
+          ventures: ventures.length,
+          disruptors: myDisruptors.length,
+          domains: domains.length,
+          technology: technology.length,
+        });
+
+        const pendingVerify = domains.filter(
+          (d) => d.domainStatus === 'AVAILABLE' && !d.takenDown && d.verified !== true
         ).length;
-        setPendingDomainVerifyCount(n);
-      })
-      .catch(() => setPendingDomainVerifyCount(0));
-  }, []);
+        setPendingDomainVerifyCount(pendingVerify);
+      } catch {
+        if (!isMounted) return;
+        setQuickCounts({ ventures: 0, disruptors: 0, domains: 0, technology: 0 });
+        setPendingDomainVerifyCount(0);
+      }
+    };
+
+    loadQuickStats();
+    const intervalId = window.setInterval(loadQuickStats, 30000);
+    const handleVisible = () => {
+      if (document.visibilityState === 'visible') loadQuickStats();
+    };
+    document.addEventListener('visibilitychange', handleVisible);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisible);
+    };
+  }, [user?.id]);
 
   const cards = [
     {
@@ -72,6 +137,13 @@ export default function DashboardPage() {
     }
   ];
 
+  const quickStats = [
+    { label: t('nav.ventures', 'Ventures'), value: String(quickCounts.ventures).padStart(2, '0') },
+    { label: t('nav.disruptor', 'Disruptors'), value: String(quickCounts.disruptors).padStart(2, '0') },
+    { label: t('nav.domains', 'Domains'), value: String(quickCounts.domains).padStart(2, '0') },
+    { label: t('nav.technology', 'Technology'), value: String(quickCounts.technology).padStart(2, '0') },
+  ];
+
   return (
     <AppLayout>
       <div className="flex flex-col gap-6">
@@ -102,8 +174,11 @@ export default function DashboardPage() {
           </div>
         )}
 
-        <header className="p-6 bg-white border border-gray-200 rounded-[14px] shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div>
+        <header className="relative overflow-hidden p-6 md:p-7 bg-white border border-gray-200 rounded-[18px] shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="pointer-events-none absolute -top-28 -right-24 h-72 w-72 rounded-full bg-purple-100/70 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 -left-16 h-64 w-64 rounded-full bg-indigo-100/70 blur-3xl" />
+
+          <div className="relative z-[1]">
             <div className="inline-flex items-center gap-3 rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-fuchsia-50 px-4 py-2.5 shadow-sm shadow-indigo-100/60">
               <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-fuchsia-500 text-white text-sm font-bold shadow-md">
                 {(user?.firstname?.[0] || user?.email?.[0] || '?').toUpperCase()}
@@ -115,34 +190,54 @@ export default function DashboardPage() {
                 </span>
               </h1>
             </div>
-            <p className="text-gray-600 mt-1">{t('dashboard.subtitle')}</p>
+            <p className="text-gray-600 mt-2">{t('dashboard.subtitle')}</p>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-full">
+
+          <div className="relative z-[1] flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-white/85 border border-gray-200 rounded-full shadow-sm">
               <span className="text-xs text-gray-500 font-medium">{t('dashboard.role')}</span>
               <span className="text-sm text-gray-900 font-semibold">{user?.role || 'USER'}</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-full">
+
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-green-50/90 border border-green-100 rounded-full shadow-sm">
               <span className="text-xs text-gray-500 font-medium">{t('nav.profile')}</span>
               <span className="text-sm text-green-600 font-semibold">{t('dashboard.profileComplete')}</span>
             </div>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        <section className="p-5 md:p-6 bg-white border border-gray-200 rounded-[18px] shadow-sm">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            {quickStats.map((stat) => (
+              <div key={stat.label} className="rounded-2xl border border-gray-200 bg-gradient-to-b from-white to-gray-50 px-4 py-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 m-0">{stat.label}</p>
+                <p className="text-2xl md:text-3xl font-bold text-gray-900 mt-2 mb-0">{stat.value}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
           {cards.map((c) => (
-            <div key={c.to} className="card-glow-hover p-6 bg-white border border-gray-200 rounded-[14px] flex flex-col items-center text-center">
-              <div className="w-16 h-16 flex items-center justify-center mb-4">
+            <div
+              key={c.to}
+              className="group relative overflow-hidden card-glow-hover p-6 bg-white border border-gray-200 rounded-[18px] flex flex-col items-center text-center shadow-sm hover:shadow-lg transition-all duration-300"
+            >
+              <div
+                className="pointer-events-none absolute inset-x-0 top-0 h-1.5 opacity-90"
+                style={{ background: `linear-gradient(90deg, ${c.accent}, #9440dd)` }}
+              />
+              <div className="w-16 h-16 flex items-center justify-center mb-4 rounded-2xl bg-gray-50 border border-gray-100 p-2">
                 <img src={c.icon} alt={t(c.titleKey)} className="w-full h-full object-contain" />
               </div>
               <h3 className="font-display text-xl font-bold text-gray-900 mb-2">{t(c.titleKey)}</h3>
               <p className="text-sm text-gray-600 mb-4 flex-1">{t(c.descKey)}</p>
-              <Link to={c.to} className="btn-glow btn-glow-sm">{t(c.ctaKey)} →</Link>
+              <Link to={c.to} className="btn-glow btn-glow-sm w-full">{t(c.ctaKey)} →</Link>
             </div>
           ))}
         </div>
 
-        <div className="p-6 bg-white border border-gray-200 rounded-[14px] shadow-sm">
+        <div className="p-6 bg-white border border-gray-200 rounded-[18px] shadow-sm">
           <h2 className="font-display text-2xl font-bold text-gray-900 mb-5">{t('dashboard.quickActions')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link to="/ventures/new" className="btn-glow flex items-center justify-center gap-2">

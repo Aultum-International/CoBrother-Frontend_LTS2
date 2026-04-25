@@ -3,9 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import TopNavbar from '../common/TopNavbar';
-import ConfirmDialog from '../common/ConfirmDialog';
 import coBrotherLogo from '../../assets/Cobrother_logo.png';
-import coBrotherLogoHover from '../../assets/Cobrother_logo2.png';
 import { useAuth } from '../../context/AuthContext';
 import { notificationAPI } from '../../api/services';
 import DashboardIcon from '../../assets/Dashboard.png';
@@ -59,8 +57,6 @@ export default function AppLayout({ children }) {
   const [bellOpen, setBellOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [logoHovered, setLogoHovered] = useState(false);
-  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const bellRef = useRef(null);
 
   const navLinks = [
@@ -162,11 +158,9 @@ export default function AppLayout({ children }) {
       <nav className="sticky top-[40px] md:top-[45px] z-[100] flex items-center gap-3 md:gap-5 px-4 sm:px-6 xl:px-8 h-[60px] md:h-16 bg-white border-b border-gray-200 min-w-0">
         <Link to="/" className="flex items-center gap-0 no-underline shrink-0">
           <img
-            src={logoHovered ? coBrotherLogoHover : coBrotherLogo}
+            src={coBrotherLogo}
             alt="CoBrother"
             className="w-[122px] h-9 object-contain md:w-[140px] md:h-[42px]"
-            onMouseEnter={() => setLogoHovered(true)}
-            onMouseLeave={() => setLogoHovered(false)}
           />
         </Link>
 
@@ -285,7 +279,7 @@ export default function AppLayout({ children }) {
             </span>
             <button
               className="max-xl:hidden bg-transparent border border-gray-200 text-gray-600 rounded-lg p-1.5 cursor-pointer transition-all duration-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-              onClick={() => setLogoutConfirmOpen(true)}
+              onClick={handleLogout}
               title={t('nav.logout')}
             >
               <LogOut size={16} />
@@ -351,7 +345,7 @@ export default function AppLayout({ children }) {
                 className="flex items-center gap-2 px-3.5 py-2.5 rounded-[12px] text-sm font-semibold text-red-600 bg-white border border-red-200 cursor-pointer transition-all duration-200 hover:bg-red-50"
                 onClick={async () => {
                   setMobileOpen(false);
-                  setLogoutConfirmOpen(true);
+                  await handleLogout();
                 }}
               >
                 <span className="inline-flex items-center justify-center w-5 h-5">
@@ -364,19 +358,10 @@ export default function AppLayout({ children }) {
         </>
       )}
 
-      <main className="flex-1 p-8 pb-32 md:pb-40 max-w-none m-0 w-full bg-gray-50 max-md:px-4 max-md:pt-4 max-md:pb-32">
+      <main className="flex-1 p-8 max-w-none m-0 w-full bg-gray-50 max-md:p-4">
         {children}
       </main>
       <HomeFooter />
-      <ConfirmDialog
-        open={logoutConfirmOpen}
-        title={t('logoutConfirm.title', 'Log out?')}
-        message={t('logoutConfirm.message', 'Are you sure you want to log out?')}
-        confirmLabel={t('logoutConfirm.confirm', 'Yes, log out')}
-        cancelLabel={t('confirm.cancel', 'Cancel')}
-        onConfirm={handleLogout}
-        onCancel={() => setLogoutConfirmOpen(false)}
-      />
     </div>
   );
 }

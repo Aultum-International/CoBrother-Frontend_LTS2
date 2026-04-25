@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { publicAPI } from '../../api/services';
+import { communityAPI, publicAPI } from '../../api/services';
 import HomeListingSkeleton from './HomeListingSkeleton';
 
 function normalizeProfiles(raw) {
-  const list = Array.isArray(raw) ? raw : raw?.data ?? [];
+  const list = Array.isArray(raw)
+    ? raw
+    : raw?.data?.data ?? raw?.data?.content ?? raw?.data ?? raw?.content ?? [];
   if (!list.length) return [];
-  const flagged = list.filter(
-    (p) =>
+  return list.filter((p) => {
+    const isFeatured =
       p.featuredOnHomepage === true ||
       p.featured_on_homepage === true ||
       p.featuredOnHome === true ||
@@ -20,9 +22,13 @@ function normalizeProfiles(raw) {
       p.disruptorHomeFeatured === true ||
       p.featuredOnDisruptorHome === true ||
       p.showOnDisruptorHome === true ||
-      p.featured === true
-  );
-  return flagged.length ? flagged : list;
+      p.featured === true;
+
+    const listedByRole = (p.listedBy?.role || p.createdBy?.role || p.appUser?.role || '').toUpperCase();
+    const isAdminListed = listedByRole === 'ADMIN';
+
+    return isFeatured || isAdminListed;
+  });
 }
 
 export default function DisruptorsSection() {
@@ -35,11 +41,24 @@ export default function DisruptorsSection() {
     const fetchProfiles = async () => {
       try {
         setLoading(true);
-        const response = await publicAPI
-          .getCommunityBlock('disruptors')
-          .catch(() => publicAPI.getCommunity());
-        const raw = response.data;
-        setProfiles(normalizeProfiles(raw));
+        const blockResponse = await publicAPI.getCommunityBlock('disruptors');
+        const blockProfiles = normalizeProfiles(blockResponse.data);
+
+        if (blockProfiles.length > 0) {
+          setProfiles(blockProfiles);
+          return;
+        }
+
+        const fallbackResponse = await publicAPI.getCommunity();
+        const fallbackProfiles = normalizeProfiles(fallbackResponse.data);
+        if (fallbackProfiles.length > 0) {
+          setProfiles(fallbackProfiles);
+          return;
+        }
+
+        // Last fallback: use full community endpoint if available in current session.
+        const allResponse = await communityAPI.getAll();
+        setProfiles(normalizeProfiles(allResponse.data));
       } catch (error) {
         console.error('Failed to fetch featured disruptors:', error);
         setProfiles([]);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus, Gavel, ShoppingCart, MessageSquare, Trash2, CheckCircle, Share2, ArrowUpRight } from 'lucide-react';
 import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
@@ -25,6 +25,7 @@ export default function DomainsPage() {
   const { t }     = useTranslation();
   const { user }  = useAuth();
   const navigate  = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const DOMAIN_PRICING_OPTIONS = [
     { value: 'FIXED',      label: t('domainsPage.fixedPrice') },
@@ -42,6 +43,35 @@ export default function DomainsPage() {
   const [enquireSuccess, setEnquireSuccess] = useState(false);
   const [filterTab, setFilterTab]           = useState('all');
   const [showConfetti, setShowConfetti]     = useState(false);
+  const normalizeDomainList = (payload) => {
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.data)) return payload.data;
+    if (Array.isArray(payload?.content)) return payload.content;
+    if (Array.isArray(payload?.data?.content)) return payload.data.content;
+    if (Array.isArray(payload?.data?.data)) return payload.data.data;
+    return [];
+  };
+
+  const loadDomains = async () => {
+    try {
+      const { data } = await domainAPI.getAll();
+      const normalized = normalizeDomainList(data);
+      if (normalized.length > 0) {
+        setAllDomains(normalized);
+        return;
+      }
+      const mineResp = await domainAPI.getMyListings();
+      setAllDomains(normalizeDomainList(mineResp.data));
+    } catch {
+      try {
+        const mineResp = await domainAPI.getMyListings();
+        setAllDomains(normalizeDomainList(mineResp.data));
+      } catch {
+        setAllDomains([]);
+      }
+    }
+  };
+
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
 
@@ -61,19 +91,21 @@ export default function DomainsPage() {
     categoryField: 'pricingDemand',
     dateField:     'createdAt',
   }, 20);
-  const changeTab = (tab) => {
-    setFilterTab(tab);
-    setPage(1);
-    setShowForm(false);
-  };
 
   useEffect(() => {
     setLoading(true);
-    domainAPI.getAll()
-      .then(({ data }) => setAllDomains(Array.isArray(data) ? data : (data?.data ?? [])))
-      .catch(() => setAllDomains([]))
+    loadDomains()
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'all' || tab === 'mine') {
+      setFilterTab(tab);
+      setPage(1);
+      setShowForm(false);
+    }
+  }, [searchParams, setPage]);
 
   const handleDelete = async () => {
     try {
@@ -84,9 +116,7 @@ export default function DomainsPage() {
     } finally { setDeleteTarget(null); }
   };
 
-  const refreshDomains = () =>
-    domainAPI.getAll()
-      .then(({ data }) => setAllDomains(Array.isArray(data) ? data : (data?.data ?? [])));
+  const refreshDomains = () => loadDomains();
 
   return (
     <AppLayout>
@@ -148,7 +178,7 @@ export default function DomainsPage() {
                   type="button"
                   className="btn-glow btn-glow-sm flex-1 justify-center bg-white !text-gray-900 border border-gray-300 hover:bg-gray-50"
                   onClick={() => {
-                    changeTab('mine');
+                    navigate('/domains/dashboard');
                     setShowConfetti(false);
                   }}
                 >
@@ -165,28 +195,34 @@ export default function DomainsPage() {
             </div>
           </div>
       )}
-      <div>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('domainsPage.title')}</h1>
-            <p className="text-gray-600 mt-1">{t('domainsPage.subtitle')}</p>
-          </div>
-          <div className="flex gap-3">
-            <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => navigate('/domains/dashboard')}>
-              <LayoutDashboard size={16} /> {t('domainsPage.dashboard')}
-            </button>
-            <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => setShowForm(true)}>
-              <Plus size={16} /> {t('domainsPage.listDomain')}
-            </button>
-          </div>
-        </div>
+      <div className="space-y-6">
+        <section className="relative overflow-hidden rounded-[28px] border border-indigo-100 bg-gradient-to-r from-[#f4f1ff] via-[#f7f6ff] to-[#eef2ff] px-6 py-7 md:min-h-[170px] md:px-8 md:py-8">
+          <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-indigo-200/30 blur-3xl" />
+          <img src={DomainsIcon} alt="" className="pointer-events-none absolute right-7 top-7 hidden h-24 w-24 opacity-15 md:block" />
+          <div className="relative flex flex-col gap-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('domainsPage.title')}</h1>
+                <p className="text-gray-600 mt-1">{t('domainsPage.subtitle')}</p>
+              </div>
+              <div className="flex gap-3">
+                <button className="inline-flex items-center gap-2 rounded-xl border border-white/70 bg-white/90 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md" onClick={() => navigate('/domains/dashboard')}>
+                  <LayoutDashboard size={16} /> {t('domainsPage.dashboard')}
+                </button>
+                <button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(99,102,241,0.35)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(99,102,241,0.42)]" onClick={() => setShowForm(true)}>
+                  <Plus size={16} /> {t('domainsPage.listDomain')}
+                </button>
+              </div>
+            </div>
 
-        <div className="flex gap-2 mb-6">
-          <button className={`btn-glow btn-glow-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => changeTab('all')}>{t('domainsPage.allDomains')}</button>
-          <button className={`btn-glow btn-glow-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => changeTab('mine')}>{t('domainsPage.myListings')}</button>
-        </div>
+            <div className="inline-flex w-fit gap-2 rounded-2xl border border-white/70 bg-white/80 p-1.5">
+              <button className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${filterTab === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                onClick={() => setFilterTab('all')}>{t('domainsPage.allDomains')}</button>
+              <button className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${filterTab === 'mine' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                onClick={() => navigate('/domains/dashboard')}>{t('domainsPage.myListings')}</button>
+            </div>
+          </div>
+        </section>
 
         {showForm && (
           <div className="mb-6">
@@ -201,17 +237,19 @@ export default function DomainsPage() {
           </div>
         )}
 
-        <FilterBar
-          search={search}           onSearch={handleSearch}
-          category={category}       onCategory={handleCategory}
-          categoryOptions={DOMAIN_PRICING_OPTIONS}
-          minPrice={minPrice}       onMinPrice={handleMinPrice}
-          maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
-          sortBy={sortBy}           onSort={handleSort}
-          onClear={clearAll}        activeFilterCount={activeFilterCount}
-          placeholder={t('domainsPage.searchPlaceholder')}
-          theme="light"
-        />
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+          <FilterBar
+            search={search}           onSearch={handleSearch}
+            category={category}       onCategory={handleCategory}
+            categoryOptions={DOMAIN_PRICING_OPTIONS}
+            minPrice={minPrice}       onMinPrice={handleMinPrice}
+            maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
+            sortBy={sortBy}           onSort={handleSort}
+            onClear={clearAll}        activeFilterCount={activeFilterCount}
+            placeholder={t('domainsPage.searchPlaceholder')}
+            theme="light"
+          />
+        </div>
 
         {!loading && allDomains.length > 0 && (
           <div className="text-sm text-gray-600 mb-4">
@@ -599,7 +637,6 @@ function DomainForm({ onSaved, onCancel }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
-  const sanitizePhone = (value) => value.replace(/\D/g, '').slice(0, 10);
 
   const [savedDomain, setSavedDomain]       = useState(null);
   const [imageFile, setImageFile]           = useState(null);
@@ -627,10 +664,6 @@ function DomainForm({ onSaved, onCancel }) {
     e.preventDefault();
     if (form.saleType === 'AUCTION' && (!form.minBidPrice || parseFloat(form.minBidPrice) <= 0)) {
       setError('Please enter a valid minimum bid price.');
-      return;
-    }
-    if (form.contactInfo.phoneNumber && form.contactInfo.phoneNumber.length !== 10) {
-      setError('Please enter a valid 10-digit phone number.');
       return;
     }
     setLoading(true); setError('');
@@ -685,7 +718,7 @@ function DomainForm({ onSaved, onCancel }) {
 
   const isAuction = form.saleType === 'AUCTION';
 
-  const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white placeholder:text-gray-400 outline-none focus:border-purple-500 transition-all w-full';
+  const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-purple-500 transition-all w-full';
   const labelCls = 'text-sm font-medium text-gray-700';
 
   useEffect(() => {
@@ -776,8 +809,8 @@ function DomainForm({ onSaved, onCancel }) {
           <label className={labelCls}>Sale Type <span className="text-red-500">*</span></label>
           <div className="grid grid-cols-2 gap-3 mt-1.5">
             {[
-              { value: 'ONE_TIME', label: '🛒 One-Time Sale', desc: 'Set a fixed price. The buyer pays and receives the domain' },
-              { value: 'AUCTION',  label: '🔨 Auction',       desc: 'Bidders compete. The highest bid wins after your chosen duration' },
+              { value: 'ONE_TIME', label: '🛒 One-Time Sale', desc: 'Set a fixed price. Buyer pays and gets the domain.' },
+              { value: 'AUCTION',  label: '🔨 Auction',       desc: 'Bidders compete. Highest bid wins after your chosen duration.' },
             ].map(opt => (
               <div key={opt.value}
                 onClick={() => setForm(f => ({ ...f, saleType: opt.value }))}
@@ -810,7 +843,7 @@ function DomainForm({ onSaved, onCancel }) {
             <label className={labelCls}>Pricing Type <span className="text-red-500">*</span></label>
             <select className={inputCls} value={form.pricingDemand}
               onChange={e => setForm(f => ({ ...f, pricingDemand: e.target.value }))} required>
-              <option value="">Select a pricing type</option>
+              <option value="">Select pricing type</option>
               <option value="FIXED">{t('domainsPage.fixedPrice')}</option>
               <option value="NEGOTIABLE">{t('domainsPage.negotiable')}</option>
             </select>
@@ -853,13 +886,13 @@ function DomainForm({ onSaved, onCancel }) {
             <label className={labelCls}>Contact Email <span className="text-red-500">*</span></label>
             <input className={inputCls} type="email" value={form.contactInfo.email}
               onChange={e => setContact('email', e.target.value)}
-              placeholder="Enter your contact email" required />
+              placeholder="your@email.com" required />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>Phone</label>
             <input className={inputCls} value={form.contactInfo.phoneNumber}
-              onChange={e => setContact('phoneNumber', sanitizePhone(e.target.value))}
-              placeholder="10-digit number" inputMode="numeric" pattern="[0-9]{10}" maxLength={10} />
+              onChange={e => setContact('phoneNumber', e.target.value)}
+              placeholder="10-digit number" maxLength={10} />
           </div>
         </div>
 
@@ -871,10 +904,10 @@ function DomainForm({ onSaved, onCancel }) {
             required
             className="peer sr-only"
           />
-          <span className={`relative w-5 h-5 rounded-[7px] border-2 flex items-center justify-center flex-shrink-0 transition-all peer-focus-visible:ring-2 peer-focus-visible:ring-purple-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)] overflow-hidden ${form.agreement.terms ? 'bg-purple-600 border-purple-600' : 'bg-white border-purple-300'}`}>
-            <span className={`absolute left-[6px] top-[1px] w-[5px] h-[10px] border-r-[2.5px] border-b-[2.5px] border-white rotate-45 transition-all duration-150 z-10 ${form.agreement.terms ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} aria-hidden="true"></span>
+          <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-focus-visible:ring-2 peer-focus-visible:ring-purple-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)] overflow-hidden">
+            <span className="absolute left-[6px] top-[1px] w-[5px] h-[10px] border-r-[2.5px] border-b-[2.5px] border-white rotate-45 opacity-0 scale-75 transition-all duration-150 peer-checked:opacity-100 peer-checked:scale-100 z-10" aria-hidden="true"></span>
           </span>
-          <span className="text-sm text-gray-700 leading-snug">I confirm that I own this domain and agree to the Terms and Conditions</span>
+          <span className="text-sm text-gray-700 leading-snug">I confirm I own this domain and agree to the Terms & Conditions.</span>
         </label>
 
         {error && <div className="text-sm text-red-500">{error}</div>}
@@ -882,7 +915,7 @@ function DomainForm({ onSaved, onCancel }) {
         <div className="flex gap-3 mt-2">
           <button type="submit" className="btn-glow flex-1" disabled={loading}>
             {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
-              isAuction ? 'List for Auction →' : 'Continue'}
+              isAuction ? 'List for Auction →' : 'Add Logo →'}
           </button>
           <button type="button" className="btn-glow" onClick={onCancel}>{t('confirm.cancel')}</button>
         </div>

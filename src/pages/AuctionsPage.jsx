@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { LayoutDashboard } from 'lucide-react';
 import { auctionAPI, ventureAuctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import AuctionImg from '../assets/Auction.png';
@@ -69,34 +70,47 @@ export default function AuctionsPage() {
 
   return (
     <AppLayout>
-      <div>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('auctions.title', 'Live Auctions')}</h1>
-            <p className="text-gray-600 mt-1">
-              {totalLive > 0
-                ? t('auctions.liveCount', '{{count}} auction(s) live right now', { count: totalLive })
-                : t('auctions.noLiveAuctions', 'No live auctions at the moment')}
-            </p>
-          </div>
-        </div>
+      <div className="space-y-6">
+        <section className="relative overflow-hidden rounded-[28px] border border-indigo-100 bg-gradient-to-r from-[#f4f1ff] via-[#f7f6ff] to-[#eef2ff] px-6 py-7 md:min-h-[170px] md:px-8 md:py-8">
+          <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-indigo-200/30 blur-3xl" />
+          <img src={AuctionImg} alt="" className="pointer-events-none absolute right-7 top-7 hidden h-24 w-24 opacity-15 md:block" />
+          <div className="relative flex flex-col gap-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('auctions.title', 'Live Auctions')}</h1>
+                <p className="text-gray-600 mt-1">
+                  {totalLive > 0
+                    ? t('auctions.liveCount', '{{count}} auction(s) live right now', { count: totalLive })
+                    : t('auctions.noLiveAuctions', 'No live auctions at the moment')}
+                </p>
+              </div>
+              <div className="flex gap-3 flex-wrap">
+                <button
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/70 bg-white/90 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  <LayoutDashboard size={16} /> {t('nav.dashboard', 'Dashboard')}
+                </button>
+              </div>
+            </div>
 
-        {/* Unified auction filters */}
-        <div className="flex gap-2 mb-6 flex-wrap">
-          {[
-            { id: 'all',      label: `${t('auctions.all', 'All')} (${totalLive})` },
-            { id: 'ventures', label: `🔨 ${t('auctions.ventures', 'Ventures')} (${ventureAuctions.length})` },
-            { id: 'domains',  label: `◇ ${t('auctions.domains', 'Domains')} (${domainAuctions.length})` },
-            { id: 'ending_soon',  label: `⚡ ${t('auctions.endingSoon', 'Ending Soon')}` },
-            { id: 'no_bids',      label: `🆕 ${t('auctions.noBidsYet', 'No Bids Yet')}` },
-          ].map(tab => (
-            <button key={tab.id}
-              className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${activeFilter === tab.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
-              onClick={() => setActiveFilter(tab.id)}>
-              {tab.label}
-            </button>
-          ))}
-        </div>
+            <div className="inline-flex flex-wrap w-fit gap-2 rounded-2xl border border-white/70 bg-white/80 p-1.5">
+              {[
+                { id: 'all',      label: `${t('auctions.all', 'All')} (${totalLive})` },
+                { id: 'ventures', label: `🔨 ${t('auctions.ventures', 'Ventures')} (${ventureAuctions.length})` },
+                { id: 'domains',  label: `◇ ${t('auctions.domains', 'Domains')} (${domainAuctions.length})` },
+                { id: 'ending_soon',  label: `⚡ ${t('auctions.endingSoon', 'Ending Soon')}` },
+                { id: 'no_bids',      label: `🆕 ${t('auctions.noBidsYet', 'No Bids Yet')}` },
+              ].map(tab => (
+                <button key={tab.id}
+                  className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${activeFilter === tab.id ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  onClick={() => setActiveFilter(tab.id)}>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

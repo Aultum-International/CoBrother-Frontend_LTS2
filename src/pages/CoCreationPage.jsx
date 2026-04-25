@@ -94,33 +94,38 @@ export default function CoCreationPage() {
 
   return (
     <AppLayout>
-      <div>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              {/* <img src={''} alt="Technology" className="w-10 h-10 object-contain" /> */}
-              <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('technologyPage.title')}</h1>
+      <div className="space-y-6">
+        <section className="relative overflow-hidden rounded-[28px] border border-indigo-100 bg-gradient-to-r from-[#f4f1ff] via-[#f7f6ff] to-[#eef2ff] px-6 py-7 md:min-h-[170px] md:px-8 md:py-8">
+          <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-indigo-200/30 blur-3xl" />
+          <img src={TechnologyIcon} alt="" className="pointer-events-none absolute right-7 top-7 hidden h-24 w-24 opacity-15 md:block" />
+          <div className="relative flex flex-col gap-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('technologyPage.title')}</h1>
+                </div>
+                <p className="text-gray-600">{t('technologyPage.subtitle')}</p>
+              </div>
+              <div className="flex gap-3">
+                <button className="inline-flex items-center gap-2 rounded-xl border border-white/70 bg-white/90 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md" onClick={() => navigate('/cocreation/dashboard')}>
+                  <LayoutDashboard size={16} /> {t('technologyPage.dashboard')}
+                </button>
+                {user && (
+                  <button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(99,102,241,0.35)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(99,102,241,0.42)]" onClick={() => setShowForm(true)}>
+                    <Plus size={16} /> {t('technologyPage.listTechnology')}
+                  </button>
+                )}
+              </div>
             </div>
-            <p className="text-gray-600">{t('technologyPage.subtitle')}</p>
-          </div>
-          <div className="flex gap-3">
-            <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => navigate('/cocreation/dashboard')}>
-              <LayoutDashboard size={16} /> {t('technologyPage.dashboard')}
-            </button>
-            {user && (
-              <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => setShowForm(true)}>
-                <Plus size={16} /> {t('technologyPage.listTechnology')}
-              </button>
-            )}
-          </div>
-        </div>
 
-        <div className="flex gap-2 mb-6">
-          <button className={`btn-glow btn-glow-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => changeTab('all')}>{t('technologyPage.allTechnology')}</button>
-          <button className={`btn-glow btn-glow-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => changeTab('mine')}>{t('technologyPage.myListings')}</button>
-        </div>
+            <div className="inline-flex w-fit gap-2 rounded-2xl border border-white/70 bg-white/80 p-1.5">
+              <button className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${filterTab === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                onClick={() => changeTab('all')}>{t('technologyPage.allTechnology')}</button>
+              <button className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${filterTab === 'mine' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                onClick={() => changeTab('mine')}>{t('technologyPage.myListings')}</button>
+            </div>
+          </div>
+        </section>
 
         {showForm && user && (
           <div className="mb-6">
@@ -131,17 +136,19 @@ export default function CoCreationPage() {
           </div>
         )}
 
-        <FilterBar
-          search={search}           onSearch={handleSearch}
-          category={category}       onCategory={handleCategory}
-          categoryOptions={COCREATION_CATEGORIES}
-          minPrice={minPrice}       onMinPrice={handleMinPrice}
-          maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
-          sortBy={sortBy}           onSort={handleSort}
-          onClear={clearAll}        activeFilterCount={activeFilterCount}
-          placeholder={t('technologyPage.searchPlaceholder')}
-          theme="light"
-        />
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+          <FilterBar
+            search={search}           onSearch={handleSearch}
+            category={category}       onCategory={handleCategory}
+            categoryOptions={COCREATION_CATEGORIES}
+            minPrice={minPrice}       onMinPrice={handleMinPrice}
+            maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
+            sortBy={sortBy}           onSort={handleSort}
+            onClear={clearAll}        activeFilterCount={activeFilterCount}
+            placeholder={t('technologyPage.searchPlaceholder')}
+            theme="light"
+          />
+        </div>
 
         {!loading && allSoftware.length > 0 && (
           <div className="text-sm text-gray-600 mb-4">

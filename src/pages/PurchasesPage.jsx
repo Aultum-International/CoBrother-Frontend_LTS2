@@ -82,7 +82,7 @@ export default function PurchasesPage() {
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">{t('purchases.noPurchasesYet', 'No purchases yet')}</h3>
             <p className="text-gray-600 mb-6">{t('purchases.browsePrompt', 'Browse domains and software to make your first purchase.')}</p>
             <div className="flex gap-3 justify-center">
-              <button className="btn-glow btn-glow-sm" onClick={() => navigate('/domains')}>{t('purchases.browseDomains', 'Browse Domains')}</button>
+              <button className="btn-glow btn-glow-sm" onClick={() => navigate('/domains?tab=all')}>{t('purchases.browseDomains', 'Browse Domains')}</button>
               <button className="btn-glow btn-glow-sm" onClick={() => navigate('/cocreation')}>{t('purchases.browseSoftware', 'Browse Software')}</button>
             </div>
           </div>
