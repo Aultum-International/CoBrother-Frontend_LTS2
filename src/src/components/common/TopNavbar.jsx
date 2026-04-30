@@ -1,0 +1,197 @@
+import { useState, useEffect, useRef } from 'react';
+import { ChevronDown, Globe } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
+import cobrotherProfile from '../../assets/CoBrother_profileW.png';
+
+export default function TopNavbar({ homeMobileMenu = false, isVisible = true }) {
+  const { t, i18n } = useTranslation();
+  const { user } = useAuth();
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showInitial, setShowInitial] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const langRef = useRef(null);
+
+  const languages = [
+    { code: 'en', name: 'English (IND)', currency: '₹' },
+    { code: 'hi', name: 'Hindi', currency: '₹' },
+    { code: 'en-US', name: 'English (US)', currency: '$' },
+    { code: 'ur', name: 'Urdu', currency: '₹' },
+    { code: 'zh', name: '中文', currency: '$' },
+    { code: 'fr', name: 'Français', currency: '$' },
+    { code: 'pt', name: 'Português', currency: '$' }
+  ];
+
+  const currentLanguageName = languages.find((l) => l.code === i18n.language)?.name || 'English (IND)';
+
+  useEffect(() => {
+    if (!user) {
+      setShowInitial(false);
+      return;
+    }
+    const startFlip = setTimeout(() => {
+      setShowInitial(true);
+    }, 1000);
+    const interval = setInterval(() => {
+      setShowInitial(prev => !prev);
+    }, 3000);
+    return () => {
+      clearTimeout(startFlip);
+      clearInterval(interval);
+    };
+  }, [user]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (langRef.current && !langRef.current.contains(e.target)) {
+        setLanguageOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const handleLanguageChange = (langCode) => {
+    i18n.changeLanguage(langCode);
+    localStorage.setItem('selectedLanguage', langCode);
+    setLanguageOpen(false);
+  };
+
+  const getUserInitial = () => {
+    if (!user) return '';
+    return user.fullName?.charAt(0)?.toUpperCase() || user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U';
+  };
+
+  return (
+    <div
+      className={`sticky top-0 w-full h-[40px] md:h-[45px] z-[1001] border-b border-purple/[0.18] font-body transition-transform duration-300 ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+      style={{ background: 'linear-gradient(90deg, #0e0b1e 0%, #130d28 60%, #0f1225 100%)' }}
+    >
+      <div className="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-end">
+        <div className="flex items-center gap-2 md:gap-5">
+          <div className="relative" ref={langRef}>
+            <button
+              className="text-white text-xs md:text-sm font-normal no-underline flex items-center gap-1 px-2.5 md:px-3 py-1.5 md:py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
+              onClick={() => setLanguageOpen((prev) => !prev)}
+              type="button"
+            >
+              <Globe size={14} className="md:w-4 md:h-4" />
+              <span className="hidden sm:inline">{currentLanguageName}</span>
+              <ChevronDown size={14} />
+            </button>
+            {languageOpen && (
+              <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[140px] overflow-hidden z-[1001]">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    type="button"
+                    onClick={() => handleLanguageChange(lang.code)}
+                    className={`w-full px-4 py-2.5 bg-transparent border-none text-left text-sm cursor-pointer transition-colors duration-200 font-body ${
+                      i18n.language === lang.code
+                        ? 'bg-purple-50 text-purple font-semibold'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="relative hidden xl:block">
+            <a
+              href="/contact"
+              className="text-white text-sm font-normal no-underline flex items-center gap-1 px-3 py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
+            >
+              {t('nav.contactUs')}
+            </a>
+          </div>
+
+          {user && (
+            <div className="relative hidden xl:block">
+              <a
+                href="/account"
+                className="text-white text-sm font-normal no-underline flex items-center gap-1 px-3 py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
+              >
+                {t('nav.myProfile')}
+              </a>
+            </div>
+          )}
+
+          <div className="relative ml-1 md:ml-2">
+            <button
+              type="button"
+              className="block w-[32px] h-[32px] md:w-[40px] md:h-[40px] shrink-0 rounded-full cursor-pointer no-underline transition-all duration-500 hover:scale-110 shadow-[0_6px_24px_rgba(0,0,0,0.14)]"
+              style={{
+                perspective: '500px',
+                transformStyle: 'preserve-3d',
+              }}
+              onClick={() => setProfileDropdownOpen((prev) => !prev)}
+            >
+              <div
+                className="absolute inset-0 rounded-full flex items-center justify-center border border-white/25 bg-transparent transition-all duration-500"
+                style={{
+                  transform: showInitial ? 'rotateY(90deg) scale(0.55)' : 'rotateY(0deg) scale(0.9)',
+                  opacity: showInitial ? 0 : 1,
+                  backfaceVisibility: 'hidden',
+                }}
+              >
+                <img src={cobrotherProfile} alt={t('nav.profile')} className="w-full h-full object-contain p-1" />
+              </div>
+              <div
+                className="absolute inset-0 rounded-full flex items-center justify-center border border-white/25 bg-gradient-to-br from-black-500 to-indigo-600 text-white font-bold text-lg transition-all duration-500"
+                style={{
+                  transform: showInitial ? 'rotateY(0deg) scale(0.9)' : 'rotateY(-90deg) scale(0.55)',
+                  opacity: showInitial ? 1 : 0,
+                  backfaceVisibility: 'hidden',
+                }}
+              >
+                {getUserInitial()}
+              </div>
+            </button>
+
+            {profileDropdownOpen && (
+              <div className="xl:hidden absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[140px] overflow-hidden z-[1001]">
+                <a
+                  href="/contact"
+                  className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  onClick={() => setProfileDropdownOpen(false)}
+                >
+                  {t('nav.contactUs')}
+                </a>
+                {user && (
+                  <a
+                    href="/dashboard"
+                    className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setProfileDropdownOpen(false)}
+                  >
+                    {t('nav.profile')}
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+
+        </div>
+      </div>
+
+      {homeMobileMenu && mobileMenuOpen && (
+        <div className="md:hidden absolute top-full inset-x-0 px-4 py-3 bg-[#130d28] border-b border-white/10">
+          <div className="w-full flex flex-col gap-2">
+            <a
+              href="/"
+              className="text-white text-sm px-3 py-2 rounded hover:bg-white/10 transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {t('nav.home')}
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,1619 @@
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { LayoutDashboard, Plus, Gavel, ShoppingCart, MessageSquare, Trash2, CheckCircle, Share2, ArrowUpRight } from 'lucide-react';
+import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
+import { useAuth } from '../context/AuthContext';
+import AppLayout from '../components/layout/AppLayout';
+import { useLikes } from '../hooks/useLikes';
+import LikeButton from '../components/common/LikeButton';
+import { useFilterSort } from '../hooks/useFilterSort';
+import FilterBar from '../components/common/FilterBar';
+import Pagination from '../components/common/Pagination';
+import SkeletonCard from '../components/common/Skeleton';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import Confetti from '../components/common/Confetti';
+import DomainsIcon from '../assets/CoBranding.png';
+
+const STATUS_COLORS = {
+  AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
+  PENDING:   { color: '#c8a96e', bg: 'rgba(200,169,110,0.1)', border: 'rgba(200,169,110,0.3)' },
+  SOLD:      { color: '#c86e6e', bg: 'rgba(200,110,110,0.1)', border: 'rgba(200,110,110,0.3)' },
+};
+
+export default function DomainsPage() {
+  const { t }     = useTranslation();
+  const { user }  = useAuth();
+  const navigate  = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [selectedAddons, setSelectedAddons] = useState({});
+
+    const toggleAddon = (key) => {
+    setSelectedAddons((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const DOMAIN_PRICING_OPTIONS = [
+    { value: 'FIXED',      label: t('domainsPage.fixedPrice') },
+    { value: 'NEGOTIABLE', label: t('domainsPage.negotiable')  },
+  ];
+
+  const [allDomains, setAllDomains]         = useState([]);
+  const [loading, setLoading]               = useState(true);
+  const [showForm, setShowForm]             = useState(false);
+  const [buyTarget, setBuyTarget]           = useState(null);
+  const [successDomain, setSuccessDomain]   = useState(null);
+  const [detailTarget, setDetailTarget]     = useState(null);
+  const [deleteTarget, setDeleteTarget]     = useState(null);
+  const [enquireTarget, setEnquireTarget]   = useState(null);
+  const [enquireSuccess, setEnquireSuccess] = useState(false);
+  const [filterTab, setFilterTab]           = useState('all');
+  const [showConfetti, setShowConfetti]     = useState(false);
+  const normalizeDomainList = (payload) => {
+    if (Array.isArray(payload)) return payload;
+    if (Array.isArray(payload?.data)) return payload.data;
+    if (Array.isArray(payload?.content)) return payload.content;
+    if (Array.isArray(payload?.data?.content)) return payload.data.content;
+    if (Array.isArray(payload?.data?.data)) return payload.data.data;
+    return [];
+  };
+
+  const loadDomains = async () => {
+    try {
+      const { data } = await domainAPI.getAll();
+      const normalized = normalizeDomainList(data);
+      if (normalized.length > 0) {
+        setAllDomains(normalized);
+        return;
+      }
+      const mineResp = await domainAPI.getMyListings();
+      setAllDomains(normalizeDomainList(mineResp.data));
+    } catch {
+      try {
+        const mineResp = await domainAPI.getMyListings();
+        setAllDomains(normalizeDomainList(mineResp.data));
+      } catch {
+        setAllDomains([]);
+      }
+    }
+  };
+
+
+  const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
+
+  const visibleDomains = filterTab === 'mine'
+    ? allDomains.filter(d => d.listedBy?.id === user?.id)
+    : allDomains.filter(d => !d.takenDown);
+
+  const {
+    paginated, totalCount,
+    search, category, minPrice, maxPrice, sortBy,
+    handleSearch, handleCategory, handleMinPrice, handleMaxPrice, handleSort,
+    clearAll, activeFilterCount,
+    page, totalPages, setPage,
+  } = useFilterSort(visibleDomains, {
+    searchFields:  ['domainName', 'domainExtension'],
+    priceField:    'askingPrice',
+    categoryField: 'pricingDemand',
+    dateField:     'createdAt',
+  }, 20);
+
+  useEffect(() => {
+    setLoading(true);
+    loadDomains()
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'all' || tab === 'mine') {
+      setFilterTab(tab);
+      setPage(1);
+      setShowForm(false);
+    }
+  }, [searchParams, setPage]);
+
+  const handleDelete = async () => {
+    try {
+      await domainAPI.delete(deleteTarget);
+      setAllDomains(d => d.filter(x => x.id !== deleteTarget));
+    } catch (e) {
+      alert(e.response?.data?.error || 'Failed to remove listing.');
+    } finally { setDeleteTarget(null); }
+  };
+
+  const refreshDomains = () => loadDomains();
+
+  return (
+    <AppLayout>
+      <Confetti show={showConfetti} />
+      {showConfetti && (
+        <div
+            className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fadeIn"
+            onClick={() => setShowConfetti(false)}
+            role="presentation"
+          >
+            <div
+              className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 sm:p-8 text-left pointer-events-auto animate-slideUp border border-gray-100 max-h-[min(90vh,640px)] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="domain-listed-success-title"
+            >
+              <div className="text-center mb-5">
+                <div className="text-5xl mb-2" aria-hidden>🌐</div>
+                <h2 id="domain-listed-success-title" className="font-display text-2xl font-extrabold text-gray-900 mb-1">
+                  {t('domainsPage.domainListed')}
+                </h2>
+                <p className="text-sm text-gray-500 m-0">{t('domainsPage.domainListedDesc')}</p>
+              </div>
+              <div className="border-t border-gray-100 pt-5">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
+                  {t('domainsPage.listedNextStepsTitle')}
+                </h3>
+                <ol className="space-y-4 m-0 p-0 list-none">
+                  {[1, 2, 3].map((n) => (
+                    <li key={n} className="flex gap-3">
+                      <span className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 text-indigo-800 text-sm font-bold flex items-center justify-center">
+                        {n}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 m-0">
+                          {t(`domainsPage.listedStep${n}Title`)}
+                        </p>
+                        <p className="text-xs text-gray-600 mt-1 m-0 leading-relaxed">
+                          {t(`domainsPage.listedStep${n}Desc`)}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <div className="mt-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <button
+                  type="button"
+                  className="btn-glow btn-glow-sm flex-1 justify-center"
+                  onClick={() => {
+                    navigate('/domains/dashboard');
+                    setShowConfetti(false);
+                  }}
+                >
+                  {t('domainsPage.openDomainDashboard')}
+                </button>
+                <button
+                  type="button"
+                  className="btn-glow btn-glow-sm flex-1 justify-center bg-white !text-gray-900 border border-gray-300 hover:bg-gray-50"
+                  onClick={() => {
+                    navigate('/domains/dashboard');
+                    setShowConfetti(false);
+                  }}
+                >
+                  {t('domainsPage.viewMyListings')}
+                </button>
+              </div>
+              <button
+                type="button"
+                className="mt-3 w-full text-sm text-gray-500 hover:text-gray-800 py-2 border-none bg-transparent cursor-pointer"
+                onClick={() => setShowConfetti(false)}
+              >
+                {t('domainsPage.listedGotIt')}
+              </button>
+            </div>
+          </div>
+      )}
+      <div className="space-y-6">
+        <section className="relative overflow-hidden rounded-[28px] border border-indigo-100 bg-gradient-to-r from-[#f4f1ff] via-[#f7f6ff] to-[#eef2ff] px-6 py-7 md:min-h-[170px] md:px-8 md:py-8">
+
+  <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-indigo-200/30 blur-3xl" />
+
+  <img
+    src={DomainsIcon}
+    alt=""
+    className="pointer-events-none absolute right-7 top-7 hidden h-24 w-24 opacity-15 md:block"
+  />
+
+  <div className="relative flex flex-col gap-6">
+
+    {/* 🔥 FIXED HEADER ROW */}
+    <div className="flex justify-between w-full">
+
+      {/* LEFT SIDE */}
+      <div className="flex flex-col">
+
+        <h1 className="font-display text-3xl font-bold text-gray-900 m-0">
+          {t('domainsPage.title')}
+        </h1>
+
+        <p className="text-gray-600 mt-1">
+          {t('domainsPage.subtitle')}
+        </p>
+
+        {/* TABS */}
+        <div className="inline-flex w-fit gap-2 rounded-2xl border border-white/70 bg-white/80 p-1.5 mt-4">
+
+          <button
+            className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+              filterTab === 'all'
+                ? 'bg-white text-indigo-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+            onClick={() => setFilterTab('all')}
+          >
+            {t('domainsPage.allDomains')}
+          </button>
+
+          <button
+            className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+              filterTab === 'mine'
+                ? 'bg-white text-indigo-600 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+            onClick={() => navigate('/domains/dashboard')}
+          >
+            {t('domainsPage.myListings')}
+          </button>
+
+        </div>
+
+      </div>
+
+      {/* RIGHT SIDE (ALIGNED WITH TABS) */}
+      <div className="flex items-end gap-3 flex-wrap">
+
+        <button
+          className="inline-flex items-center gap-2 rounded-xl border border-white/70 bg-white/90 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+          onClick={() => navigate('/domains/dashboard')}
+        >
+          <LayoutDashboard size={16} />
+          {t('domainsPage.dashboard')}
+        </button>
+
+        <button
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(99,102,241,0.35)] transition-all hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(99,102,241,0.42)]"
+          onClick={() => setShowForm(true)}
+        >
+          <Plus size={16} />
+          {t('domainsPage.listDomain')}
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+       
+
+        {showForm && (
+          <div className="mb-6">
+            <DomainForm
+              onSaved={d => {
+                setAllDomains(prev => [d, ...prev]);
+                setShowForm(false);
+                setShowConfetti(true);
+              }}
+              onCancel={() => setShowForm(false)}
+            />
+          </div>
+        )}
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+          <FilterBar
+            search={search}           onSearch={handleSearch}
+            category={category}       onCategory={handleCategory}
+            categoryOptions={DOMAIN_PRICING_OPTIONS}
+            minPrice={minPrice}       onMinPrice={handleMinPrice}
+            maxPrice={maxPrice}       onMaxPrice={handleMaxPrice}
+            sortBy={sortBy}           onSort={handleSort}
+            onClear={clearAll}        activeFilterCount={activeFilterCount}
+            placeholder={t('domainsPage.searchPlaceholder')}
+            theme="light"
+          />
+        </div>
+
+        {!loading && allDomains.length > 0 && (
+          <div className="text-sm text-gray-600 mb-4">
+            {t('domainsPage.domainsFound', { count: totalCount })}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : paginated.length === 0 ? (
+          <div className="text-center py-20">
+            <img src={DomainsIcon} alt="Domain" className="mx-auto mb-4 w-16 h-16 object-contain" />
+            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+              {activeFilterCount > 0 ? t('domainsPage.noDomainsMatch') :
+               filterTab === 'mine' ? t('domainsPage.noActiveListings') :
+               t('domainsPage.noDomainsYet')}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {activeFilterCount > 0
+                ? t('domainsPage.tryAdjusting')
+                : t('domainsPage.beFirstDomain')}
+            </p>
+            {activeFilterCount > 0
+              ? <button className="btn-glow btn-glow-sm" onClick={clearAll}>{t('domainsPage.clearFilters')}</button>
+              : <button className="btn-glow btn-glow-sm" onClick={() => setShowForm(true)}>
+                  {t('domainsPage.listADomain')}
+                </button>
+            }
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {paginated.map(d => (
+                <DomainCard
+                  key={d.id}
+                  domain={d}
+                  isOwner={d.listedBy?.id === user?.id}
+                  likeState={getLike(d.id)}
+                  onLike={() => toggleLike(d.id)}
+                  onView={() => setDetailTarget(d)}
+                  onBuy={() => setBuyTarget(d)}
+                  onEnquire={() => setEnquireTarget(d)}
+                  onViewAuction={() => navigate(`/auction/${d.auction?.id}`)}
+                  onDelete={() => setDeleteTarget(d.id)}
+                />
+              ))}
+            </div>
+            <Pagination page={page} totalPages={totalPages}
+              onPage={setPage} totalCount={totalCount} pageSize={20} />
+          </>
+        )}
+      </div>
+
+      {buyTarget && (
+        <BuyDomainModal
+          domain={buyTarget}
+          onClose={() => setBuyTarget(null)}
+          onSuccess={d => {
+            setSuccessDomain(d);
+            setBuyTarget(null);
+            setAllDomains(prev => prev.map(x => x.id === d.id ? d : x));
+          }}
+        />
+      )}
+
+      {successDomain && (
+        <PurchaseSuccessModal domain={successDomain} onClose={() => setSuccessDomain(null)} />
+      )}
+
+      {detailTarget && (
+        <DomainDetailModal
+          domain={detailTarget}
+          isOwner={detailTarget.listedBy?.id === user?.id}
+          likeState={getLike(detailTarget.id)}
+          onLike={() => toggleLike(detailTarget.id)}
+          onClose={() => { setDetailTarget(null); refreshDomains(); }}
+          onBuy={() => { setBuyTarget(detailTarget); setDetailTarget(null); }}
+          onEnquire={() => { setEnquireTarget(detailTarget); setDetailTarget(null); }}
+          onViewAuction={() => {
+            navigate(`/auction/${detailTarget.auction?.id}`);
+            setDetailTarget(null);
+          }}
+        />
+      )}
+
+      {enquireTarget && (
+        <DomainEnquiryModal
+          domain={enquireTarget}
+          user={user}
+          onClose={() => setEnquireTarget(null)}
+          onSuccess={() => { setEnquireTarget(null); setEnquireSuccess(true); }}
+        />
+      )}
+
+      {enquireSuccess && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={() => setEnquireSuccess(false)}>
+          <div className="relative w-full max-w-[420px] text-center bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(17,24,39,0.16)] p-8">
+            <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
+            <div className="text-green-600 flex justify-center mb-4"><CheckCircle size={46} /></div>
+            <h2 className="font-display text-[1.75rem] text-gray-900 mb-2">Enquiry Submitted!</h2>
+            <p className="text-gray-500 mb-6">
+              Our team will review your request and get back to you shortly.
+            </p>
+            <button className="btn-glow w-full" onClick={() => setEnquireSuccess(false)}>Done</button>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title={t('removeDomain.title')}
+        message={t('removeDomain.message')}
+        confirmLabel={t('removeDomain.confirm')}
+        danger
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
+    </AppLayout>
+  );
+}
+
+// ─── Domain Card ──────────────────────────────────────────────────────────────
+function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
+                       onDelete, likeState, onLike }) {
+  const { t } = useTranslation();
+  const [shareOpen, setShareOpen] = useState(false);
+  const shareRef = useRef(null);
+  const s           = STATUS_COLORS[domain.domainStatus] || STATUS_COLORS.AVAILABLE;
+  const isAuction   = domain.saleType === 'AUCTION';
+  const isHighValue = !isAuction && domain.askingPrice >= 500000;
+  const auction     = domain.auction;
+  const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
+  const domainInitials = (domain.domainName || '')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .slice(0, 2)
+    .toUpperCase() || '?';
+
+  // Close share dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (shareRef.current && !shareRef.current.contains(e.target)) {
+        setShareOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/domains` : 'https://cobrother.com/domains';
+  const shareText = `Check out this domain: ${domain.domainName}${domain.domainExtension} - Listed on CoBrother!`;
+
+  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+
+  const handleShare = (platform) => {
+    window.open(platform, '_blank', 'width=600,height=400');
+    setShareOpen(false);
+  };
+
+  const accentGrad = isAuction
+    ? 'from-purple-600 via-fuchsia-500 to-pink-500'
+    : 'from-indigo-600 via-blue-500 to-cyan-400';
+
+  return (
+    <div
+      className="group relative bg-white rounded-2xl overflow-hidden cursor-pointer flex flex-col border border-gray-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] hover:-translate-y-0.5 transition-all duration-300"
+      onClick={onView}
+    >
+      {/* Gradient header with large image */}
+      <div className={`relative bg-gradient-to-r ${accentGrad} px-4 pt-3.5 pb-3.5 min-h-[90px] flex items-end`}>
+        {domain.logo
+          ? <img src={domain.logo} alt={domain.domainName}
+              className="absolute top-0 right-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-300" />
+          : null
+        }
+        <div className="relative z-10 flex items-end justify-between w-full">
+          <div className="flex items-center gap-2">
+            {domain.logo
+              ? <img src={domain.logo} alt={domain.domainName}
+                  className="w-14 h-14 rounded-xl object-cover ring-[3px] ring-white/50 shadow-lg" />
+              : <div className="w-14 h-14 rounded-xl flex items-center justify-center font-display text-2xl font-extrabold text-white ring-[3px] ring-white/30 shadow-lg bg-white/15 backdrop-blur-sm">
+                  {domainInitials}
+                </div>
+            }
+            <div>
+              <span className={`px-2 py-[3px] text-[10px] font-bold rounded-md uppercase tracking-wide ${isAuction ? 'bg-yellow-400 text-gray-900' : 'bg-white/25 backdrop-blur-sm text-white'}`}>
+                {isAuction ? '🔨 Auction' : domain.domainExtension}
+              </span>
+              {isOwner && (
+                <span className="ml-1.5 px-2 py-[3px] bg-white text-indigo-600 text-[10px] font-extrabold rounded-md uppercase tracking-wide shadow-sm">
+                  {t('domainsPage.owner')}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        {domain.takenDown && (
+          <span className="absolute top-3 right-3 z-10 px-2 py-[3px] bg-red-500 text-white text-[10px] font-bold rounded-md uppercase tracking-wide shadow-sm">
+            ⚠ Taken Down
+          </span>
+        )}
+      </div>
+
+      {/* Body */}
+      <div className="relative px-4 pb-4 pt-3 flex flex-col flex-1">
+        {/* Domain name + status/pricing tags on right */}
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h3 className="font-display text-[0.95rem] font-extrabold text-gray-900 truncate leading-snug">
+            {domain.domainName}{domain.domainExtension}
+          </h3>
+          <div className="flex items-center gap-1 flex-shrink-0">
+            {!isAuction && (
+              <span className={`px-1.5 py-[2px] text-[9px] font-bold rounded uppercase tracking-wide border ${
+                domain.domainStatus === 'AVAILABLE' ? 'bg-green-50 text-green-600 border-green-200' :
+                domain.domainStatus === 'SOLD'      ? 'bg-red-50 text-red-500 border-red-200' :
+                                                      'bg-amber-50 text-amber-600 border-amber-200'
+              }`}>
+                {domain.domainStatus}
+              </span>
+            )}
+            <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
+              {domain.pricingDemand || 'Fixed'}
+            </span>
+          </div>
+        </div>
+
+        {/* Badges row */}
+        <div className="flex items-center gap-1.5 flex-wrap mb-3">
+          {domain.verified && (
+            <span className="px-2 py-[2px] text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-md">
+              {t('domainsPage.verified')}
+            </span>
+          )}
+          {isHighValue && domain.domainStatus === 'AVAILABLE' && (
+            <span className="px-2 py-[2px] text-[10px] font-bold text-purple-600 bg-purple-50 border border-purple-200 rounded-md">
+              {t('domainsPage.premium')}
+            </span>
+          )}
+          {isAuction && (
+            <>
+              {auction?.status === 'ACTIVE'   && <span className="text-[10px] text-emerald-600 font-bold">🟢 Live</span>}
+              {auction?.status === 'EXTENDED' && <span className="text-[10px] text-amber-500 font-bold">⚡ Extended</span>}
+              {auction?.status === 'DRAFT'    && <span className="text-[10px] text-gray-400">⏳ Draft</span>}
+            </>
+          )}
+        </div>
+
+        {/* Price block */}
+        {isAuction && auction ? (
+          <div className="rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 px-3 py-2 mb-3">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xl font-extrabold text-purple-700 tracking-tight">
+                ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+              </span>
+              <span className="text-[10px] text-purple-400 font-semibold">
+                {auction.currentHighestBid > 0 ? 'highest' : 'min bid'}
+              </span>
+            </div>
+            <span className="text-[10px] text-purple-400">{auction.totalBids} bid{auction.totalBids !== 1 ? 's' : ''}</span>
+          </div>
+        ) : (
+          <div className="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 px-3 py-2 mb-3">
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-xl font-extrabold text-emerald-700 tracking-tight">
+                ₹{Number(domain.askingPrice).toLocaleString('en-IN')}
+              </span>
+              <span className="text-[10px] text-emerald-400 font-semibold">{t('domainsPage.askingPrice')}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Stats row */}
+        <div className="flex items-center gap-2.5 text-[11px] text-gray-400 font-medium py-2 border-t border-gray-100 mt-auto">
+          <span className="flex items-center gap-1">👁 {domain.views || 0}</span>
+          <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
+
+          <div className="relative ml-auto" ref={shareRef}>
+            <button
+              className="p-1 rounded-md hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
+              onClick={(e) => { e.stopPropagation(); setShareOpen(!shareOpen); }}
+              title="Share"
+            >
+              <Share2 size={13} />
+            </button>
+
+            {shareOpen && (
+              <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px]">
+                <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+                  <span className="text-[10px] font-semibold text-gray-500">Share via</span>
+                </div>
+                <button className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleShare(linkedinShare); }}>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                  LinkedIn
+                </button>
+                <button className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleShare(facebookShare); }}>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  Facebook
+                </button>
+                <button className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                  onClick={(e) => { e.stopPropagation(); handleShare(whatsappShare); }}>
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                  WhatsApp
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2 mt-1 items-center" onClick={e => e.stopPropagation()}>
+          {isOwner ? (
+            <>
+              <button className="flex-1 py-2 bg-red-500 text-white text-xs font-bold rounded-lg transition-all hover:bg-red-600 inline-flex items-center justify-center gap-1.5"
+                onClick={e => { e.stopPropagation(); onDelete(); }}>
+                <Trash2 size={13} /> {t('domainsPage.remove')}
+              </button>
+              <button
+                className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full border-2 border-gray-200 bg-white text-gray-600 transition-all hover:border-indigo-400 hover:text-indigo-600 hover:shadow-md"
+                onClick={onView} title={t('domainsPage.viewDetails')}>
+                <ArrowUpRight size={16} />
+              </button>
+            </>
+          ) : (
+            <>
+              {isAuction ? (
+                auctionLive ? (
+                  <button
+                    onClick={e => { e.stopPropagation(); onViewAuction(); }}
+                    className={`flex-1 py-2 bg-gradient-to-r ${accentGrad} text-white text-xs font-bold rounded-lg transition-all hover:opacity-90 inline-flex items-center justify-center gap-1.5`}>
+                    <Gavel size={13} /> {t('domainsPage.bidNow')}
+                  </button>
+                ) : (
+                  <span className="flex-1 py-2 text-center text-[11px] text-gray-400 font-medium">
+                    {auction?.status === 'DRAFT'  ? 'Coming Soon' :
+                     auction?.status === 'ENDED'  ? 'Auction Ended' :
+                     auction?.status === 'UNSOLD' ? 'Unsold' : 'Closed'}
+                  </span>
+                )
+              ) : domain.domainStatus === 'AVAILABLE' ? (
+                isHighValue ? (
+                  <button
+                    onClick={e => { e.stopPropagation(); onEnquire(); }}
+                    className={`flex-1 py-2 bg-gradient-to-r ${accentGrad} text-white text-xs font-bold rounded-lg transition-all hover:opacity-90 inline-flex items-center justify-center gap-1.5`}>
+                    <MessageSquare size={13} /> {t('domainsPage.enquire')}
+                  </button>
+                ) : (
+                  <button
+                    onClick={e => { e.stopPropagation(); onBuy(); }}
+                    className={`flex-1 py-2 bg-gradient-to-r ${accentGrad} text-white text-xs font-bold rounded-lg transition-all hover:opacity-90 inline-flex items-center justify-center gap-1.5`}>
+                    <ShoppingCart size={13} /> {t('domainsPage.buyNow')}
+                  </button>
+                )
+              ) : (
+                <span className="flex-1 py-2 text-center text-[11px] text-gray-400 font-medium">
+                  {domain.domainStatus === 'SOLD' ? t('domainsPage.sold') : t('domainsPage.pending')}
+                </span>
+              )}
+              <button
+                className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full border-2 border-gray-200 bg-white text-gray-600 transition-all hover:border-indigo-400 hover:text-indigo-600 hover:shadow-md"
+                onClick={onView} title={t('domainsPage.viewDetails')}>
+                <ArrowUpRight size={16} />
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Domain Form ──────────────────────────────────────────────────────────────
+function DomainForm({ onSaved, onCancel }) {
+  const { t } = useTranslation();
+  const [form, setForm] = useState({
+    domainName: '', domainExtension: '',
+    askingPrice: '', pricingDemand: '',
+    saleType: 'ONE_TIME', minBidPrice: '', auctionDuration: 'SEVEN_DAYS',
+    contactInfo: { email: '', phoneNumber: '' },
+    agreement: { terms: false },
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState('');
+
+  const [savedDomain, setSavedDomain]       = useState(null);
+  const [imageFile, setImageFile]           = useState(null);
+  const [imagePreview, setImagePreview]     = useState(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageError, setImageError]         = useState('');
+  const fileInputRef                        = useRef(null);
+  const logoStepRef                         = useRef(null);
+
+  const getScrollParent = (node) => {
+    let current = node?.parentElement;
+    while (current) {
+      const styles = window.getComputedStyle(current);
+      const canScroll = /(auto|scroll)/.test(styles.overflowY) && current.scrollHeight > current.clientHeight;
+      if (canScroll) return current;
+      current = current.parentElement;
+    }
+    return null;
+  };
+
+  const setContact = (k, v) =>
+    setForm(f => ({ ...f, contactInfo: { ...f.contactInfo, [k]: v } }));
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    if (form.saleType === 'AUCTION' && (!form.minBidPrice || parseFloat(form.minBidPrice) <= 0)) {
+      setError('Please enter a valid minimum bid price.');
+      return;
+    }
+    setLoading(true); setError('');
+    try {
+      const { data: domain } = await domainAPI.create({
+        domainName:      form.domainName,
+        domainExtension: form.domainExtension,
+        askingPrice:     form.saleType === 'AUCTION' ? 0 : parseFloat(form.askingPrice),
+        pricingDemand:   form.pricingDemand,
+        saleType:        form.saleType,
+        contactInfo:     form.contactInfo,
+        agreement:       form.agreement,
+      });
+      if (form.saleType === 'AUCTION' && domain.id) {
+        await auctionAPI.create(domain.id, {
+          minBidPrice: parseFloat(form.minBidPrice),
+          duration:    form.auctionDuration,
+        });
+      }
+      setSavedDomain(domain);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to list domain.');
+    } finally { setLoading(false); }
+  };
+
+  const handleImageChange = e => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setImageError('Only image files are allowed.'); return; }
+    setImageError('');
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onload = ev => setImagePreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleImageUpload = async () => {
+    if (!imageFile || !savedDomain) return;
+    setImageUploading(true); setImageError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      const { data } = await domainAPI.uploadImage(savedDomain.id, formData);
+      onSaved({ ...savedDomain, logo: data.logoUrl });
+    } catch (err) {
+      setImageError(err.response?.data?.error || 'Upload failed. You can add a logo later.');
+      setImageUploading(false);
+    }
+  };
+
+  const handleSkip = () => onSaved(savedDomain);
+
+  const isAuction = form.saleType === 'AUCTION';
+
+  const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-purple-500 transition-all w-full';
+  const labelCls = 'text-sm font-medium text-gray-700';
+
+  useEffect(() => {
+    if (!savedDomain || !logoStepRef.current) return;
+    const scrollParent = getScrollParent(logoStepRef.current);
+    const scrollToAbsoluteTop = () => {
+      if (scrollParent) {
+        scrollParent.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(scrollToAbsoluteTop));
+  }, [savedDomain]);
+
+  if (savedDomain) {
+    return (
+      <div ref={logoStepRef} className="scroll-mt-24 p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
+        <h3 className="font-display text-2xl text-gray-900 font-semibold">
+          Add a Logo <span className="text-sm text-gray-400 font-normal">(optional)</span>
+        </h3>
+        <p className="text-gray-500 text-sm mt-1">
+          Upload a logo for <strong className="text-purple-600">{savedDomain.domainName}{savedDomain.domainExtension}</strong>. You can also do this later.
+        </p>
+        <div className="mt-5">
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all mb-3 ${
+              imagePreview ? 'border-gray-400 bg-gray-50' : 'border-gray-200 bg-gray-50 hover:border-gray-400'
+            }`}
+          >
+            {imagePreview ? (
+              <img src={imagePreview} alt="Preview" className="max-h-[120px] max-w-full rounded-lg object-contain mx-auto" />
+            ) : (
+              <>
+                <div className="text-4xl mb-2">🖼</div>
+                <div className="text-sm text-gray-500">Click to choose an image</div>
+                <div className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP</div>
+              </>
+            )}
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+          {imagePreview && (
+            <button type="button" className="text-xs text-gray-500 hover:text-red-500 mb-3"
+              onClick={() => { setImageFile(null); setImagePreview(null); }}>✕ Remove</button>
+          )}
+          {imageError && <div className="text-sm text-red-500 mb-3">{imageError}</div>}
+          <div className="flex gap-3">
+            <button type="button" className="btn-glow flex-1"
+              disabled={!imageFile || imageUploading} onClick={handleImageUpload}>
+              {imageUploading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'List Your Domain →'}
+            </button>
+            <button type="button" className="btn-glow" onClick={handleSkip}>Skip</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
+      <h3 className="font-display text-2xl text-gray-900 font-semibold">List Your Domain</h3>
+      <p className="text-gray-500 text-sm mt-1">Fill in the details to list your domain for sale.</p>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
+        <div className="flex flex-col gap-1.5">
+          <label className={labelCls}>Domain Name <span className="text-red-500">*</span></label>
+          <input className={inputCls}
+            value={form.domainName + form.domainExtension}
+            onChange={e => {
+              const full = e.target.value;
+              const dot  = full.indexOf('.');
+              if (dot !== -1) {
+                setForm(f => ({ ...f, domainName: full.slice(0, dot), domainExtension: full.slice(dot) }));
+              } else {
+                setForm(f => ({ ...f, domainName: full, domainExtension: '' }));
+              }
+            }}
+            placeholder="e.g. mybrand.com" required
+          />
+          <span className="text-xs text-gray-500 mt-1 block">
+            Include the extension (e.g. .com, .in, .io)
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className={labelCls}>Sale Type <span className="text-red-500">*</span></label>
+          <div className="grid grid-cols-2 gap-3 mt-1.5">
+            {[
+              { value: 'ONE_TIME', label: '🛒 One-Time Sale', desc: 'Set a fixed price. Buyer pays and gets the domain.' },
+              { value: 'AUCTION',  label: '🔨 Auction',       desc: 'Bidders compete. Highest bid wins after your chosen duration.' },
+            ].map(opt => (
+              <div key={opt.value}
+                onClick={() => setForm(f => ({ ...f, saleType: opt.value }))}
+                className={`p-3.5 rounded-lg cursor-pointer border-2 transition-all duration-150 ${
+                  form.saleType === opt.value 
+                    ? 'border-purple-600 bg-purple-50' 
+                    : 'border-gray-200 bg-white'
+                }`}>
+                <div className={`font-semibold text-sm mb-1 ${
+                  form.saleType === opt.value ? 'text-purple-600' : 'text-gray-600'
+                }`}>
+                  {opt.label}
+                </div>
+                <div className="text-xs text-gray-500 leading-snug">{opt.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          {!isAuction && (
+            <div className="flex flex-col gap-1.5">
+              <label className={labelCls}>Asking Price (₹) <span className="text-red-500">*</span></label>
+              <input className={inputCls} type="number" min="0" value={form.askingPrice}
+                onChange={e => setForm(f => ({ ...f, askingPrice: e.target.value }))}
+                placeholder="e.g. 50000" required={!isAuction} />
+            </div>
+          )}
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>Pricing Type <span className="text-red-500">*</span></label>
+            <select className={inputCls} value={form.pricingDemand}
+              onChange={e => setForm(f => ({ ...f, pricingDemand: e.target.value }))} required>
+              <option value="">Select pricing type</option>
+              <option value="FIXED">{t('domainsPage.fixedPrice')}</option>
+              <option value="NEGOTIABLE">{t('domainsPage.negotiable')}</option>
+            </select>
+          </div>
+        </div>
+
+        {isAuction && (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>Minimum Bid (₹) <span className="text-red-500">*</span></label>
+                <input className={inputCls} type="number" min="1" value={form.minBidPrice}
+                  onChange={e => setForm(f => ({ ...f, minBidPrice: e.target.value }))}
+                  placeholder="e.g. 5000" required />
+                <span className="text-[0.72rem] text-gray-500 mt-1 block">
+                  Each subsequent bid must be at least 5% higher.
+                </span>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className={labelCls}>Auction Duration <span className="text-red-500">*</span></label>
+                <select className={inputCls} value={form.auctionDuration}
+                  onChange={e => setForm(f => ({ ...f, auctionDuration: e.target.value }))}>
+                  <option value="ONE_DAY">1 Day</option>
+                  <option value="SEVEN_DAYS">7 Days</option>
+                  <option value="FIFTEEN_DAYS">15 Days</option>
+                  <option value="THIRTY_DAYS">30 Days</option>
+                </select>
+              </div>
+            </div>
+            <div className="p-3.5 bg-amber-100 border border-amber-400 rounded-lg text-[0.82rem] text-amber-900 leading-relaxed">
+              ⚡ Auction domains go live only after domain verification (≈15 mins). Your listing
+              stays in <strong>Draft</strong> until verification is complete, then the auction
+              timer starts automatically.
+            </div>
+          </>
+        )}
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>Contact Email <span className="text-red-500">*</span></label>
+            <input className={inputCls} type="email" value={form.contactInfo.email}
+              onChange={e => setContact('email', e.target.value)}
+              placeholder="your@email.com" required />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>Phone</label>
+            <input className={inputCls} value={form.contactInfo.phoneNumber}
+              onChange={e => setContact('phoneNumber', e.target.value)}
+              placeholder="10-digit number" maxLength={10} />
+          </div>
+        </div>
+
+        <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 max-w-full">
+          <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-focus-visible:ring-2 peer-focus-visible:ring-purple-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)] overflow-hidden">
+            <span className="absolute left-[6px] top-[1px] w-[5px] h-[10px] border-r-[2.5px] border-b-[2.5px] border-white rotate-45 opacity-0 scale-75 transition-all duration-150 peer-checked:opacity-100 peer-checked:scale-100 z-10" aria-hidden="true"></span>
+          </span>
+          <span className="text-sm text-gray-700 leading-snug">I confirm I own this domain and agree to the Terms & Conditions.</span>
+        </label>
+
+        {error && <div className="text-sm text-red-500">{error}</div>}
+
+        <div className="flex gap-3 mt-2">
+          <button type="submit" className="btn-glow flex-1" disabled={loading}>
+            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
+              isAuction ? 'List for Auction →' : 'Add Logo →'}
+          </button>
+          <button type="button" className="btn-glow" onClick={onCancel}>{t('confirm.cancel')}</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+// ─── Buy Domain Modal ─────────────────────────────────────────────────────────
+function BuyDomainModal({ domain, onClose, onSuccess }) {
+  const { t } = useTranslation();
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [showAddons, setShowAddons] = useState(false);
+
+  const [selectedAddons, setSelectedAddons] = useState({});
+
+const addonCategories = [
+  {
+    title: "Business Setup",
+    items: [
+      { key: "udyam", name: "Udyam Registration", price: 999 },
+      { key: "gst", name: "GST Registration", price: 1499 },
+      { key: "company", name: "Company Registration / LLP / Pvt Ltd", price: 2999 },
+      { key: "pan", name: "PAN/TAN Registration", price: 499 },
+      { key: "iec", name: "IEC Import Export Code Registration", price: 999 },
+      { key: "trademark", name: "Trademark Registration", price: 1999 },
+      { key: "loan", name: "MSME Loan Assistance", price: 1999 },
+      { key: "tax", name: "Accounting / Tax Filing Services", price: 1499 },
+    ],
+  },
+
+  {
+    title: "Website & Technology",
+    items: [
+      { key: "website", name: "Website Building", price: 4999 },
+      { key: "ecommerce", name: "E-commerce Store Setup", price: 4999 },
+      { key: "app", name: "Mobile App Development", price: 9999 },
+      { key: "hosting", name: "Hosting Setup", price: 1999 },
+      { key: "ssl", name: "SSL Certificate", price: 999 },
+      { key: "maintenance", name: "Website Maintenance", price: 1999 },
+      { key: "security", name: "Website Security / Backup", price: 999 },
+      { key: "chatbot", name: "Chatbot Integration", price: 1999 },
+      { key: "crm", name: "CRM Setup", price: 2999 },
+      { key: "billing", name: "Invoice/Billing Software Setup", price: 1499 },
+      { key: "erp", name: "Custom ERP / Software Development", price: 9999 },
+    ],
+  },
+
+  {
+    title: "Marketing & Growth",
+    items: [
+      { key: "seo", name: "SEO Setup", price: 2999 },
+      { key: "googleads", name: "Google Ads Setup", price: 1999 },
+      { key: "fbads", name: "Facebook / Instagram Ads Setup", price: 1999 },
+      { key: "marketing", name: "Digital Marketing Services", price: 4999 },
+      { key: "content", name: "Content Writing / Copywriting", price: 999 },
+      { key: "social_setup", name: "Social Media Account Setup", price: 499 },
+      { key: "social_mgmt", name: "Social Media Management", price: 1999 },
+      { key: "gmb", name: "Google My Business Setup", price: 999 },
+      { key: "sms", name: "SMS / Email Marketing Setup", price: 1499 },
+    ],
+  },
+
+  {
+    title: "Branding & Design",
+    items: [
+      { key: "logo", name: "Logo Design / Logo Maker", price: 499 },
+      { key: "visiting_card", name: "Visiting Card / Business Card Design", price: 499 },
+      { key: "brochure", name: "Brochure / Flyer Design", price: 999 },
+    ],
+  },
+
+  {
+    title: "Email & Communication",
+    items: [
+      { key: "business_email", name: "Business Email Setup", price: 499 },
+      { key: "workspace", name: "Google Workspace / Professional Email", price: 2499 },
+      { key: "whatsapp", name: "WhatsApp Business API Setup", price: 2999 },
+    ],
+  },
+
+  {
+    title: "Other Services",
+    items: [
+      { key: "payment", name: "Payment Gateway Integration", price: 1999 },
+      { key: "renewal", name: "Domain Renewal Reminder Service", price: 299 },
+    ],
+  },
+];
+
+  const addonTotal = addonCategories.reduce((total, category) => {
+  return (
+    total +
+    category.items.reduce((sum, addon) => {
+      return sum + (selectedAddons[addon.key] ? addon.price : 0);
+    }, 0)
+  );
+}, 0);
+  const totalPrice = Number(domain.askingPrice) + addonTotal;
+
+  const toggleAddon = (key) => {
+    setSelectedAddons((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  const handleBuy = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const { data: orderData } = await domainAPI.createOrder(domain.id);
+
+      const rzp = new window.Razorpay({
+        key: orderData.keyId,
+        amount: orderData.amount * 100,
+        currency: orderData.currency,
+        name: 'CoBrother',
+        description: domain.domainName,
+        order_id: orderData.orderId,
+
+        handler: async (response) => {
+          try {
+            await domainAPI.verifyPayment(domain.id, {
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
+            onSuccess({ ...domain, domainStatus: 'SOLD' });
+          } catch {
+            setError('Payment verification failed');
+            setLoading(false);
+          }
+        },
+      });
+
+      rzp.open();
+    } catch {
+      setError('Payment failed');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="w-full max-w-[480px] bg-white rounded-2xl p-6 relative shadow-xl">
+
+        {/* CLOSE */}
+        <button
+          className="absolute right-4 top-4 text-gray-500 hover:text-black text-lg"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+
+        {/* HEADER */}
+        <div className="mb-5">
+          <p className="text-xs font-semibold text-indigo-600 mb-1">
+            DOMAIN PURCHASE
+          </p>
+          <h2 className="text-xl font-bold text-gray-900">
+            {domain.domainName}{domain.domainExtension}
+          </h2>
+          <p className="text-sm text-gray-600">{domain.pricingDemand}</p>
+        </div>
+
+        {/* INFO */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800 mb-3">
+          Domain transfer within 24 hours
+        </div>
+
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800 mb-4">
+          Updates after payment
+        </div>
+
+        {/* 🔥 ADD-ONS */}
+        <div className="mb-5">
+
+          {/* HEADER */}
+          <div
+            className="flex justify-between items-center border border-gray-300 rounded-xl px-4 py-3 cursor-pointer bg-white hover:bg-gray-50 transition"
+            onClick={() => setShowAddons(!showAddons)}
+          >
+            <span className="font-semibold text-gray-900">Add-ons</span>
+            <span className="text-gray-700 text-sm">
+              {showAddons ? '▲' : '▼'}
+            </span>
+          </div>
+
+          {/* DROPDOWN */}
+          {showAddons && (
+  <div className="mt-3 max-h-[250px] overflow-y-auto pr-2 space-y-3">
+
+              {addonCategories.map((category) => (
+  <div key={category.title} className="mb-5">
+
+    {/* CATEGORY TITLE */}
+    <h3 className="font-semibold text-gray-800 mb-2">
+      {category.title}
+    </h3>
+
+    {/* ITEMS */}
+    {category.items.map((addon) => (
+      <div
+        key={addon.key}
+        className="border border-gray-200 rounded-xl p-3 bg-white flex justify-between items-center mb-2"
+      >
+        <div>
+          <p className="font-medium text-gray-900">
+            {addon.name}
+          </p>
+
+          <p className="text-sm font-semibold text-black mt-1">
+            ₹{addon.price}/year
+          </p>
+        </div>
+
+        <input
+          type="checkbox"
+          checked={selectedAddons[addon.key]}
+          onChange={() => toggleAddon(addon.key)}
+          className="w-4 h-4 accent-indigo-600 cursor-pointer"
+        />
+      </div>
+    ))}
+
+  </div>
+))}
+
+            </div>
+          )}
+        </div>
+
+        {/* TOTAL */}
+        <div className="flex justify-between items-center text-sm font-semibold mb-4 text-gray-900">
+          <span>Total</span>
+          <span>₹{totalPrice.toLocaleString('en-IN')}</span>
+        </div>
+
+        {/* BUTTONS */}
+        <div className="flex gap-3">
+          <button
+            onClick={handleBuy}
+            disabled={loading}
+            className="flex-1 bg-black text-white py-2.5 rounded-full font-medium hover:bg-gray-900 transition"
+          >
+            {loading
+              ? 'Processing...'
+              : `Pay ₹${totalPrice.toLocaleString('en-IN')} →`}
+          </button>
+
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 rounded-full text-gray-700 hover:bg-gray-100 transition"
+          >
+            Cancel
+          </button>
+        </div>
+
+        {error && (
+          <div className="text-red-500 text-sm mt-3">
+            {error}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+// ─── Domain Detail Modal ──────────────────────────────────────────────────────
+function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
+                              onViewAuction, likeState, onLike }) {
+  const [detail, setDetail]   = useState(null);
+  const [loading, setLoading] = useState(true);
+  const hasFetched            = useRef(false);
+  const [logoFile, setLogoFile] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoError, setLogoError] = useState('');
+  const logoInputRef = useRef(null);
+
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    domainAPI.get(domain.id)
+      .then(({ data }) => setDetail(data?.data ?? data))
+      .catch(() => setDetail(domain))
+      .finally(() => setLoading(false));
+  }, [domain.id]);
+
+  const d           = detail || domain;
+  const c           = d.contactInfo || {};
+  const s           = STATUS_COLORS[d.domainStatus] || STATUS_COLORS.AVAILABLE;
+  const isAuction   = d.saleType === 'AUCTION';
+  const isHighValue = !isAuction && d.askingPrice >= 500000;
+  const auction     = d.auction;
+  const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
+  const currentLogo = logoPreview || d.logo || null;
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setLogoError('Only image files are allowed.');
+      return;
+    }
+    setLogoError('');
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setLogoPreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleLogoUpload = async () => {
+    if (!logoFile) {
+      setLogoError('Please choose a logo first.');
+      return;
+    }
+    setLogoUploading(true);
+    setLogoError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', logoFile);
+      const { data } = await domainAPI.uploadImage(d.id, formData);
+      setDetail((prev) => ({ ...(prev || d), logo: data.logoUrl }));
+      setLogoFile(null);
+      setLogoPreview(null);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    } catch (err) {
+      setLogoError(err.response?.data?.error || 'Failed to upload logo.');
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(17,24,39,0.16)] p-8">
+        <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
+        <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
+
+        {loading ? (
+          <div className="flex justify-center p-12">
+            <div className="w-7 h-7 border-2 border-gray-200 border-t-indigo-500 rounded-full animate-spin" />
+          </div>
+        ) : (
+          <>
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide">{isAuction ? '🔨 Auction' : 'Domain'}</div>
+                {d.verified && (
+                  <span className="px-2 py-0.5 rounded text-[0.68rem] font-bold text-green-600 bg-green-50 border border-green-300">
+                    ✓ Verified
+                  </span>
+                )}
+                {isHighValue && (
+                  <span className="px-2 py-0.5 rounded text-[0.68rem] font-bold text-purple-600 bg-purple-50 border border-purple-200">
+                    Premium
+                  </span>
+                )}
+              </div>
+              <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">{d.domainName}{d.domainExtension}</h2>
+              <p className="text-sm text-gray-500">{d.pricingDemand}</p>
+            </div>
+
+            <div className="flex gap-2 flex-wrap mb-4">
+              {isAuction && auction ? (
+                <>
+                  <div className="px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-[0.82rem] text-green-800">
+                    {auction.currentHighestBid > 0
+                      ? `🏆 ₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`
+                      : `🔨 Min ₹${Number(auction.minBidPrice).toLocaleString('en-IN')}`}
+                  </div>
+                  <div className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-[0.82rem] text-gray-600">
+                    📋 {auction.totalBids} bid{auction.totalBids !== 1 ? 's' : ''}
+                  </div>
+                </>
+              ) : (
+                <div className="px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-[0.82rem] text-green-800">
+                  💰 ₹{Number(d.askingPrice).toLocaleString('en-IN')}
+                </div>
+              )}
+              <div className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-[0.82rem] text-gray-600">
+                👁 {d.views || 0} views
+              </div>
+              {!isAuction && (
+                <span className="px-2.5 py-1 rounded-md text-xs font-semibold" style={{ color: s.color, background: s.bg, border: `1px solid ${s.border}` }}>
+                  {d.domainStatus}
+                </span>
+              )}
+            </div>
+
+            {isAuction && auction && (
+              <Section title="Auction Info">
+                <div className="grid grid-cols-2 gap-3">
+                  <DetailItem label="Status"
+                    value={auction.status === 'ACTIVE'   ? '🟢 Live' :
+                           auction.status === 'EXTENDED' ? '⚡ Extended' :
+                           auction.status === 'DRAFT'    ? '⏳ Pending Verification' :
+                           auction.status} />
+                  <DetailItem label="Duration" value={auction.duration?.replace(/_/g, ' ')} />
+                  {auction.endTime && (
+                    <DetailItem label="Ends"
+                      value={new Date(
+                        auction.endTime.endsWith('Z') ? auction.endTime : auction.endTime + 'Z'
+                      ).toLocaleDateString('en-IN',
+                        { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} />
+                  )}
+                  {auction.currentHighestBid > 0 && (
+                    <DetailItem label="Next Min Bid"
+                      value={`₹${Number(auction.currentHighestBid * 1.05)
+                        .toLocaleString('en-IN', { maximumFractionDigits: 0 })}`} />
+                  )}
+                </div>
+              </Section>
+            )}
+
+            {isHighValue && !isOwner && d.domainStatus === 'AVAILABLE' && (
+              <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-lg mb-5 text-[0.83rem] text-purple-700">
+                ❆ This is a premium domain. Submit an enquiry and our team will facilitate
+                the transaction.
+              </div>
+            )}
+
+            {(c.email || c.phoneNumber) && (
+              <Section title="Contact">
+                <div className="grid grid-cols-2 gap-3">
+                  {c.email       && <DetailItem label="Email" value={c.email} />}
+                  {c.phoneNumber && <DetailItem label="Phone" value={c.phoneNumber} />}
+                </div>
+              </Section>
+            )}
+
+            {isOwner && (
+              <Section title="Domain Logo">
+                <div className="border border-gray-200 rounded-xl p-3.5 bg-gray-50">
+                  <div
+                    onClick={() => logoInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all ${
+                      currentLogo ? 'border-indigo-300 bg-white' : 'border-gray-200 bg-white hover:border-indigo-300'
+                    }`}
+                  >
+                    {currentLogo ? (
+                      <img
+                        src={currentLogo}
+                        alt={`${d.domainName} logo`}
+                        className="max-h-[110px] max-w-full rounded-lg object-contain mx-auto"
+                      />
+                    ) : (
+                      <>
+                        <div className="text-3xl mb-2">🖼</div>
+                        <div className="text-sm text-gray-600 font-medium">Click to choose a logo</div>
+                        <div className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP</div>
+                      </>
+                    )}
+                  </div>
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleLogoChange}
+                  />
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button type="button" className="btn-glow btn-glow-sm" onClick={() => logoInputRef.current?.click()}>
+                      {d.logo ? 'Change Logo' : 'Choose Logo'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-glow btn-glow-sm"
+                      onClick={handleLogoUpload}
+                      disabled={!logoFile || logoUploading}
+                    >
+                      {logoUploading
+                        ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
+                        : (d.logo ? 'Update Logo' : 'Upload Logo')}
+                    </button>
+                  </div>
+
+                  {logoError && <div className="text-sm text-red-500 mt-2">{logoError}</div>}
+                  {!logoFile && (
+                    <div className="text-xs text-gray-500 mt-2">
+                      You can upload or replace the logo anytime from this details panel.
+                    </div>
+                  )}
+                </div>
+              </Section>
+            )}
+
+            {d.listedBy && (
+              <Section title="Listed By">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center font-bold text-indigo-600">
+                    {d.listedBy.firstname?.[0]?.toUpperCase() || '?'}
+                  </div>
+                  <div className="font-semibold text-gray-900 text-[0.9rem]">
+                    {d.listedBy.firstname} {d.listedBy.lastname}
+                  </div>
+                </div>
+              </Section>
+            )}
+
+            <div className="flex gap-3 mt-6 flex-wrap items-center">
+              {!isOwner && (
+                isAuction ? (
+                  auctionLive ? (
+                    <button
+                      onClick={onViewAuction}
+                      className="btn-glow btn-glow-sm">
+                      🔨 Go to Auction →
+                    </button>
+                  ) : null
+                ) : d.domainStatus === 'AVAILABLE' ? (
+                  isHighValue ? (
+                    <button
+                      onClick={onEnquire}
+                      className="btn-glow btn-glow-sm">
+                      Enquire Now →
+                    </button>
+                  ) : (
+                    <button className="btn-glow btn-glow-sm" onClick={onBuy}>Buy Now →</button>
+                  )
+                ) : null
+              )}
+              <LikeButton liked={likeState?.liked} count={likeState?.count}
+                          onToggle={onLike} size="md" />
+              <button className="btn-glow btn-glow-sm" onClick={onClose}>Close</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Domain Enquiry Modal ─────────────────────────────────────────────────────
+function DomainEnquiryModal({ domain, user, onClose, onSuccess }) {
+  const { t } = useTranslation();
+  const [form, setForm] = useState({
+    fullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
+    email:    user?.email || '',
+    phone:    user?.phoneNumber || '',
+    message:  '',
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState('');
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setLoading(true); setError('');
+    try {
+      // Correct signature: (domainId, { fullName, email, phone, message })
+      await domainEnquiryAPI.submit(domain.id, {
+        fullName: form.fullName,
+        email:    form.email,
+        phone:    form.phone,
+        message:  form.message,
+      });
+      onSuccess();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to submit enquiry.');
+    } finally { setLoading(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="relative w-full max-w-[500px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
+        <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
+        <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
+        <div className="mb-6">
+          <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide mb-2">Domain Enquiry</div>
+          <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">{domain.domainName}{domain.domainExtension}</h2>
+          <p className="text-sm text-gray-500">₹{Number(domain.askingPrice).toLocaleString('en-IN')} · {domain.pricingDemand}</p>
+        </div>
+        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-lg mb-5 text-[0.83rem] text-amber-800">
+          ⚡ For high-value domains, our team will facilitate the transaction.
+          Fill in your details and we'll be in touch shortly.
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Full Name <span className="text-red-500">*</span></label>
+            <input className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-purple-500 transition-all" value={form.fullName}
+              onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))}
+              placeholder="Your full name" required />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-gray-700">Email <span className="text-red-500">*</span></label>
+              <input className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-purple-500 transition-all" type="email" value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                placeholder="your@email.com" required />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-gray-700">Phone <span className="text-red-500">*</span></label>
+              <input className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-purple-500 transition-all" value={form.phone}
+                onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                placeholder="10-digit number" maxLength={10} required />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Message / Reason for Enquiry <span className="text-red-500">*</span></label>
+            <textarea className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-purple-500 transition-all resize-vertical" value={form.message}
+              onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
+              placeholder="Tell us why you're interested and any specific requirements…"
+              rows={4} required />
+          </div>
+          {error && <div className="text-sm text-red-500">{error}</div>}
+          <div className="flex gap-3 mt-1">
+            <button type="submit" className="btn-glow flex-1" disabled={loading}>
+              {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'Submit Enquiry →'}
+            </button>
+            <button type="button" className="btn-glow" onClick={onClose}>{t('confirm.cancel')}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function Section({ title, children }) {
+  return (
+    <div className="mb-5">
+      <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">
+        {title}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function DetailItem({ label, value }) {
+  return (
+    <div className="border border-gray-200 bg-white rounded-[10px] p-2.5">
+      <div className="text-[0.72rem] text-gray-500 font-bold uppercase tracking-wider mb-1">{label}</div>
+      <div className="text-[0.95rem] text-gray-900 font-semibold">{value}</div>
+    </div>
+  );
+}
