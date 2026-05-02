@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { communityAPI } from '../api/services';
+import { communityAPI, communityAuctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import AppLayout from '../components/layout/AppLayout';
 import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
-
 
 const ROLES = [
   'FOUNDER','CO_FOUNDER','INVESTOR','MENTOR',
@@ -15,41 +14,48 @@ const INDUSTRIES = [
   'TECH','FINANCE','HEALTHCARE','EDUCATION','FOOD_AND_BEVERAGE','RETAIL',
   'REAL_ESTATE','MEDIA','MANUFACTURING','LOGISTICS','AGRICULTURE','OTHER'
 ];
+const WORK_TYPES = [
+  { value: 'FREELANCE',   label: 'Freelance' },
+  { value: 'FULL_TIME',   label: 'Full Time' },
+  { value: 'PART_TIME',   label: 'Part Time' },
+  { value: 'CONTRACT',    label: 'Contract'  },
+  { value: 'OPEN_TO_ALL', label: 'Open to All' },
+];
+const DURATIONS = [
+  { value: 'ONE_DAY',      label: '1 Day'    },
+  { value: 'SEVEN_DAYS',   label: '7 Days'   },
+  { value: 'FIFTEEN_DAYS', label: '15 Days'  },
+  { value: 'THIRTY_DAYS',  label: '30 Days'  },
+];
 
 export default function CommunityPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [detailProfile, setDetailProfile] = useState(null);
 
-  
   const [profiles, setProfiles]             = useState([]);
-
   const { toggle: toggleLike, get: getLike } = useLikes('COMMUNITY', profiles);
   const [loading, setLoading]               = useState(true);
   const [showForm, setShowForm]             = useState(false);
   const [myProfile, setMyProfile]           = useState(null);
+  const [myAuction, setMyAuction]           = useState(null);
+  const [detailProfile, setDetailProfile]   = useState(null);
+
   const [linkedInLoading, setLinkedInLoading] = useState(false);
-  const [linkedInError, setLinkedInError]   = useState('');
+  const [linkedInError, setLinkedInError]     = useState('');
   const [linkedInSuccess, setLinkedInSuccess] = useState('');
 
-  // ── Handle LinkedIn redirect back: ?linkedin=success&profileId=42 ──────────
-  // The BACKEND exchanges the code, saves the Community row, then redirects
-  // the browser here with the saved profileId. We just load that profile.
+  const [showAuctionModal, setShowAuctionModal] = useState(false);
+
+  // ── Handle LinkedIn redirect back ─────────────────────────────────────────
   useEffect(() => {
     const status    = searchParams.get('linkedin');
     const profileId = searchParams.get('profileId');
     const errMsg    = searchParams.get('linkedin_error');
 
-    // Clear params from URL immediately
-    if (status || errMsg) {
-      setSearchParams({}, { replace: true });
-    }
+    if (status || errMsg) setSearchParams({}, { replace: true });
 
-    if (errMsg) {
-      setLinkedInError(decodeURIComponent(errMsg));
-      return;
-    }
+    if (errMsg) { setLinkedInError(decodeURIComponent(errMsg)); return; }
 
     if (status === 'success' && profileId) {
       setLinkedInLoading(true);
@@ -57,36 +63,34 @@ export default function CommunityPage() {
         .then(({ data }) => {
           const profile = data?.data ?? data;
           setMyProfile(profile);
-          setLinkedInSuccess('LinkedIn connected! Your name and photo have been imported. Now complete your profile below.');
+          setLinkedInSuccess('LinkedIn connected! Complete your profile below.');
           setShowForm(true);
-          // Insert into profiles list if not already there
-          setProfiles(prev => {
-            if (prev.find(p => p.id === profile.id)) return prev;
-            return [profile, ...prev];
-          });
+          setProfiles(prev => prev.find(p => p.id === profile.id) ? prev : [profile, ...prev]);
         })
-        .catch(() => {
-          setLinkedInError('LinkedIn connected but failed to load profile. Please refresh.');
-        })
+        .catch(() => setLinkedInError('LinkedIn connected but failed to load profile. Please refresh.'))
         .finally(() => setLinkedInLoading(false));
     }
-  }, []); // run once on mount
+  }, []);
 
-
-  // ── Load all community profiles ───────────────────────────────────────────
+  // ── Load all profiles + my auction ───────────────────────────────────────
   useEffect(() => {
     communityAPI.getAll()
       .then(({ data }) => {
         const list = Array.isArray(data) ? data : (data?.data ?? []);
         setProfiles(list);
         const mine = list.find(p => p.appUser?.id === user?.id);
-        if (mine && !myProfile) setMyProfile(mine);
+        if (mine && !myProfile) {
+          setMyProfile(mine);
+          // Fetch my auction status
+          communityAuctionAPI.getByCommunity(mine.id)
+            .then(({ data: ad }) => setMyAuction(ad?.auction ?? ad))
+            .catch(() => {});
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [user]);
 
-  // ── Click "Connect with LinkedIn" ─────────────────────────────────────────
   const handleConnectLinkedIn = async () => {
     setLinkedInError('');
     setLinkedInLoading(true);
@@ -96,28 +100,11 @@ export default function CommunityPage() {
       const url    = parsed?.url ?? parsed?.authUrl ?? parsed;
       if (!url || typeof url !== 'string') throw new Error('Invalid auth URL');
       window.location.href = url;
-    } catch (e) {
+    } catch {
       setLinkedInLoading(false);
       setLinkedInError('Could not get LinkedIn auth URL. Please try again.');
     }
   };
-
-// ─── Community Detail Modal ───────────────────────────────────────────────────
-
-  if (linkedInLoading) {
-    return (
-      <AppLayout>
-        <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-          <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
-          <p className="text-gray-400 text-sm">
-            Connecting your LinkedIn profile…
-          </p>
-        </div>
-      </AppLayout>
-    );
-  }
-  
-  
 
   const handleProfileSaved = (saved) => {
     setMyProfile(saved);
@@ -130,9 +117,37 @@ export default function CommunityPage() {
     });
   };
 
+  const handleAuctionCreated = (auction) => {
+    setMyAuction(auction);
+    setShowAuctionModal(false);
+  };
+
+  // Active auction badge text
+  const auctionStatusLabel = () => {
+    if (!myAuction) return null;
+    const s = myAuction.status;
+    if (s === 'PAYMENT_PENDING') return { text: '⏳ Auction pending payment', color: 'amber' };
+    if (s === 'ACTIVE')          return { text: '🟢 Auction live!',           color: 'green' };
+    if (s === 'EXTENDED')        return { text: '⚡ Auction extended',         color: 'amber' };
+    if (s === 'ENDED')           return { text: '🏆 Auction ended',            color: 'purple' };
+    if (s === 'UNSOLD')          return { text: 'Auction ended — no bids',     color: 'red' };
+    return null;
+  };
+  const auctionBadge = auctionStatusLabel();
+
+  if (linkedInLoading) return (
+    <AppLayout>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+        <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
+        <p className="text-gray-400 text-sm">Connecting your LinkedIn profile…</p>
+      </div>
+    </AppLayout>
+  );
+
   return (
     <AppLayout>
       <div>
+        {/* ── Header ── */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Community</h1>
@@ -140,7 +155,26 @@ export default function CommunityPage() {
           </div>
           <div className="flex gap-3 flex-wrap items-center">
             {myProfile ? (
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap items-center">
+                {/* Auction status / button */}
+                {auctionBadge ? (
+                  <div className="flex gap-2 items-center">
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
+                      auctionBadge.color === 'green'  ? 'bg-green-50 text-green-700 border-green-300'  :
+                      auctionBadge.color === 'amber'  ? 'bg-amber-50 text-amber-700 border-amber-300'  :
+                      auctionBadge.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-300' :
+                      'bg-red-50 text-red-600 border-red-300'
+                    }`}>{auctionBadge.text}</span>
+                    <button className="btn-glow btn-glow-sm"
+                      onClick={() => navigate(`/community-auction/${myAuction.id}`)}>
+                      View Auction →
+                    </button>
+                  </div>
+                ) : (
+                  <button className="btn-glow btn-glow-sm" onClick={() => setShowAuctionModal(true)}>
+                    🔨 Put Profile to Auction
+                  </button>
+                )}
                 <button className="btn-glow btn-glow-sm" onClick={() => navigate('/profile/analytics')}>
                   📈 Analytics
                 </button>
@@ -149,20 +183,19 @@ export default function CommunityPage() {
                 </button>
               </div>
             ) : (
-              <button className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50 disabled:cursor-not-allowed" onClick={handleConnectLinkedIn} disabled={linkedInLoading}>
+              <button
+                className="inline-flex items-center justify-center gap-2.5 px-5 py-2.5 bg-[#0077b5] text-white font-semibold text-sm rounded-[10px] border-none cursor-pointer transition-colors hover:bg-[#005885] disabled:opacity-50"
+                onClick={handleConnectLinkedIn} disabled={linkedInLoading}>
                 {linkedInLoading
                   ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" /> Connecting…</>
-                  : <><LinkedInIcon /> Connect with LinkedIn</>
-                }
+                  : <><LinkedInIcon /> Connect with LinkedIn</>}
               </button>
             )}
           </div>
         </div>
 
         {linkedInError && (
-          <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600 mb-6">
-            {linkedInError}
-          </div>
+          <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600 mb-6">{linkedInError}</div>
         )}
         {linkedInSuccess && (
           <div className="p-4 bg-blue-100 border border-blue-200 rounded-lg text-sm text-blue-600 mb-6 flex items-center gap-2">
@@ -181,13 +214,15 @@ export default function CommunityPage() {
         )}
 
         {loading ? (
-          <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>
+          <div className="flex items-center justify-center py-20">
+            <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
+          </div>
         ) : profiles.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">◉</div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No community members yet</h3>
-            <p className="text-gray-600 mb-6">Connect your LinkedIn to join the community and be discovered.</p>
-            <button className="px-5 py-2 bg-[#0077B5] text-white rounded-full text-sm font-semibold transition-all duration-200 hover:bg-[#006399] flex items-center gap-2 mx-auto" onClick={handleConnectLinkedIn}>
+            <p className="text-gray-600 mb-6">Connect your LinkedIn to join.</p>
+            <button className="px-5 py-2 bg-[#0077B5] text-white rounded-full text-sm font-semibold hover:bg-[#006399] flex items-center gap-2 mx-auto" onClick={handleConnectLinkedIn}>
               <LinkedInIcon /> Connect with LinkedIn
             </button>
           </div>
@@ -195,8 +230,7 @@ export default function CommunityPage() {
           <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-5">
             {profiles.map(p => (
               <CommunityCard
-                key={p.id}
-                profile={p}
+                key={p.id} profile={p}
                 isMe={p.appUser?.id === user?.id}
                 likeState={getLike(p.id)}
                 onLike={() => toggleLike(p.id)}
@@ -207,21 +241,272 @@ export default function CommunityPage() {
           </div>
         )}
       </div>
+
       {detailProfile && (
         <CommunityDetailModal
           profile={detailProfile}
           isMe={detailProfile.appUser?.id === user?.id}
           onClose={() => setDetailProfile(null)}
           onEdit={() => { setMyProfile(detailProfile); setShowForm(true); setDetailProfile(null); }}
+          onViewAuction={(auctionId) => navigate(`/community-auction/${auctionId}`)}
+        />
+      )}
+
+      {showAuctionModal && myProfile && (
+        <CreateAuctionModal
+          communityId={myProfile.id}
+          profileName={myProfile.name}
+          onClose={() => setShowAuctionModal(false)}
+          onSuccess={handleAuctionCreated}
         />
       )}
     </AppLayout>
   );
 }
 
-function CommunityDetailModal({ profile, isMe, onClose, onEdit }) {
-  const [detail, setDetail]   = useState(null);
-  const [loading, setLoading] = useState(true);
+// ─── Create Auction Modal (form + Razorpay ₹118) ─────────────────────────────
+function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
+  const [step, setStep]       = useState('form'); // form | payment | done
+  const [form, setForm]       = useState({
+    auctionTitle: '',
+    auctionSkills: '',
+    workType: 'OPEN_TO_ALL',
+    expectedRate: '',
+    availableFrom: '',
+    additionalInfo: '',
+    minBidPrice: '',
+    duration: 'SEVEN_DAYS',
+  });
+  const [auctionId, setAuctionId]   = useState(null);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState('');
+
+  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+
+  // Step 1: create auction record
+  const handleCreate = async e => {
+    e.preventDefault();
+    if (!form.auctionTitle.trim()) { setError('Auction title is required.'); return; }
+    if (!form.minBidPrice || parseFloat(form.minBidPrice) <= 0) { setError('Enter a valid minimum bid.'); return; }
+    setLoading(true); setError('');
+    try {
+      const payload = {
+        ...form,
+        minBidPrice: parseFloat(form.minBidPrice),
+      };
+      const { data } = await communityAuctionAPI.create(communityId, payload);
+      const auction = data?.auction ?? data;
+      setAuctionId(auction.id);
+      setStep('payment');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to create auction. Please try again.');
+    } finally { setLoading(false); }
+  };
+
+  // Step 2: pay ₹118 via Razorpay
+  const handlePayListingFee = async () => {
+    setLoading(true); setError('');
+    try {
+      const { data } = await communityAuctionAPI.createListingOrder(auctionId);
+
+      const options = {
+        key:         data.keyId,
+        amount:      data.amount * 100,
+        currency:    'INR',
+        name:        'CoBrother',
+        description: 'Profile Auction Listing Fee',
+        order_id:    data.orderId,
+        handler: async (response) => {
+          try {
+            const { data: verifyData } = await communityAuctionAPI.verifyListingFee(auctionId, {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id:   response.razorpay_order_id,
+              razorpay_signature:  response.razorpay_signature,
+            });
+            const liveAuction = verifyData?.auction ?? verifyData;
+            setStep('done');
+            onSuccess(liveAuction);
+          } catch {
+            setError('Payment verification failed. Please contact support.');
+          }
+        },
+        prefill: { name: profileName },
+        theme: { color: '#1a1a2e' },
+        modal: { ondismiss: () => setLoading(false) },
+      };
+
+      if (!window.Razorpay) {
+        setError('Razorpay SDK not loaded. Please refresh the page.');
+        setLoading(false);
+        return;
+      }
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', () => {
+        setError('Payment failed. Please try again.');
+        setLoading(false);
+      });
+      rzp.open();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Could not initiate payment. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="relative w-full max-w-[540px] max-h-[90vh] overflow-y-auto bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
+        <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
+        <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer hover:text-gray-700" onClick={onClose}>✕</button>
+
+        {/* ── Step indicator ── */}
+        <div className="flex items-center gap-2 mb-6">
+          {['Details', 'Pay ₹118', 'Live!'].map((s, i) => (
+            <div key={s} className="flex items-center gap-2">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                (step === 'form' && i === 0) || (step === 'payment' && i === 1) || (step === 'done' && i === 2)
+                  ? 'bg-gray-900 text-white'
+                  : (step === 'payment' && i === 0) || (step === 'done' && i <= 1)
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-100 text-gray-400'
+              }`}>{((step === 'payment' && i === 0) || (step === 'done' && i <= 1)) ? '✓' : i + 1}</div>
+              <span className="text-xs text-gray-500 font-medium">{s}</span>
+              {i < 2 && <div className="w-6 h-px bg-gray-200" />}
+            </div>
+          ))}
+        </div>
+
+        {step === 'form' && (
+          <>
+            <div className="mb-5">
+              <div className="inline-flex items-center px-2.5 py-0.5 bg-amber-50 border border-amber-200 rounded-full text-[0.72rem] font-semibold text-amber-700 uppercase tracking-wide mb-2">
+                🔨 Profile Auction
+              </div>
+              <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">Put Your Profile to Auction</h2>
+              <p className="text-sm text-gray-500">Let companies bid to work with you. One-time listing fee: <strong>₹118</strong></p>
+            </div>
+
+            <form onSubmit={handleCreate} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">Auction Title <span className="text-red-500">*</span></label>
+                <input name="auctionTitle" value={form.auctionTitle} onChange={handleChange}
+                  placeholder="e.g. Senior React Developer — Available for Freelance"
+                  className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" required />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">Skills to Highlight <span className="text-gray-400 text-xs">(comma-separated)</span></label>
+                <input name="auctionSkills" value={form.auctionSkills} onChange={handleChange}
+                  placeholder="e.g. React, Node.js, System Design"
+                  className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-700">Work Type</label>
+                  <select name="workType" value={form.workType} onChange={handleChange}
+                    className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+                    {WORK_TYPES.map(w => <option key={w.value} value={w.value}>{w.label}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-700">Expected Rate</label>
+                  <input name="expectedRate" value={form.expectedRate} onChange={handleChange}
+                    placeholder="e.g. ₹60–80 LPA or ₹800/hr"
+                    className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">Available From</label>
+                <input name="availableFrom" value={form.availableFrom} onChange={handleChange}
+                  placeholder="e.g. Immediately, June 2025"
+                  className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium text-gray-700">Additional Info <span className="text-gray-400 text-xs">(optional)</span></label>
+                <textarea name="additionalInfo" value={form.additionalInfo} onChange={handleChange}
+                  placeholder="Anything else bidders should know about you..."
+                  rows={2}
+                  className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-700">Minimum Bid (₹) <span className="text-red-500">*</span></label>
+                  <input name="minBidPrice" type="number" min="1" value={form.minBidPrice} onChange={handleChange}
+                    placeholder="e.g. 50000"
+                    className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" required />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium text-gray-700">Auction Duration <span className="text-red-500">*</span></label>
+                  <select name="duration" value={form.duration} onChange={handleChange}
+                    className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+                    {DURATIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {error && <div className="text-sm text-red-500 p-3 bg-red-50 border border-red-200 rounded-lg">{error}</div>}
+
+              <div className="flex gap-3 mt-1">
+                <button type="submit" className="btn-glow flex-1" disabled={loading}>
+                  {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'Continue to Payment →'}
+                </button>
+                <button type="button" className="btn-glow" onClick={onClose}>Cancel</button>
+              </div>
+            </form>
+          </>
+        )}
+
+        {step === 'payment' && (
+          <div className="text-center py-4">
+            <div className="text-5xl mb-4">💳</div>
+            <h2 className="font-display text-2xl font-semibold text-gray-900 mb-2">One-Time Listing Fee</h2>
+            <p className="text-gray-500 text-sm mb-6">
+              Pay a one-time listing fee of <strong className="text-gray-900">₹118</strong> to make your auction go live.
+              Your profile will be immediately visible to bidders.
+            </p>
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl mb-6 text-left">
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">What you get</div>
+              <ul className="text-sm text-gray-700 space-y-1.5">
+                <li>✓ Live auction visible to all registered users</li>
+                <li>✓ Real-time bid notifications</li>
+                <li>✓ Pre-auction meeting scheduler</li>
+                <li>✓ Winner email with contact details</li>
+              </ul>
+            </div>
+            {error && <div className="text-sm text-red-500 p-3 bg-red-50 border border-red-200 rounded-lg mb-4">{error}</div>}
+            <div className="flex gap-3">
+              <button className="btn-glow flex-1 text-base py-3" onClick={handlePayListingFee} disabled={loading}>
+                {loading
+                  ? <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
+                  : 'Pay ₹118 & Go Live →'}
+              </button>
+              <button className="btn-glow" onClick={() => setStep('form')}>← Back</button>
+            </div>
+          </div>
+        )}
+
+        {step === 'done' && (
+          <div className="text-center py-6">
+            <div className="text-5xl mb-4">🎉</div>
+            <h2 className="font-display text-2xl font-semibold text-gray-900 mb-2">Your Auction is Live!</h2>
+            <p className="text-gray-500 text-sm">Bidders can now discover your profile and place bids.</p>
+            <button className="btn-glow mt-6" onClick={onClose}>Done</button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Community Detail Modal (with auction link) ───────────────────────────────
+function CommunityDetailModal({ profile, isMe, onClose, onEdit, onViewAuction }) {
+  const [detail, setDetail]     = useState(null);
+  const [loading, setLoading]   = useState(true);
+  const [auction, setAuction]   = useState(null);
   const p = detail || profile;
   const skills = p.skills?.split(',').map(s => s.trim()).filter(Boolean) || [];
 
@@ -230,13 +515,20 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit }) {
       .then(({ data }) => setDetail(data?.data ?? data))
       .catch(() => setDetail(profile))
       .finally(() => setLoading(false));
+
+    communityAuctionAPI.getByCommunity(profile.id)
+      .then(({ data }) => setAuction(data?.auction ?? data))
+      .catch(() => {});
   }, [profile.id]);
 
+  const isAuctionLive = auction && (auction.status === 'ACTIVE' || auction.status === 'EXTENDED');
+
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn"
+      onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
-        <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
+        <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer hover:text-gray-700" onClick={onClose}>✕</button>
 
         {loading ? (
           <div className="flex justify-center p-12">
@@ -258,6 +550,25 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit }) {
                 )}
               </div>
             </div>
+
+            {/* Auction banner */}
+            {isAuctionLive && (
+              <div className="mb-5 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-0.5">🔨 Profile Auction Live</div>
+                  <div className="text-sm text-amber-800 font-semibold">{auction.auctionTitle}</div>
+                  <div className="text-xs text-amber-600 mt-1">
+                    {auction.currentHighestBid > 0
+                      ? `Highest bid: ₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`
+                      : `Starting at ₹${Number(auction.minBidPrice).toLocaleString('en-IN')}`}
+                  </div>
+                </div>
+                <button className="btn-glow btn-glow-sm flex-shrink-0"
+                  onClick={() => { onClose(); onViewAuction(auction.id); }}>
+                  Bid / Meet →
+                </button>
+              </div>
+            )}
 
             <div className="flex gap-2 flex-wrap mb-5">
               {p.industry && <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700">{p.industry.replace(/_/g, ' ')}</span>}
@@ -290,9 +601,7 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit }) {
             )}
 
             <div className="flex gap-3 mt-6">
-              {isMe && (
-                <button className="btn-glow" onClick={onEdit}>✏ Edit Profile</button>
-              )}
+              {isMe && <button className="btn-glow" onClick={onEdit}>✏ Edit Profile</button>}
               <button className="btn-glow" onClick={onClose}>Close</button>
             </div>
           </>
@@ -302,16 +611,12 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit }) {
   );
 }
 
-
 // ─── Community Profile Form ───────────────────────────────────────────────────
 function CommunityProfileForm({ initial, onSaved, onCancel }) {
   const [form, setForm] = useState({
-    role:     initial?.role     || '',
-    skills:   initial?.skills   || '',
-    industry: initial?.industry || '',
-    location: initial?.location || '',
-    whyImHere: initial?.whyImHere || '',
-    linkedInProfileUrl: initial?.linkedInProfileUrl || '',
+    role: initial?.role || '', skills: initial?.skills || '',
+    industry: initial?.industry || '', location: initial?.location || '',
+    whyImHere: initial?.whyImHere || '', linkedInProfileUrl: initial?.linkedInProfileUrl || '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
@@ -351,67 +656,42 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
           <div className="mt-2.5 text-xs text-blue-500">✓ Name and photo imported from LinkedIn</div>
         </div>
       )}
-
-      <h3 className="font-display text-2xl text-gray-900 font-semibold">
-        Complete Your Community Profile
-      </h3>
+      <h3 className="font-display text-2xl text-gray-900 font-semibold">Complete Your Community Profile</h3>
       <p className="text-gray-500 text-sm mt-1">Help others understand what you bring to the table.</p>
-
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Your Role <span className="text-red-500 font-bold">*</span></label>
-            <select name="role" value={form.role} onChange={handleChange} required
-              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+            <label className="text-sm font-medium text-gray-700">Your Role <span className="text-red-500">*</span></label>
+            <select name="role" value={form.role} onChange={handleChange} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
               <option value="">Select role</option>
               {ROLES.map(r => <option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Industry <span className="text-red-500 font-bold">*</span></label>
-            <select name="industry" value={form.industry} onChange={handleChange} required
-              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
+            <label className="text-sm font-medium text-gray-700">Industry <span className="text-red-500">*</span></label>
+            <select name="industry" value={form.industry} onChange={handleChange} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
               <option value="">Select industry</option>
               {INDUSTRIES.map(i => <option key={i} value={i}>{i.replace(/_/g, ' ')}</option>)}
             </select>
           </div>
         </div>
-
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Skills <span className="text-gray-400 text-xs">(comma-separated)</span></label>
-          <input name="skills" value={form.skills} onChange={handleChange}
-            placeholder="e.g. Java, React, Marketing, Finance"
-            className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          <input name="skills" value={form.skills} onChange={handleChange} placeholder="e.g. Java, React, Marketing, Finance" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
         </div>
-
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Location</label>
-          <input name="location" value={form.location} onChange={handleChange}
-            placeholder="e.g. Bengaluru, India"
-            className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+          <input name="location" value={form.location} onChange={handleChange} placeholder="e.g. Bengaluru, India" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
         </div>
-
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Why I'm Here <span className="text-gray-400 text-xs">(optional)</span></label>
-          <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange}
-            placeholder="e.g. Looking to co-found a SaaS product, open to advisory roles in fintech, seeking a tech co-founder for my D2C brand..."
-            rows={3}
-            className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
+          <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange} placeholder="e.g. Looking to co-found a SaaS product..." rows={3} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
         </div>
-
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">LinkedIn Profile URL <span className="text-red-500 font-bold">*</span></label>
-          <input name="linkedInProfileUrl" value={form.linkedInProfileUrl} onChange={handleChange}
-            placeholder="https://www.linkedin.com/in/your-username"
-            required
-            className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
-          <span className="text-xs text-gray-400 mt-0.5">
-            Find it on your LinkedIn profile page — e.g. linkedin.com/in/johndoe
-          </span>
+          <label className="text-sm font-medium text-gray-700">LinkedIn Profile URL <span className="text-red-500">*</span></label>
+          <input name="linkedInProfileUrl" value={form.linkedInProfileUrl} onChange={handleChange} placeholder="https://www.linkedin.com/in/your-username" required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
         </div>
-
         {error && <div className="text-sm text-red-500">{error}</div>}
-
         <div className="flex gap-3">
           <button type="submit" className="btn-glow" disabled={loading}>
             {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'Save Profile →'}
@@ -426,15 +706,11 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
 // ─── Community Card ───────────────────────────────────────────────────────────
 function CommunityCard({ profile, isMe, onView, onEdit, likeState, onLike }) {
   const skills = profile.skills?.split(',').map(s => s.trim()).filter(Boolean) || [];
-
   return (
-    
-    <div
-      className={`card-glow-hover p-6 bg-white rounded-[18px] flex flex-col gap-3 cursor-pointer relative border ${isMe ? 'border-indigo-300' : 'border-gray-200'}`}
-      onClick={onView}
-    >
+    <div className={`card-glow-hover p-6 bg-white rounded-[18px] flex flex-col gap-3 cursor-pointer relative border ${isMe ? 'border-indigo-300' : 'border-gray-200'}`} onClick={onView}>
       {isMe && (
-        <button className="absolute top-3.5 right-3.5 inline-flex items-center justify-center w-7 h-7 bg-gray-50 border border-gray-200 rounded-full text-gray-500 p-0 cursor-pointer transition-all hover:bg-gray-100" onClick={e => { e.stopPropagation(); onEdit(); }} title="Edit profile">✏</button>
+        <button className="absolute top-3.5 right-3.5 inline-flex items-center justify-center w-7 h-7 bg-gray-50 border border-gray-200 rounded-full text-gray-500 p-0 cursor-pointer hover:bg-gray-100"
+          onClick={e => { e.stopPropagation(); onEdit(); }} title="Edit profile">✏</button>
       )}
       <div className="flex items-center gap-3">
         {profile.imageUrl
@@ -448,19 +724,13 @@ function CommunityCard({ profile, isMe, onView, onEdit, likeState, onLike }) {
           )}
         </div>
       </div>
-
       <div className="flex flex-col gap-1">
         <span className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider">Industry & Location</span>
         <div className="flex flex-wrap gap-1.5">
-          {profile.industry && (
-            <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700">{profile.industry.replace(/_/g, ' ')}</span>
-          )}
-          {profile.location && (
-            <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">📍 {profile.location}</span>
-          )}
+          {profile.industry && <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700">{profile.industry.replace(/_/g, ' ')}</span>}
+          {profile.location && <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">📍 {profile.location}</span>}
         </div>
       </div>
-
       {skills.length > 0 && (
         <div className="flex flex-col gap-1">
           <span className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider">Skills</span>
@@ -470,13 +740,11 @@ function CommunityCard({ profile, isMe, onView, onEdit, likeState, onLike }) {
           </div>
         </div>
       )}
-
       {profile.linkedInProfileUrl && (
         <a href={profile.linkedInProfileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs text-[#0077b5] no-underline mt-0.5 hover:text-[#005885]" onClick={e => e.stopPropagation()}>
           <LinkedInIcon size={13} /> LinkedIn ↗
         </a>
       )}
-
       <div className="flex justify-between items-center mt-1">
         <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} forceRed />
       </div>
@@ -484,7 +752,6 @@ function CommunityCard({ profile, isMe, onView, onEdit, likeState, onLike }) {
   );
 }
 
-// ─── LinkedIn Icon ────────────────────────────────────────────────────────────
 function LinkedInIcon({ size = 18 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">

@@ -78,7 +78,7 @@ export const domainAPI = {
   create:          (data)    => api.post('/api/v1/domain', data),
   update:          (id, data)=> api.put(`/api/v1/domain/${id}`, data),
   delete:          (id)      => api.delete(`/api/v1/domain/${id}`),
-  createOrder:     (id)      => api.post(`/api/v1/domain/${id}/purchase/create-order`),
+  createOrder: (id, data) => api.post(`/api/v1/domain/${id}/purchase/create-order`, data),
   verifyPayment:   (id, data)=> api.post(`/api/v1/domain/${id}/purchase/verify`, data),
   handleFailure:   (id)      => api.post(`/api/v1/domain/${id}/purchase/failure`),
   verifyInit:  (id, method) => api.post(`/api/v1/domain/${id}/verify/init?method=${method}`),
@@ -137,6 +137,8 @@ export const adminAPI = {
   getCoVentures:        ()              => api.get('/api/v1/admin/coventures'),
   getVentures:          ()              => api.get('/api/v1/admin/ventures'),
   getDomains:           ()              => api.get('/api/v1/admin/domains'),
+  getSoftwares:         ()              => api.get('/api/v1/admin/softwares'),
+  getCommunities:       ()              => api.get('/api/v1/admin/communities'),
   getCoCreations:       ()              => api.get('/api/v1/admin/cocreations'),
   getCoBrotherRequests: ()              => api.get('/api/v1/admin/cobrother-requests'),
   getCoBrothers:        ()              => api.get('/api/v1/admin/cobrothers'),
@@ -150,6 +152,12 @@ export const adminAPI = {
   toggleDomainHomepage:   (id)  => api.post(`/api/v1/admin/domain/${id}/toggle-homepage`),
   toggleVentureHomepage:  (id)  => api.post(`/api/v1/admin/venture/${id}/toggle-homepage`),
   toggleSoftwareHomepage: (id)  => api.post(`/api/v1/admin/software/${id}/toggle-homepage`),
+  toggleFeatured: (type, id, featured) =>
+    api.post('/api/v1/admin/feature', { type, entityId: String(id), featured: String(featured) }),
+  getAllSoftwareAuctions:    ()         => api.get('/api/v1/software-auction/admin/all'),
+  getPendingSoftwareAuctions:()         => api.get('/api/v1/software-auction/admin/pending'),
+  approveSoftwareAuction:    (id)       => api.post(`/api/v1/software-auction/admin/${id}/approve`),
+  rejectSoftwareAuction:     (id, r)    => api.post(`/api/v1/software-auction/admin/${id}/reject`, { reason: r }),
 
 };
 
@@ -183,6 +191,50 @@ export const auctionAPI = {
 
 export const feedbackAPI = {
   submit: (payload) => api.post('/api/v1/feedback', payload),
+};
+
+// ─── Community Auction ────────────────────────────────────────────────────────
+export const communityAuctionAPI = {
+  create:              (communityId, data) => api.post(`/api/v1/community-auction/?communityId=${communityId}`, data),
+  createListingOrder:  (auctionId)         => api.post(`/api/v1/community-auction/${auctionId}/listing-fee/create-order`),
+  verifyListingFee:    (auctionId, data)   => api.post(`/api/v1/community-auction/${auctionId}/listing-fee/verify`, data),
+  get:                 (auctionId)         => api.get(`/api/v1/community-auction/${auctionId}`),
+  getByCommunity:      (communityId)       => api.get(`/api/v1/community-auction/community/${communityId}`),
+  getActive:           ()                  => api.get('/api/v1/community-auction/active'),
+  getMyAuctions:       ()                  => api.get('/api/v1/community-auction/my'),
+  placeBid:            (auctionId, amount) => api.post(`/api/v1/community-auction/${auctionId}/bid`, { amount }),
+  reAuction:           (auctionId, data)   => api.post(`/api/v1/community-auction/${auctionId}/re-auction`, data),
+  close:               (auctionId)         => api.post(`/api/v1/community-auction/${auctionId}/close`),
+  adminGetAll:         ()                  => api.get('/api/v1/community-auction/admin/all'),
+};
+
+export const softwareAuctionAPI = {
+  create:          (softwareId, data)   => api.post(`/api/v1/software-auction/software/${softwareId}`, data),
+  get:             (auctionId)          => api.get(`/api/v1/software-auction/${auctionId}`),
+  getBySoftware:   (softwareId)         => api.get(`/api/v1/software-auction/software/${softwareId}`),
+  placeBid:        (auctionId, amount)  => api.post(`/api/v1/software-auction/${auctionId}/bid`, { amount }),
+  reAuction:       (auctionId, data)    => api.post(`/api/v1/software-auction/${auctionId}/re-auction`, data),
+  close:           (auctionId)          => api.post(`/api/v1/software-auction/${auctionId}/close`),
+  getActive:       ()                   => api.get('/api/v1/software-auction/active'),
+  adminGetAll:     ()                   => api.get('/api/v1/software-auction/admin/all'),
+  adminGetPending: ()                   => api.get('/api/v1/software-auction/admin/pending'),
+  adminApprove:    (auctionId)          => api.post(`/api/v1/software-auction/admin/${auctionId}/approve`),
+  adminReject:     (auctionId, reason)  => api.post(`/api/v1/software-auction/admin/${auctionId}/reject`, { reason }),
+};
+ 
+
+
+// ─── Meeting Schedule ─────────────────────────────────────────────────────────
+export const meetingAPI = {
+  request:       (auctionId, data)  => api.post(`/api/v1/meetings/auction/${auctionId}`, data),
+  confirm:       (meetingId)        => api.put(`/api/v1/meetings/${meetingId}/confirm`),
+  cancel:        (meetingId, reason)=> api.put(`/api/v1/meetings/${meetingId}/cancel`, reason ? { reason } : {}),
+  complete:      (meetingId)        => api.put(`/api/v1/meetings/${meetingId}/complete`),
+  getAllMine:     ()                 => api.get('/api/v1/meetings/all'),
+  getMyRequests: ()                 => api.get('/api/v1/meetings/my-requests'),
+  getMySchedule: ()                 => api.get('/api/v1/meetings/my-schedule'),
+  getForAuction: (auctionId)        => api.get(`/api/v1/meetings/auction/${auctionId}`),
+  adminGetAll:   ()                 => api.get('/api/v1/meetings/admin/all'),
 };
 
 export const joinUsAPI = {

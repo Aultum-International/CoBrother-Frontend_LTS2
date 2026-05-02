@@ -6,6 +6,7 @@ import PurchaseIcon from '../assets/purchase.png';
 import DomainsIcon from '../assets/CoBranding.png';
 import SoftwareIcon from '../assets/CoCreation.png';
 import CoBrotherIcon from '../assets/Community-profileicon.png';
+import { generateInvoice } from '../utils/generateInvoice';
 
 export default function PurchasesPage() {
   const navigate                      = useNavigate();
@@ -15,6 +16,10 @@ export default function PurchasesPage() {
   const [loading, setLoading]         = useState(true);
   const [helpModal, setHelpModal]     = useState(null);
   const [helpSuccess, setHelpSuccess] = useState(null);
+
+  // Optional: pull user info from your auth context/store for the invoice billing section
+  // const { user } = useAuth();
+  const user = {}; // Replace with real user: { name, email, gstin, address }
 
   useEffect(() => {
     setLoading(true);
@@ -73,7 +78,9 @@ export default function PurchasesPage() {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>
+          <div className="flex items-center justify-center py-20">
+            <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
+          </div>
         ) : displayItems.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">🛒</div>
@@ -88,9 +95,18 @@ export default function PurchasesPage() {
           <div className="flex flex-col gap-3.5">
             {displayItems.map((item) =>
               item._type === 'domain' ? (
-                <DomainPurchaseRow key={'d-' + item.id} domain={item} />
+                <DomainPurchaseRow
+                  key={'d-' + item.id}
+                  domain={item}
+                  onDownloadInvoice={() => generateInvoice({ type: 'domain', item, user })}
+                />
               ) : (
-                <SoftwarePurchaseRow key={'s-' + item.id} purchase={item} onGetHelp={() => setHelpModal(item)} />
+                <SoftwarePurchaseRow
+                  key={'s-' + item.id}
+                  purchase={item}
+                  onGetHelp={() => setHelpModal(item)}
+                  onDownloadInvoice={() => generateInvoice({ type: 'software', item, user })}
+                />
               )
             )}
           </div>
@@ -132,7 +148,10 @@ export default function PurchasesPage() {
   );
 }
 
-function DomainPurchaseRow({ domain }) {
+/* ─────────────────────────────────────────────────────────
+   Domain Purchase Row
+───────────────────────────────────────────────────────── */
+function DomainPurchaseRow({ domain, onDownloadInvoice }) {
   return (
     <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
       <div className="flex justify-between flex-wrap gap-3">
@@ -146,11 +165,12 @@ function DomainPurchaseRow({ domain }) {
           </div>
           <div className="text-xs text-gray-600">{domain.pricingDemand}</div>
         </div>
-        <div className="text-right">
+        <div className="text-right flex flex-col items-end gap-2">
           <div className="font-display text-xl font-bold text-green-600">
             ₹{Number(domain.askingPrice).toLocaleString('en-IN')}
           </div>
           <div className="text-xs text-gray-600">✓ Payment Confirmed</div>
+          <InvoiceDownloadButton onClick={onDownloadInvoice} />
         </div>
       </div>
       <div className="mt-3.5 px-4 py-3 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-900">
@@ -160,8 +180,11 @@ function DomainPurchaseRow({ domain }) {
   );
 }
 
-function SoftwarePurchaseRow({ purchase, onGetHelp }) {
-  const sw        = purchase.software || {};
+/* ─────────────────────────────────────────────────────────
+   Software Purchase Row
+───────────────────────────────────────────────────────── */
+function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
+  const sw      = purchase.software || {};
   const helpPaid  = purchase.coBrotherHelpPaid;
   const confirmed = purchase.completionStatus === 'CONFIRMED';
 
@@ -183,12 +206,13 @@ function SoftwarePurchaseRow({ purchase, onGetHelp }) {
             </div>
           )}
         </div>
-        <div className="text-right flex-shrink-0">
+        <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
           <div className="font-display text-xl font-bold text-purple-700">
             ₹{Number(sw.price || 0).toLocaleString('en-IN')}
           </div>
           {helpPaid && <div className="text-xs text-gray-600">+ ₹1,000 CoBrother</div>}
           <div className="text-xs text-gray-600">✓ Payment Confirmed</div>
+          <InvoiceDownloadButton onClick={onDownloadInvoice} />
         </div>
       </div>
 
@@ -204,9 +228,7 @@ function SoftwarePurchaseRow({ purchase, onGetHelp }) {
       <div className="mt-3.5">
         {helpPaid ? (
           <div className="p-4 bg-green-100 border border-green-200 rounded-lg">
-            <div className="font-bold text-sm text-green-600 mb-1">
-              ◆ CoBrother Helper Assigned
-            </div>
+            <div className="font-bold text-sm text-green-600 mb-1">◆ CoBrother Helper Assigned</div>
             <div className="text-xs text-gray-600 leading-relaxed">
               Check your email for introduction details from your assigned CoBrother.
             </div>
@@ -214,9 +236,7 @@ function SoftwarePurchaseRow({ purchase, onGetHelp }) {
         ) : (
           <div className="p-4 bg-purple-50 border border-purple-100 rounded-lg flex items-center justify-between flex-wrap gap-3">
             <div>
-              <div className="font-bold text-sm text-purple-700 mb-1">
-                Need help getting started?
-              </div>
+              <div className="font-bold text-sm text-purple-700 mb-1">Need help getting started?</div>
               <div className="text-xs text-gray-600 leading-relaxed">
                 Get a dedicated CoBrother to guide you through setup and deployment.
               </div>
@@ -231,6 +251,30 @@ function SoftwarePurchaseRow({ purchase, onGetHelp }) {
   );
 }
 
+/* ─────────────────────────────────────────────────────────
+   Reusable Download Button
+───────────────────────────────────────────────────────── */
+function InvoiceDownloadButton({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-gray-900 border border-gray-200 hover:border-gray-400 rounded-lg px-3 py-1.5 transition-all duration-200 bg-white hover:bg-gray-50 group"
+    >
+      <svg
+        className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-700 transition-colors"
+        viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M8 1v9m0 0L5 7m3 3 3-3M2 12v2a1 1 0 001 1h10a1 1 0 001-1v-2"
+          stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+      Invoice
+    </button>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────
+   CoBrother Help Modal (unchanged)
+───────────────────────────────────────────────────────── */
 function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
@@ -312,6 +356,9 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
   );
 }
 
+/* ─────────────────────────────────────────────────────────
+   Stat Card (unchanged)
+───────────────────────────────────────────────────────── */
 function StatCard({ label, value, iconSrc, color = '#111827' }) {
   return (
     <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">

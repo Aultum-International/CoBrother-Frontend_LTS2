@@ -12,6 +12,9 @@ import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
 import SkeletonCard from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import SoftwareAuctionRequestModal from './SoftwareAuctionRequestModal';
+import { softwareAuctionAPI } from '../api/services';
+import AddonSelector, { addonTotal, ADDON_SERVICES } from '../components/addon/AddonSelector';
 
 const COCREATION_CATEGORIES = [
   'SAAS','MOBILE_APP','DESKTOP','API_TOOL',
@@ -39,6 +42,11 @@ export default function CoCreationPage() {
   const [detailTarget, setDetailTarget]     = useState(null);
   const [deleteTarget, setDeleteTarget]     = useState(null);
   const [filterTab, setFilterTab]           = useState('all');
+  
+  const [auctionTarget, setAuctionTarget]     = useState(null);  // software to auction
+  const [auctionStatuses, setAuctionStatuses] = useState({});    // softwareId → auction info
+ 
+
 
   const { toggle: toggleLike, get: getLike } = useLikes('SOFTWARE', allSoftware);
 
@@ -69,6 +77,19 @@ export default function CoCreationPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (!user || allSoftware.length === 0) return;
+    const myListings = allSoftware.filter(s => s.listedBy?.id === user.id);
+    myListings.forEach(s => {
+      softwareAuctionAPI.getBySoftware(s.id)
+        .then(({ data }) => {
+          setAuctionStatuses(prev => ({ ...prev, [s.id]: data.auction }));
+        })
+        .catch(() => {});
+    });
+  }, [allSoftware, user]);
+
+
   const handleDelete = async () => {
     try {
       await cocreationAPI.delete(deleteTarget);
@@ -77,6 +98,20 @@ export default function CoCreationPage() {
       alert(e.response?.data?.error || 'Failed to remove listing.');
     } finally { setDeleteTarget(null); }
   };
+
+  const handleAuctionSubmitted = () => {
+    setAuctionTarget(null);
+    alert('Auction request submitted! Admin will review it shortly.');
+    // Reload auction statuses
+    if (auctionTarget) {
+      softwareAuctionAPI.getBySoftware(auctionTarget.id)
+        .then(({ data }) => {
+          setAuctionStatuses(prev => ({ ...prev, [auctionTarget.id]: data.auction }));
+        })
+        .catch(() => {});
+    }
+  };
+
 
   const refreshSoftware = () =>
     cocreationAPI.getAll()
@@ -169,12 +204,14 @@ export default function CoCreationPage() {
                 <SoftwareCard
                   key={s.id}
                   item={s}
-                  isOwner={s.listedBy?.id === user?.id || user?.role === 'ADMIN'}
+                  isOwner={s.listedBy?.id === user?.id}
                   likeState={getLike(s.id)}
                   onLike={() => toggleLike(s.id)}
                   onView={() => setDetailTarget(s)}
                   onBuy={() => setBuyTarget(s)}
                   onDelete={() => setDeleteTarget(s.id)}
+                  onAuction={() => setAuctionTarget(s)}
+                  auctionStatus={auctionStatuses[s.id]}
                 />
               ))}
             </div>
@@ -214,6 +251,15 @@ export default function CoCreationPage() {
         />
       )}
 
+      {auctionTarget && (
+        <SoftwareAuctionRequestModal
+          software={auctionTarget}
+          onClose={() => setAuctionTarget(null)}
+          onSubmitted={handleAuctionSubmitted}
+        />
+      )}
+
+
       <ConfirmDialog
         open={!!deleteTarget}
         title="Remove Software Listing?"
@@ -226,7 +272,8 @@ export default function CoCreationPage() {
     </AppLayout>
   );
 }
-function SoftwareCard({ item, isOwner, onView, onBuy, onDelete, likeState, onLike }) {
+function SoftwareCard({ item, isOwner, onView, onBuy, onDelete, likeState, onLike, onAuction, auctionStatus }) {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const s = STATUS_COLORS[item.softwareStatus] || STATUS_COLORS.AVAILABLE;
 
@@ -300,10 +347,48 @@ function SoftwareCard({ item, isOwner, onView, onBuy, onDelete, likeState, onLik
               )}
             </>
           ) : item.listedBy?.id === user?.id ? (
-            <button className="inline-flex items-center justify-center px-3 py-1.5 bg-red-50 border border-red-200 text-red-600 font-semibold text-xs rounded-lg cursor-pointer transition-colors hover:bg-red-100"
-              onClick={e => { e.stopPropagation(); onDelete(); }}>
-              Remove
-            </button>
+            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
+              {/* Auction CTA logic */}
+              {!auctionStatus && item.softwareStatus === 'AVAILABLE' && (
+                <button
+                  className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
+                  style={{ background: 'rgba(200,169,110,0.12)', color: '#c8a96e',
+                           border: '1px solid rgba(200,169,110,0.35)' }}
+                  onClick={() => onAuction()}>
+                  🔨 Auction
+                </button>
+              )}
+              {auctionStatus?.approvalStatus === 'PENDING_APPROVAL' && (
+                <span style={{ fontSize: '0.72rem', color: '#c8a96e', padding: '0.25rem 0.5rem',
+                               background: 'rgba(200,169,110,0.1)', border: '1px solid rgba(200,169,110,0.3)',
+                               borderRadius: 6 }}>
+                  ⏳ Auction Pending
+                </span>
+              )}
+              {auctionStatus?.approvalStatus === 'APPROVED' && (
+                <button
+                  className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
+                  style={{ background: 'rgba(110,200,150,0.12)', color: '#6ec896',
+                           border: '1px solid rgba(110,200,150,0.35)' }}
+                  onClick={e => { e.stopPropagation(); navigate(`/cocreation/auction/${auctionStatus.id}`); }}>
+                  🟢 View Auction
+                </button>
+              )}
+              {auctionStatus?.approvalStatus === 'REJECTED' && (
+                <button
+                  className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
+                  style={{ background: 'rgba(200,110,110,0.1)', color: '#c86e6e',
+                           border: '1px solid rgba(200,110,110,0.3)' }}
+                  onClick={() => onAuction()}>
+                  ↻ Re-submit Auction
+                </button>
+              )}
+              <button
+                className="inline-flex items-center justify-center px-3 py-1.5 bg-red-50 border border-red-200 text-red-600 font-semibold text-xs rounded-lg cursor-pointer transition-colors hover:bg-red-100"
+                onClick={e => { e.stopPropagation(); onDelete(); }}>
+                Remove
+              </button>
+            </div>
           ) : item.softwareStatus === 'AVAILABLE' ? (
             <button className="inline-flex items-center justify-center px-3 py-1.5 bg-indigo-600 text-white font-semibold text-xs rounded-lg cursor-pointer hover:bg-indigo-700"
               onClick={e => { e.stopPropagation(); onBuy(); }}>
@@ -546,10 +631,12 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
   const [coBrotherOptIn, setCoBrotherOptIn] = useState(false);
   const [loading, setLoading]               = useState(false);
   const [error, setError]                   = useState('');
+  const [addons, setAddons]                 = useState([]);
 
   const basePrice    = item.price;
   const coBrotherFee = coBrotherOptIn ? 1000 : 0;
-  const totalPrice   = basePrice + coBrotherFee;
+  const addonExtra     = addonTotal(addons);
+  const totalPrice   = basePrice + coBrotherFee + addonExtra;
 
   const handlePay = async () => {
     setLoading(true); setError('');
@@ -558,6 +645,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
       const { data: orderData } = await cocreationAPI.createOrder(item.id, {
         ...form,
         coBrotherOptIn,
+        services: addons,
       });
 
       const options = {
@@ -582,6 +670,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
               githubLink:       verifyData.githubLink,
               coBrotherOptIn,
               coBrotherHelpPaid: coBrotherOptIn,
+              _addons:           addons,
             });
           } catch {
             setError('Payment verification failed. Contact support.');
@@ -672,6 +761,8 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
             </div>
           </div>
         </div>
+        
+        <AddonSelector selected={addons} onChange={setAddons} />
 
         {/* ── Billing breakdown ── */}
         <div className="bg-gray-50 border border-gray-200 rounded-[10px] p-4 mb-5">
@@ -682,6 +773,16 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
                        value={`₹${Number(basePrice).toLocaleString('en-IN')}`} />
           {coBrotherOptIn && (
             <BillingLine label="◆ CoBrother Helper" value="₹1,000" accent />
+          )}
+          {addons.filter(k => !ADDON_SERVICES.find(s => s.key === k)?.contactOnly).map(k => {
+            const svc = ADDON_SERVICES.find(s => s.key === k);
+            return svc ? (
+              <BillingLine key={k} label={svc.label}
+                value={`₹${svc.price.toLocaleString('en-IN')}`} accent />
+            ) : null;
+          })}
+          {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (
+            <div className="text-xs text-amber-600 py-1">+ contact-based services (no charge now)</div>
           )}
           <div className="h-px bg-gray-200 my-2.5" />
           <div className="flex justify-between items-center">

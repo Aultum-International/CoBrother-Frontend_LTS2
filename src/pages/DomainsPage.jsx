@@ -13,6 +13,7 @@ import SkeletonCard from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import Confetti from '../components/common/Confetti';
 import DomainsIcon from '../assets/CoBranding.png';
+import AddonSelector, {addonTotal, ADDON_SERVICES} from '../components/addon/AddonSelector';
 
 const DOMAIN_PRICING_OPTIONS = [
   { value: 'FIXED',      label: 'Fixed Price' },
@@ -790,14 +791,24 @@ function DomainForm({ onSaved, onCancel }) {
 function BuyDomainModal({ domain, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
+  const [addons, setAddons]   = useState([]);
+
+  const addonExtra  = addonTotal(addons);
+  const domainPrice = Number(domain.askingPrice);
+  const totalPrice  = domainPrice + addonExtra;
 
   const handleBuy = async () => {
     setLoading(true); setError('');
     try {
-      const { data: orderData } = await domainAPI.createOrder(domain.id);
+      const { data: orderData } = await domainAPI.createOrder(domain.id, {
+        services: addons
+      });
       const options = {
-        key: orderData.keyId, amount: orderData.amount * 100, currency: orderData.currency,
-        name: 'CoBrother', description: `Purchase ${domain.domainName}${domain.domainExtension}`,
+        key:      orderData.keyId,
+        amount:   orderData.amount * 100,
+        currency: orderData.currency,
+        name:     'CoBrother',
+        description: `Purchase ${domain.domainName}${domain.domainExtension}`,
         order_id: orderData.orderId,
         handler: async response => {
           try {
@@ -806,7 +817,12 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
               razorpayOrderId:   response.razorpay_order_id,
               razorpaySignature: response.razorpay_signature,
             });
-            onSuccess({ ...domain, domainStatus: 'SOLD', paymentStatus: 'COMPLETED' });
+            onSuccess({
+              ...domain,
+              domainStatus:  'SOLD',
+              paymentStatus: 'COMPLETED',
+              _addons:       addons,
+            });
           } catch { setError('Payment verification failed. Contact support.'); setLoading(false); }
         },
         modal: { ondismiss: async () => { await domainAPI.handleFailure(domain.id); setLoading(false); } },
@@ -824,26 +840,55 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[480px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
+      <div className="relative w-full max-w-[520px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8 max-h-[90vh] overflow-y-auto">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
-        <div className="mb-6">
+
+        <div className="mb-5">
           <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide mb-2">Domain Purchase</div>
           <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">{domain.domainName}{domain.domainExtension}</h2>
           <p className="text-sm text-gray-500">{domain.pricingDemand}</p>
         </div>
-        <div className="p-3.5 bg-green-50 border border-green-200 rounded-lg text-[0.82rem] text-green-800 leading-relaxed mb-3">
-          ⏳ A confirmation email has been sent. The seller will initiate the domain transfer
-          within <strong>24 hours</strong>.
-        </div>
-        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-lg text-[0.82rem] text-amber-800 leading-relaxed mb-5">
+
+        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-lg text-[0.82rem] text-amber-800 leading-relaxed mb-4">
           ⏳ After payment, you will be updated within <strong>24 hours</strong> with transfer details.
         </div>
-        {error && <div className="text-sm text-red-500 mb-4">{error}</div>}
-        <div className="flex gap-3">
+
+        {/* ── Add-on selector ── */}
+        <AddonSelector selected={addons} onChange={setAddons} />
+
+        {/* ── Billing breakdown ── */}
+        <div className="mt-4 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm">
+          <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Billing Breakdown</div>
+          <div className="flex justify-between text-gray-600 mb-1">
+            <span>{domain.domainName}{domain.domainExtension}</span>
+            <span>₹{domainPrice.toLocaleString('en-IN')}</span>
+          </div>
+          {addons.filter(k => !ADDON_SERVICES.find(s => s.key === k)?.contactOnly).map(k => {
+            const svc = ADDON_SERVICES.find(s => s.key === k);
+            return svc ? (
+              <div key={k} className="flex justify-between text-indigo-600 mb-1">
+                <span className="truncate mr-2">{svc.label}</span>
+                <span>₹{svc.price.toLocaleString('en-IN')}</span>
+              </div>
+            ) : null;
+          })}
+          {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (
+            <div className="text-xs text-amber-600 mb-1">+ contact-based services (no extra charge)</div>
+          )}
+          <div className="flex justify-between font-bold text-gray-900 border-t border-gray-200 pt-2 mt-1">
+            <span>Total</span>
+            <span>₹{totalPrice.toLocaleString('en-IN')}</span>
+          </div>
+        </div>
+
+        {error && <div className="text-sm text-red-500 mt-4 mb-2">{error}</div>}
+
+        <div className="flex gap-3 mt-5">
           <button type="button" className="btn-glow flex-1" onClick={handleBuy} disabled={loading}>
-            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
-              `Pay ₹${Number(domain.askingPrice).toLocaleString('en-IN')} →`}
+            {loading
+              ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
+              : `Pay ₹${totalPrice.toLocaleString('en-IN')} →`}
           </button>
           <button type="button" className="btn-glow" onClick={onClose}>Cancel</button>
         </div>
@@ -851,6 +896,7 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
     </div>
   );
 }
+
 
 // ─── Purchase Success Modal ───────────────────────────────────────────────────
 function PurchaseSuccessModal({ domain, onClose }) {

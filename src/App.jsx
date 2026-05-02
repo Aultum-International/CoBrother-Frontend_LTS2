@@ -27,11 +27,18 @@ import FeeRequestsPage       from './pages/FeeRequestsPage';
 import { AdminGuard, CoBrotherGuard } from './components/auth/ProtectedRoute';
 import AuctionPage from './pages/AuctionPage';
 import VentureAuctionPage from './pages/VentureAuctionPage';
+import CommunityAuctionPage from './pages/CommunityAuctionPage';
+import MeetingsPage from './pages/MeetingsPage';
 import PurchasesPage from './pages/PurchasesPage';
 import AuctionsPage from './pages/AuctionsPage';
 import Home from './pages/Home';
 import JoinForm from './pages/JoinForm';
 import ContactPage from './pages/ContactPage';
+import SoftwareAuctionPage from './pages/SoftwareAuctionPage';
+import AboutUsPage from './pages/AboutUsPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import TermsAndConditionsPage from './pages/TermsAndConditionsPage';  
+
 
 
 export default function App() {
@@ -45,13 +52,19 @@ export default function App() {
           <Route path="/join-form" element={<JoinForm />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/about" element={<AboutUsPage />} />
+          <Route path="/careers" element={<Navigate to="/contact" replace />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
           {/* OAuth callback — path MUST match app.oauth2.redirect-uri in application.properties */}
           <Route path="/auth/callback" element={<OAuthCallbackPage />} />
 
 
           <Route path="/auction/:auctionId" element={<ProfileGuard><AuctionPage /></ProfileGuard>} />
           <Route path="/venture-auction/:auctionId" element={<ProfileGuard><VentureAuctionPage /></ProfileGuard>} />
+          <Route path="/community-auction/:auctionId" element={<ProfileGuard><CommunityAuctionPage /></ProfileGuard>} />
+          <Route path="/meetings" element={<ProfileGuard><MeetingsPage /></ProfileGuard>} />
           {/* Authenticated but profile may be incomplete */}
           <Route
             path="/complete-profile"
@@ -66,7 +79,7 @@ export default function App() {
 
           <Route path="/domains" element={<ProfileGuard><DomainsPage /></ProfileGuard>} />
           <Route path="/domains/dashboard" element={<ProfileGuard><DomainsDashboardPage /></ProfileGuard>} />
-
+          <Route path="/cocreation/auction/:auctionId" element={<SoftwareAuctionPage />} />
           <Route path="/cocreation" element={<ProfileGuard><CoCreationPage /></ProfileGuard>} />
           <Route path="/cocreation/dashboard" element={<ProfileGuard><CoCreationDashboardPage /></ProfileGuard>} />
           <Route path="/cocreation/:id/analytics" element={<ProfileGuard><CoCreationAnalyticsPage /></ProfileGuard>} />
@@ -76,6 +89,7 @@ export default function App() {
           <Route path="/fee-requests" element={<ProtectedRoute><FeeRequestsPage /></ProtectedRoute>} />
           <Route path="/auctions"  element={<ProfileGuard><AuctionsPage  /></ProfileGuard>} />
           <Route path="/purchases" element={<ProfileGuard><PurchasesPage /></ProfileGuard>} />
+          
 
 
           {/* Authenticated + profile complete required */}
