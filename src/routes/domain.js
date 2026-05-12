@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
 const { Domain } = require('../models'); // adjust path to your models
 
 const axios = require('axios');
@@ -17,8 +16,7 @@ async function getOpToken() {
     password: 'Aultum@12345',
     ip: '0.0.0.0',
   });
-  if (data.code !== 0) throw new Error('OpenProvider auth failed');
-  _opToken = data.data.token;
+  if (data.code !== 0) throw n
   _opTokenExpiry = Date.now() + 20 * 60 * 1000;
   return _opToken;
 }
