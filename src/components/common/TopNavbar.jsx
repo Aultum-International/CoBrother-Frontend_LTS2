@@ -141,22 +141,74 @@ export default function TopNavbar({ homeMobileMenu = false }) {
             </button>
 
             {/* Profile Dropdown - Mobile/Tablet Only */}
+            {/* Profile Dropdown - All screens */}
             {profileDropdownOpen && (
-              <div className="md:hidden absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[140px] overflow-hidden z-[1001]">
-                <a
-                  href="/contact"
-                  className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  onClick={() => setProfileDropdownOpen(false)}
-                >
-                  {t('contactUs')}
-                </a>
-                <a
-                  href={user ? "/dashboard" : "/profile"}
-                  className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  onClick={() => setProfileDropdownOpen(false)}
-                >
-                  Profile
-                </a>
+              <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px] overflow-hidden z-[1001]">
+                {user ? (
+                  <>
+                    {/* User info header */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-xs font-semibold text-gray-900 truncate">
+                        {user.fullName || user.name || 'User'}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                    </div>
+
+                    <a
+                      href="/complete-profile"
+                      className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
+                      onClick={() => setProfileDropdownOpen(false)}
+                    >
+                      Update Profile
+                    </a>
+
+                    <a
+                      href="/dashboard"
+                      className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
+                      onClick={() => setProfileDropdownOpen(false)}
+                    >
+                      Dashboard
+                    </a>
+
+                    {/* Contact Us - visible only on mobile (md has it in navbar) */}
+                    <a
+                      href="/contact"
+                      className="md:hidden block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
+                      onClick={() => setProfileDropdownOpen(false)}
+                    >
+                      {t('contactUs')}
+                    </a>
+
+                    <div className="border-t border-gray-100">
+                      <button
+                        className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors bg-transparent border-none cursor-pointer"
+                        onClick={() => {
+                          localStorage.clear();
+                          window.location.href = '/';
+                        }}
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <a
+                      href="/login"
+                      className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
+                      onClick={() => setProfileDropdownOpen(false)}
+                    >
+                      Sign In
+                    </a>
+                    <a
+                      href="/contact"
+                      className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
+                      onClick={() => setProfileDropdownOpen(false)}
+                    >
+                      {t('contactUs')}
+                    </a>
+                  </>
+                )}
               </div>
             )}
           </div>
