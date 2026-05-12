@@ -243,20 +243,59 @@ export default function HomeNavbar({
             <button className="btn-glow btn-glow-md" onClick={() => navigate('/join-form')}>
               {t('joinUs')}
             </button>
+
             {!user ? (
               <button className="btn-glow btn-glow-md" onClick={() => navigate('/login')}>
                 {t('signIn')}
               </button>
             ) : (
-              <button
-                className="btn-glow btn-glow-md"
-                onClick={() => {
-                  localStorage.clear();
-                  window.location.href = '/';
-                }}
-              >
-                Logout
-              </button>
+              <div className="relative">
+                <button
+                  className={`flex items-center gap-2 px-3 py-2 border-none rounded-lg text-[14px] font-semibold cursor-pointer transition-all duration-200 ${
+                    openDropdown === 'profile'
+                      ? 'bg-gray-100 text-gray-900'
+                      : 'bg-transparent text-gray-900 hover:bg-gray-100'
+                  }`}
+                  onClick={() => setOpenDropdown(openDropdown === 'profile' ? null : 'profile')}
+                >
+                  {user.picture ? (
+                    <img
+                      src={user.picture}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                      <User size={16} className="text-gray-600" />
+                    </div>
+                  )}
+                  <span className="max-w-[100px] truncate">{user.name || user.email}</span>
+                  <ChevronDown size={14} />
+                </button>
+
+                {openDropdown === 'profile' && (
+                  <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
+                    <button
+                      className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                      onClick={() => {
+                        navigate('/complete-profile');
+                        setOpenDropdown(null);
+                      }}
+                    >
+                      Update Profile
+                    </button>
+                    <button
+                      className="block w-full px-4 py-3 border-none text-left text-sm text-red-600 bg-transparent cursor-pointer transition-all duration-200 hover:bg-red-50"
+                      onClick={() => {
+                        localStorage.clear();
+                        window.location.href = '/';
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -333,16 +372,24 @@ export default function HomeNavbar({
                     {t('signIn')}
                   </button>
                 ) : (
-                  <button
-                    className="btn-glow btn-glow-md w-full"
-                    onClick={() => {
-                      localStorage.clear();
-                      window.location.href = '/';
-                      closeMobileMenu();
-                    }}
-                  >
-                    Logout
-                  </button>
+                  <>
+                    <button
+                      className="w-full px-5 py-3.5 border-none text-left text-base text-gray-700 bg-transparent cursor-pointer transition-all duration-200 border-l-[3px] border-l-transparent hover:bg-gray-50 hover:text-gray-900 hover:border-l-gray-900"
+                      onClick={() => { navigate('/complete-profile'); closeMobileMenu(); }}
+                    >
+                      Update Profile
+                    </button>
+                    <button
+                      className="btn-glow btn-glow-md w-full"
+                      onClick={() => {
+                        localStorage.clear();
+                        window.location.href = '/';
+                        closeMobileMenu();
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </>
                 )}
               </div>
             </div>

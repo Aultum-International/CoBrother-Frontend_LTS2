@@ -37,7 +37,9 @@ import ContactPage from './pages/ContactPage';
 import SoftwareAuctionPage from './pages/SoftwareAuctionPage';
 import AboutUsPage from './pages/AboutUsPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
-import TermsAndConditionsPage from './pages/TermsAndConditionsPage';  
+import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
+import { User } from 'lucide-react';
+
 
 
 
