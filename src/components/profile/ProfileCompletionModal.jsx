@@ -46,8 +46,8 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 p-8 pb-6">
-          <div className="inline-block px-2.5 py-1 bg-purple-50 text-purple-600 text-xs font-semibold rounded-md mb-4">Welcome aboard</div>
-          <h2 className="font-display text-2xl font-bold text-gray-900 m-0 mb-2">Complete Your Profile</h2>
+          {/* <div className="inline-block px-2.5 py-1 bg-purple-50 text-purple-600 text-xs font-semibold rounded-md mb-4"></div> */}
+          <h2 className="font-display text-2xl font-bold text-gray-900 m-0 mb-2">Update Your Profile</h2>
           <p className="text-gray-500 text-sm m-0 mb-6">Just a few details to get you started on CoBrother.</p>
         </div>
 
@@ -124,7 +124,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
             {loading ? (
               <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" />
             ) : (
-              'Complete Profile →'
+              'Update Profile →'
             )}
           </button>
         </form>
