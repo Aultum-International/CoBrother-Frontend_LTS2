@@ -1,40 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
-const OP_BASE = 'https://api.openprovider.eu/v1beta';
-const PROXY   = 'https://corsproxy.io/?url=';
-
-// Token cache
-let _token  = null;
-let _expiry = 0;
-
-async function getToken() {
-  if (_token && Date.now() < _expiry) return _token;
-  const res  = await fetch(`https://backend.cobrother.com/api/v1/domain/check?name=${fullDomain}`, {
-    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-  });
-  const data = await res.json();
-  
-  if (data.code !== 0) throw new Error('Auth failed');
-  _token  = data.data.token;
-  _expiry = Date.now() + 20 * 60 * 1000;
-  return _token;
-}
-
-async function opCheck(name, ext) {
-  const token = await getToken();
-  const res = await fetch(`${PROXY}${encodeURIComponent(`${OP_BASE}/domains/check`)}`, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-    body:    JSON.stringify({ domains: [{ name, extension: ext }], with_price: true }),
-  });
-  const data   = await res.json();
-  const result = data.data?.results?.[0];
-  return {
-    available: result?.status === 'free',                          // "free" = available, "active" = taken
-    price:     result?.price?.reseller?.price ?? null,             // INR price
-  };
-}
 
 function buildRegisterUrl(name, ext) {
   return `https://cp.openprovider.eu/domain/register?domain=${encodeURIComponent(name)}&tld=${encodeURIComponent(ext)}`;
@@ -59,42 +25,29 @@ export default function DomainSearchBar() {
     if (!pairs) return;
     setLoading(true);
 
-    // Seed skeleton rows
+    // Seed skeleton rows immediately
     setResults(pairs.map(({ name, ext }) => ({
-      domain: `${name}.${ext}`, name, ext,
-      status: 'loading', price: null, listing: null,
+      domain: `${name}.${ext}`,
+      name,
+      ext,
+      status:  'loading',
+      price:   null,
+      listing: null,
     })));
 
     await Promise.all(pairs.map(async ({ name, ext }) => {
       const fullDomain = `${name}.${ext}`;
       try {
-        // 1. Check our marketplace first
-        const mktRes  = await fetch(`https://backend.cobrother.com/api/v1/domain/all`);
-        const mktData = await mktRes.json();
-        const domains = Array.isArray(mktData) ? mktData : (mktData?.data ?? []);
-        const match   = domains.find(
-          d => d.domainName?.toLowerCase() === name &&
-               d.domainExtension?.toLowerCase() === `.${ext}` &&
-               !d.takenDown
+        const res  = await fetch(
+          `https://backend.cobrother.com/api/v1/domain/check?name=${encodeURIComponent(fullDomain)}`
         );
-
-        if (match) {
-          setResults(prev => prev.map(r => r.domain === fullDomain ? {
-            ...r, status: 'marketplace',
-            price:   match.askingPrice,
-            listing: match,
-          } : r));
-          return;
-        }
-
-        // 2. Not in marketplace → check OpenProvider
-        const { available, price } = await opCheck(name, ext);
-        setResults(prev => prev.map(r => r.domain === fullDomain ? {
-          ...r,
-          status: available ? 'available' : 'taken',
-          price:  available ? price : null,
-        } : r));
-
+        const data = await res.json();
+        // Backend returns: { status: 'marketplace'|'available'|'taken', price, listing }
+        setResults(prev => prev.map(r =>
+          r.domain === fullDomain
+            ? { ...r, status: data.status, price: data.price ?? null, listing: data.listing ?? null }
+            : r
+        ));
       } catch (err) {
         console.error(fullDomain, err);
         setResults(prev => prev.map(r =>
@@ -135,14 +88,18 @@ export default function DomainSearchBar() {
   // ── Sub-components ──────────────────────────────────────────────────────────
   const Badge = ({ status }) => {
     const map = {
-      loading:     ['bg-gray-100 text-gray-400',    'CHECKING…'],
-      marketplace: ['bg-indigo-100 text-indigo-700','🏪 ON OUR MARKETPLACE'],
+      loading:     ['bg-gray-100 text-gray-400',     'CHECKING…'],
+      marketplace: ['bg-indigo-100 text-indigo-700', '🏪 ON OUR MARKETPLACE'],
       available:   ['bg-emerald-100 text-emerald-700','✓ AVAILABLE'],
-      taken:       ['bg-red-100 text-red-500',      'TAKEN'],
-      error:       ['bg-gray-100 text-gray-400',    'UNAVAILABLE'],
+      taken:       ['bg-red-100 text-red-500',        'TAKEN'],
+      error:       ['bg-gray-100 text-gray-400',      'UNAVAILABLE'],
     };
     const [cls, label] = map[status] ?? map.taken;
-    return <span className={`inline-block text-[11px] font-bold px-3 py-1 rounded-full mb-3 ${cls}`}>{label}</span>;
+    return (
+      <span className={`inline-block text-[11px] font-bold px-3 py-1 rounded-full mb-3 ${cls}`}>
+        {label}
+      </span>
+    );
   };
 
   const Price = ({ result, large }) => {
@@ -166,24 +123,30 @@ export default function DomainSearchBar() {
       ? 'px-8 py-3 rounded-xl font-bold text-base transition-all'
       : 'px-5 py-2 rounded-lg font-bold text-sm transition-all';
 
+    if (result.status === 'loading')
+      return <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-500 rounded-full animate-spin" />;
+
     if (result.status === 'marketplace')
-      return <button onClick={() => goToMarketplace(result.listing)}
-        className={`bg-indigo-600 text-white hover:bg-indigo-700 ${base}`}>
-        View on Marketplace →
-      </button>;
+      return (
+        <button onClick={() => goToMarketplace(result.listing)}
+          className={`bg-indigo-600 text-white hover:bg-indigo-700 ${base}`}>
+          View on Marketplace →
+        </button>
+      );
 
     if (result.status === 'available')
-      return <button onClick={() => goRegister(result.name, result.ext)}
-        className={`bg-gray-900 text-white hover:bg-gray-700 ${base}`}>
-        {large ? 'Register Now →' : 'Register'}
-      </button>;
+      return (
+        <button onClick={() => goRegister(result.name, result.ext)}
+          className={`bg-gray-900 text-white hover:bg-gray-700 ${base}`}>
+          {large ? 'Register Now →' : 'Register'}
+        </button>
+      );
 
-    if (result.status === 'loading')
-      return <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-500 rounded-full animate-spin" />;
-
-    return <button disabled className={`bg-gray-100 text-gray-400 cursor-not-allowed ${base}`}>
-      Taken
-    </button>;
+    return (
+      <button disabled className={`bg-gray-100 text-gray-400 cursor-not-allowed ${base}`}>
+        Taken
+      </button>
+    );
   };
 
   // ── Render ──────────────────────────────────────────────────────────────────
@@ -199,10 +162,13 @@ export default function DomainSearchBar() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
           <form onSubmit={handleSearch}
             className="search-glow-focus w-full max-w-[880px] flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-2xl sm:rounded-full shadow-[0_4px_32px_rgba(0,0,0,0.12)] border border-gray-200 overflow-hidden px-4 sm:pl-6 sm:pr-3 py-3 sm:py-2.5 gap-3 sm:gap-0 flex-1">
-            <input type="text"
+            <input
+              type="text"
               className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-gray-800 text-base sm:text-lg placeholder:text-gray-400 py-2.5 sm:py-3 focus:ring-0"
               placeholder="Search your next big domain..."
-              value={query} onChange={e => setQuery(e.target.value)} />
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+            />
             <button type="submit"
               className="bg-[#232f3e] text-white py-3 px-6 sm:px-7 rounded-full text-sm sm:text-base font-semibold transition-all w-full sm:w-auto hover:bg-gray-700 hover:-translate-y-0.5 flex-shrink-0">
               Search
@@ -234,12 +200,12 @@ export default function DomainSearchBar() {
             <p className="text-center text-gray-400 text-sm mb-6">Checking domains…</p>
           )}
 
-          {/* Best match card */}
+          {/* Best match */}
           {best && (
             <div className={`mb-8 bg-white rounded-3xl p-8 shadow-xl border-2 transition-all ${
               best.status === 'marketplace' ? 'border-indigo-400' :
               best.status === 'available'   ? 'border-emerald-400' :
-              best.status === 'loading'     ? 'border-gray-200' :
+              best.status === 'loading'     ? 'border-gray-200'   :
                                               'border-red-200'
             }`}>
               <Badge status={best.status} />
@@ -272,11 +238,11 @@ export default function DomainSearchBar() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {others.map((item, i) => (
                 <div key={i} className={`bg-white border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all ${
-                  item.status === 'taken' || item.status === 'error'
-                    ? 'border-gray-100 opacity-60'
-                    : item.status === 'marketplace' ? 'border-indigo-200'
-                    : item.status === 'available'   ? 'border-emerald-200'
-                    : 'border-gray-200'
+                  item.status === 'taken'       ? 'border-gray-100 opacity-60' :
+                  item.status === 'error'       ? 'border-gray-100 opacity-60' :
+                  item.status === 'marketplace' ? 'border-indigo-200'          :
+                  item.status === 'available'   ? 'border-emerald-200'         :
+                                                  'border-gray-200'
                 }`}>
                   <Badge status={item.status} />
                   <h2 className={`text-xl font-extrabold mb-3 ${
