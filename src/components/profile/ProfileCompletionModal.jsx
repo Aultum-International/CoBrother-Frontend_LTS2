@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { profileAPI } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
 
+
 export default function ProfileCompletionModal({ forceOpen = false }) {
   const { refreshUser } = useAuth();
   const navigate = useNavigate();

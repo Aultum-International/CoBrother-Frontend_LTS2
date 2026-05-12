@@ -45,6 +45,18 @@ export default function AdminDashboardPage() {
   };
 
   const loadTab = (currentTab) => {
+    const fetchers = {
+      coventures:          adminAPI.getCoVentures,
+      domains:             adminAPI.getDomains,
+      'domain-enquiries':  adminAPI.getDomainEnquiries,
+      cocreations:         adminAPI.getCoCreations,
+      auctions:            adminAPI.getAllAuctions,
+      'venture-auctions':  adminAPI.getAllVentureAuctions,
+      meetings:            meetingAPI.adminGetAll,
+      'software-auctions': softwareAuctionAPI.adminGetAll,
+      'addon-orders':      adminAPI.getAddonOrders,   // ← was missing
+    };
+  
     if (!fetchers[currentTab]) return;
     setLoading(true);
     fetchers[currentTab]()

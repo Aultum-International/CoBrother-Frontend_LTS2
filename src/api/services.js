@@ -134,6 +134,7 @@ export const likeAPI = {
 };
 
 export const adminAPI = {
+  
   getCoVentures:        ()              => api.get('/api/v1/admin/coventures'),
   getVentures:          ()              => api.get('/api/v1/admin/ventures'),
   getDomains:           ()              => api.get('/api/v1/admin/domains'),
@@ -145,6 +146,7 @@ export const adminAPI = {
   forward:              (data)          => api.post('/api/v1/admin/forward', data),
   listOfficialSoftware: (data)          => api.post('/api/v1/admin/cocreation', data),
   getAllAuctions: () => api.get('/api/v1/auction/admin/all'),
+  getAddonOrders: () => api.get('/api/v1/addon/admin/all'),
   getAllVentureAuctions: () => api.get('/api/v1/venture-auction/admin/all'),
   takeDown:  (type, id, reason) => api.post(`/api/v1/admin/takedown`, { type, entityId: id, reason }),
   restore:   (type, id)         => api.post(`/api/v1/admin/restore`,  { type, entityId: id }),
