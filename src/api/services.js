@@ -78,6 +78,7 @@ export const domainAPI = {
   create:          (data)    => api.post('/api/v1/domain', data),
   update:          (id, data)=> api.put(`/api/v1/domain/${id}`, data),
   delete:          (id)      => api.delete(`/api/v1/domain/${id}`),
+  check: (name) => api.get(`/api/v1/domain/check?name=${name}`),
   createOrder: (id, data) => api.post(`/api/v1/domain/${id}/purchase/create-order`, data),
   verifyPayment:   (id, data)=> api.post(`/api/v1/domain/${id}/purchase/verify`, data),
   handleFailure:   (id)      => api.post(`/api/v1/domain/${id}/purchase/failure`),
