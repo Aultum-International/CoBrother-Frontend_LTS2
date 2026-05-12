@@ -101,7 +101,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
               Address <span className="text-gray-400 text-xs">(optional)</span>
             </label>
             <input
-              name="phoneNumber"
+              name="address"
               value={form.address}
               onChange={handleChange}
               placeholder="e.g. Jayanagar, Bengaluru"
