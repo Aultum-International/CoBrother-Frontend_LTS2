@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 export default function ProfileCompletionModal({ forceOpen = false }) {
   const { refreshUser } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ firstname: '', lastname: '', phoneNumber: '' });
+  const [form, setForm] = useState({ firstname: '', lastname: '', phoneNumber: '', address: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState(1); // 1 = name, 2 = phone (optional)
@@ -91,6 +91,20 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
               value={form.phoneNumber}
               onChange={handleChange}
               placeholder="e.g. 9876543210"
+              maxLength={10}
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">
+              Address <span className="text-gray-400 text-xs">(optional)</span>
+            </label>
+            <input
+              name="phoneNumber"
+              value={form.address}
+              onChange={handleChange}
+              placeholder="e.g. Jayanagar, Bengaluru"
               maxLength={10}
               className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
             />
