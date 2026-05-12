@@ -3,6 +3,7 @@ import { ChevronDown, Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import coBrotherLogo from '../../assets/Cobrother_logo.png';
+import { User } from 'lucide-react';
 
 export default function HomeNavbar({
   navRef,
