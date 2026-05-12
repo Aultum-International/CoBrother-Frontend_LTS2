@@ -246,4 +246,5 @@ export const publicAPI = {
   getDomains:   () => api.get('/public/api/v1/domains'),
   getVentures:  () => api.get('/public/api/v1/ventures'),
   getSoftwares: () => api.get('/public/api/v1/softwares'),
+  getCommunities: () => api.get('/public/api/v1/communities'),
 };

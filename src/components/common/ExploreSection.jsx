@@ -6,6 +6,7 @@ import DomainsSection from '../home/DomainsSection';
 import VenturesSection from '../home/VenturesSection';
 import TechnologySection from '../home/TechnologySection';
 import FeedbackSection from '../home/FeedbackSection';
+import CommunitySection from '../home/CommunitySection';
 
 export default function ExploreSection() {
   const { t } = useTranslation();
@@ -61,6 +62,8 @@ export default function ExploreSection() {
           TECHNOLOGY SECTION (Separate Component)
       ═══════════════════════════════════════════════════════════════════ */}
       <TechnologySection />
+
+      <CommunitySection />
 
       {/* ═══════════════════════════════════════════════════════════════════
           FEEDBACK WIDGET (Separate Component)
