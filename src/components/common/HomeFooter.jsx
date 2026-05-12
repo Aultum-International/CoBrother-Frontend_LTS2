@@ -1,7 +1,7 @@
 import { Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import coBrotherLogo from '../../assets/Cobrother_logo.png';
+import coBrotherLogo from '../../assets/Cobrother_Green.png';
 
 const XIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="w-4 h-4 sm:w-5 sm:h-5">
@@ -92,23 +92,23 @@ export default function HomeFooter() {
             <h3 className={headingClass}>{t('explore')}</h3>
             <nav className="flex flex-col">
               <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className={`${linkClass} text-left`}>
-                {t('home')}
+                {t('Home')}
               </button>
               <Link to="/join-form" className={linkClass}>
-                {t('joinUs')}
+                {t('Join Us')}
               </Link>
             </nav>
           </div>
 
           {/* Company */}
           <div className="md:col-span-1 lg:col-span-2">
-            <h3 className={headingClass}>{t('company')}</h3>
+            <h3 className={headingClass}>{t('Company')}</h3>
             <nav className="flex flex-col">
               <Link to="/about" className={linkClass}>
-                {t('aboutUs')}
+                {t('About Us')}
               </Link>
               <Link to="/contact" className={linkClass}>
-                {t('contact')}
+                {t('Contact Us')}
               </Link>
             </nav>
           </div>
@@ -118,17 +118,17 @@ export default function HomeFooter() {
             <h3 className={headingClass}>{t('legal')}</h3>
             <nav className="flex flex-col">
               <Link to="/privacy-policy" className={linkClass}>
-                {t('privacyPolicy')}
+                {t('Privacy Policy')}
               </Link>
               <Link to="/terms-and-conditions" className={linkClass}>
-                {t('termsAndConditions')}
+                {t('Terms & Conditions')}
               </Link>
             </nav>
           </div>
 
           {/* Social */}
           <div className="sm:col-span-2 md:col-span-1 lg:col-span-2 flex flex-col">
-            <h3 className={headingClass}>{t('showUsSomeLove')}</h3>
+            <h3 className={headingClass}>{t('Show us some love')}</h3>
             <div className="flex flex-wrap gap-2 sm:gap-2.5">
               {socials.map(({ href, label, Icon }) => (
                 <a
@@ -150,18 +150,18 @@ export default function HomeFooter() {
         {/* Bottom Bar */}
         <div className="mt-10 sm:mt-12 pt-5 sm:pt-6 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-center sm:text-left">
           <p className="text-slate-500 text-xs sm:text-sm order-2 sm:order-1">
-            {t('footerCopyright')}
+            {t('Copyright © {{year}} CoBrother™ Aultum International. All rights reserved.  ', { year: new Date().getFullYear() })}
           </p>
 
           <p className="text-slate-500 text-xs sm:text-sm flex items-center justify-center sm:justify-end gap-1.5 order-1 sm:order-2">
-            {t('madeWith')}
+            {t('Made with')}
             <span className="relative inline-flex items-center justify-center group">
               <Heart size={18} fill="#fb7185" stroke="none" className="text-rose-400 inline-block" />
               <Heart size={12} fill="#fb7185" stroke="none" className="floating-heart heart-1" />
               <Heart size={12} fill="#fb7185" stroke="none" className="floating-heart heart-2" />
               <Heart size={12} fill="#fb7185" stroke="none" className="floating-heart heart-3" />
             </span>
-            {t('inIndia')}
+            {t('In India')}
           </p>
         </div>
       </div>
