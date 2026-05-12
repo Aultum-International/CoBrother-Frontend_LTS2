@@ -10,12 +10,11 @@ let _expiry = 0;
 
 async function getToken() {
   if (_token && Date.now() < _expiry) return _token;
-  const res = await fetch(`${PROXY}${encodeURIComponent(`${OP_BASE}/auth/login`)}`, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ username: 'aultum.com@gmail.com', password: 'Aultum@12345', ip: '0.0.0.0' }),
+  const res  = await fetch(`https://backend.cobrother.com/api/v1/domain/check?name=${fullDomain}`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
   });
   const data = await res.json();
+  
   if (data.code !== 0) throw new Error('Auth failed');
   _token  = data.data.token;
   _expiry = Date.now() + 20 * 60 * 1000;
