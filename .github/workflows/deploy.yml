@@ -30,7 +30,7 @@ jobs:
 
       - name: Copy dist to server
         run: |
-          scp -r dist/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/frontend/
+          scp -i ~/.ssh/deploy_key -r dist/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/frontend/
 
       - name: Reload Nginx
         run: |
