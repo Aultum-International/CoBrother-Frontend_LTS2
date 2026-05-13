@@ -24,7 +24,7 @@ export default defineConfig({
 
       '/api': {
 
-        target: 'https://backend.cobrother.com',
+        target: 'http://localhost:8080',
 
         changeOrigin: true,
 
@@ -32,7 +32,7 @@ export default defineConfig({
 
       '/oauth2': {
 
-        target: 'https://backend.cobrother.com',
+        target: 'http://localhost:8080',
 
         changeOrigin: true,
 
