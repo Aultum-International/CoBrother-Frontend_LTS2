@@ -87,14 +87,25 @@ export default function VentureAnalyticsPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-[1100px]">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-4xl font-bold text-gold m-0">Venture Analytics</h1>
-            <p className="text-gray-600 mt-1 font-medium">Track performance and applicant insights for your ventures.</p>
-          </div>
-          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/ventures')}>← Back</button>
-        </div>
+<div className="flex items-start justify-between mb-6">
+  <div>
+    <h1 className="font-display text-4xl font-bold text-gray-900 m-0">
+      Venture Analytics
+    </h1>
+
+    <p className="text-gray-600 mt-1 font-medium">
+      Track performance and applicant insights for your ventures.
+    </p>
+  </div>
+
+  <button
+    className="btn-glow btn-glow-sm"
+    onClick={() => navigate('/ventures')}
+  >
+    ← Back
+  </button>
+</div>
+
 
         {/* Venture selector */}
         {!fetching && ventures.length > 0 && (
@@ -219,16 +230,30 @@ export default function VentureAnalyticsPage() {
 
           </div>
         )}
+{!fetching && ventures.length === 0 && (
+  <div className="flex items-center justify-center h-[75vh]">
+    <div className="text-center">
+      <div className="text-6xl mb-4">📊</div>
 
-        {!fetching && ventures.length === 0 && (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4">📊</div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No ventures listed yet</h3>
-            <p className="text-gray-600 mb-6">List a venture to start tracking analytics.</p>
-            <button className="btn-glow" onClick={() => navigate('/ventures/new')}>List a Venture</button>
-          </div>
-        )}
-      </div>
-    </AppLayout>
-  );
+      <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+        No ventures listed yet
+      </h3>
+
+      <p className="text-gray-600 mb-6">
+        List a venture to start tracking analytics.
+      </p>
+
+      <button
+        className="btn-glow"
+        onClick={() => navigate('/ventures/new')}
+      >
+        List a Venture
+      </button>
+    </div>
+  </div>
+)}
+
+
+</AppLayout>
+);
 }

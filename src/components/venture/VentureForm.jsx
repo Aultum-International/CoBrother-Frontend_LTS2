@@ -32,7 +32,7 @@ const EMPTY = {
     industry: '', dealValue: '', referenceImageUrl: '', ventureType: '',
   },
   contactInfo: { email: '', phoneNumber: '' },
-  agreement: { terms: true },
+  agreement: { terms: false },
   status: true,
   stage: '',
   lookingFor: '',
@@ -223,8 +223,8 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Website</label>
-            <input value={form.brandDetails.website} onChange={(e) => setBrand('website', e.target.value)} placeholder="https://..." type="url" className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]" />
+            <label className="text-sm font-medium text-gray-700">Website <span className="text-red-400">*</span></label>
+            <input value={form.brandDetails.website} onChange={(e) => setBrand('website', e.target.value)} placeholder="https://..." type="url" required className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:shadow-[0-0_0_3px_rgba(99,102,241,0.12)]" />
           </div>
           {!isAuction && (
             <div className="flex flex-col gap-1.5">
@@ -288,7 +288,10 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">Phone Number</label>
-            <input value={form.contactInfo.phoneNumber} onChange={(e) => setContact('phoneNumber', e.target.value)} placeholder="10-digit number" maxLength={10} className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]" />
+            <input value={form.contactInfo.phoneNumber} onChange={(e) => {
+              const value = e.target.value.replace(/[^0-9]/g, '');
+              setContact('phoneNumber', value);
+            }} type="tel" placeholder="10-digit number" maxLength={10} className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]" />
           </div>
         </div>
       </section>
@@ -347,8 +350,12 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
             required
             className="peer sr-only"
           />
-          <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-focus-visible:ring-2 peer-focus-visible:ring-purple-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)] overflow-hidden">
-            <span className="absolute left-[6px] top-[1px] w-[5px] h-[10px] border-r-[2.5px] border-b-[2.5px] border-white rotate-45 opacity-0 scale-75 transition-all duration-150 peer-checked:opacity-100 peer-checked:scale-100 z-10" aria-hidden="true"></span>
+          <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all" style={{ backgroundColor: form.agreement.terms ? '#9333ea' : 'white', borderColor: form.agreement.terms ? '#9333ea' : '#d8b4fe' }}>
+            {form.agreement.terms && (
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="4" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+            )}
           </span>
           <span className="leading-snug">I agree to the Terms & Conditions and confirm the information provided is accurate.</span>
         </label>

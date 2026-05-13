@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -11,6 +11,18 @@ export default function TopNavbar({ homeMobileMenu = false }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showInitial, setShowInitial] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const languageRef = useRef(null);
+
+  // Close language dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (languageRef.current && !languageRef.current.contains(event.target)) {
+        setLanguageOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const languages = [
     { code: 'en', name: 'English (IND)', currency: '₹' },
@@ -59,7 +71,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
     >
       <div className="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-end">
         <div className="flex items-center gap-2 md:gap-5">
-          <div className="relative">
+          <div className="relative" ref={languageRef}>
             <button
               className="text-white text-xs md:text-sm font-normal no-underline flex items-center gap-1 px-2.5 md:px-3 py-1.5 md:py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
               onClick={() => setLanguageOpen((prev) => !prev)}
@@ -78,6 +90,10 @@ export default function TopNavbar({ homeMobileMenu = false }) {
                         ? 'bg-purple-50 text-purple font-semibold'
                         : 'text-gray-700 hover:bg-gray-100'
                     }`}
+                    onClick={() => {
+                      i18n.changeLanguage(lang.code);
+                      setLanguageOpen(false);
+                    }}
                   >
                     {lang.name}
                   </button>

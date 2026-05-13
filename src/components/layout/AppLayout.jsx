@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, Menu, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import TopNavbar from '../common/TopNavbar';
 import coBrotherLogo from '../../assets/Cobrother_logo.png';
 import { useAuth } from '../../context/AuthContext';
@@ -56,6 +57,7 @@ function renderNavIcon(icon, label) {
 }
 
 export default function AppLayout({ children }) {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -66,13 +68,13 @@ export default function AppLayout({ children }) {
   const bellRef = useRef(null);
 
   const navLinks = [
-    { to: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
-    { to: '/ventures', label: 'Venture', icon: VentureIcon },
-    { to: '/domains', label: 'Domains', icon: DomainsIcon },
-    { to: '/cocreation', label: 'Technology', icon: TechnologyIcon },
-    { to: '/community', label: 'Disruptor', icon: CommunityIcon },
-    { to: '/auctions', label: 'Auctions', icon: AuctionIcon },
-    { to: '/purchases', label: 'Purchases', icon: PurchaseIcon },
+    { to: '/dashboard', label: t('dashboard'), icon: DashboardIcon },
+    { to: '/ventures', label: t('venture'), icon: VentureIcon },
+    { to: '/domains', label: t('domains'), icon: DomainsIcon },
+    { to: '/cocreation', label: t('technology'), icon: TechnologyIcon },
+    { to: '/community', label: t('disruptor'), icon: CommunityIcon },
+    { to: '/auctions', label: t('auctions'), icon: AuctionIcon },
+    { to: '/purchases', label: t('purchases'), icon: PurchaseIcon },
   ];
 
   const coBrotherLinks = [{ to: '/cobrother', label: 'CoBrother', icon: 'â—†' }];
@@ -259,7 +261,7 @@ export default function AppLayout({ children }) {
                     onClick={() => setBellOpen(false)}
                     className="text-[0.78rem] text-gray-700 no-underline hover:underline"
                   >
-                    View all notifications â†’
+                    View all notifications
                   </Link>
                 </div>
               </div>

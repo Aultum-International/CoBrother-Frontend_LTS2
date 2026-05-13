@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus } from 'lucide-react';
 import { cocreationAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -31,6 +32,7 @@ const STATUS_COLORS = {
 };
 
 export default function CoCreationPage() {
+  const { t } = useTranslation();
   const { user }  = useAuth();
   const navigate  = useNavigate();
 
@@ -124,17 +126,17 @@ export default function CoCreationPage() {
           <div>
             <div className="flex items-center gap-3 mb-1">
               {/* <img src={''} alt="Technology" className="w-10 h-10 object-contain" /> */}
-              <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Technology</h1>
+              <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('technology')}</h1>
             </div>
-            <p className="text-gray-600">Buy and sell software products built by the community.</p>
+            <p className="text-gray-600">{t('buyAndSellSoftware')}</p>
           </div>
           <div className="flex gap-3">
             <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => navigate('/cocreation/dashboard')}>
-              <LayoutDashboard size={16} /> Dashboard
+              <LayoutDashboard size={16} /> {t('dashboard')}
             </button>
             {user && (
               <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => setShowForm(true)}>
-                <Plus size={16} /> List Technology
+                <Plus size={16} /> {t('listTechnology')}
               </button>
             )}
           </div>
@@ -142,9 +144,9 @@ export default function CoCreationPage() {
 
         <div className="flex gap-2 mb-6">
           <button className={`btn-glow btn-glow-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('all')}>All Technology</button>
+            onClick={() => setFilterTab('all')}>{t('allTechnology')}</button>
           <button className={`btn-glow btn-glow-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('mine')}>My Listings</button>
+            onClick={() => setFilterTab('mine')}>{t('myListings')}</button>
         </div>
 
         {showForm && user && (
@@ -461,7 +463,7 @@ function SoftwareForm({ onSaved, onCancel }) {
 
   const handleSkip = () => onSaved(savedSoftware);
 
-  const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all w-full';
+  const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white outline-none focus:border-indigo-500 transition-all w-full placeholder:text-gray-400';
   const labelCls = 'text-sm font-medium text-gray-700';
 
   if (savedSoftware) {
@@ -602,8 +604,12 @@ function SoftwareForm({ onSaved, onCancel }) {
           <input type="checkbox" className="peer sr-only" checked={form.agreement.terms}
             onChange={e => setForm(f => ({ ...f, agreement: { terms: e.target.checked } }))}
             required />
-          <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-focus-visible:ring-2 peer-focus-visible:ring-purple-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)] overflow-hidden">
-            <span className="absolute left-[6px] top-[1px] w-[5px] h-[10px] border-r-[2.5px] border-b-[2.5px] border-white rotate-45 opacity-0 scale-75 transition-all duration-150 peer-checked:opacity-100 peer-checked:scale-100 z-10" aria-hidden="true"></span>
+          <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all" style={{ backgroundColor: form.agreement.terms ? '#9333ea' : 'white', borderColor: form.agreement.terms ? '#9333ea' : '#d8b4fe' }}>
+            {form.agreement.terms && (
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="4" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+            )}
           </span>
           <span className="text-sm text-gray-700 leading-snug">I confirm this software is ready for sale and agree to the Terms & Conditions.</span>
         </label>

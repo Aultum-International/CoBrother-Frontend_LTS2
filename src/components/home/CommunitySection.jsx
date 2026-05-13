@@ -54,7 +54,7 @@ export default function CommunitySection() {
           <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
             {t('community')}
           </h3>
-          <p className="text-center text-gray-500 py-12">{t('noCommunity')}</p>
+          <p className="text-center text-gray-500 py-12">{t('No Community')}</p>
         </div>
       </section>
     );

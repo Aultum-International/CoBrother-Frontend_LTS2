@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Share2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ventureAPI, ventureAuctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import AppLayout from '../components/layout/AppLayout';
@@ -26,6 +27,7 @@ const VENTURE_INDUSTRIES = [
 ].map(v => ({ value: v, label: v.replace(/_/g, ' ') }));
 
 export default function VenturesPage() {
+  const { t } = useTranslation();
   const { user }  = useAuth();
   const navigate  = useNavigate();
 
@@ -98,12 +100,12 @@ export default function VenturesPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Ventures</h1>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('venture')}</h1>
             <p className="text-gray-600 mt-1">Discover and co-venture on exciting opportunities.</p>
           </div>
           <div className="flex gap-3 flex-wrap">
             <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => navigate('/ventures/dashboard')}>
-              <img src={DashboardIcon} alt="Dashboard" style={{width: '18px', height: '18px'}} /> Dashboard
+              <img src={DashboardIcon} alt="Dashboard" style={{width: '18px', height: '18px'}} /> {t('dashboard')}
             </button>
             <button className="btn-glow btn-glow-sm" onClick={() => navigate('/ventures/analytics')}>
               📈 Analytics    
@@ -239,7 +241,7 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/ventures` : 'https://cobrother.com/ventures';
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/ventures` : 'http://localhost:5173/ventures';
   const shareText = `Check out this venture: ${b.brandName} - Listed on CoBrother!`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;

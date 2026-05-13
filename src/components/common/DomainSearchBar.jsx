@@ -39,7 +39,7 @@ export default function DomainSearchBar() {
       const fullDomain = `${name}.${ext}`;
       try {
         const res  = await fetch(
-          `https://backend.cobrother.com/api/v1/domain/check?name=${encodeURIComponent(fullDomain)}`
+          `http://localhost:8080/api/v1/domain/check?name=${encodeURIComponent(fullDomain)}`
         );
         const data = await res.json();
         // Backend returns: { status: 'marketplace'|'available'|'taken', price, listing }

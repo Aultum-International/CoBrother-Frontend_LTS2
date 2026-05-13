@@ -69,7 +69,7 @@ export function useCommunityAuction(auctionId) {
     if (!auctionId) return;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS('https://backend.cobrother.com/ws'),
+      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
       reconnectDelay: 3000,
       onConnect: () => {
         setConnected(true);

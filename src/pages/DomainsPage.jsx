@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus, Gavel, ShoppingCart, MessageSquare, Trash2, CheckCircle, Share2, ArrowUpRight } from 'lucide-react';
 import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -27,6 +28,7 @@ const STATUS_COLORS = {
 };
 
 export default function DomainsPage() {
+  const { t } = useTranslation();
   const { user }  = useAuth();
   const navigate  = useNavigate();
 
@@ -97,24 +99,24 @@ export default function DomainsPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Domains</h1>
-            <p className="text-gray-600 mt-1">Buy and sell premium domain names.</p>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('domains')}</h1>
+            <p className="text-gray-600 mt-1">{t('buyAndSellDomains')}</p>
           </div>
           <div className="flex gap-3">
             <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => navigate('/domains/dashboard')}>
-              <LayoutDashboard size={16} /> Dashboard
+              <LayoutDashboard size={16} /> {t('dashboard')}
             </button>
             <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => setShowForm(true)}>
-              <Plus size={16} /> List Domain
+              <Plus size={16} /> {t('listDomain')}
             </button>
           </div>
         </div>
 
         <div className="flex gap-2 mb-6">
           <button className={`btn-glow btn-glow-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('all')}>All Domains</button>
+            onClick={() => setFilterTab('all')}>{t('allDomains')}</button>
           <button className={`btn-glow btn-glow-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('mine')}>My Listings</button>
+            onClick={() => setFilterTab('mine')}>{t('myListings')}</button>
         </div>
 
         {showForm && (
@@ -291,7 +293,7 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/domains` : 'https://cobrother.com/domains';
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/domains` : 'http://localhost:5173/domains';
   const shareText = `Check out this domain: ${domain.domainName}${domain.domainExtension} - Listed on CoBrother!`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
@@ -596,7 +598,7 @@ function DomainForm({ onSaved, onCancel }) {
 
   const isAuction = form.saleType === 'AUCTION';
 
-  const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-purple-500 transition-all w-full';
+  const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white outline-none focus:border-purple-500 transition-all w-full placeholder:text-gray-400';
   const labelCls = 'text-sm font-medium text-gray-700';
 
   if (savedDomain) {
@@ -754,7 +756,11 @@ function DomainForm({ onSaved, onCancel }) {
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>Phone</label>
             <input className={inputCls} value={form.contactInfo.phoneNumber}
-              onChange={e => setContact('phoneNumber', e.target.value)}
+              onChange={e => {
+                const value = e.target.value.replace(/[^0-9]/g, '');
+                setContact('phoneNumber', value);
+              }}
+              type="tel"
               placeholder="10-digit number" maxLength={10} />
           </div>
         </div>
@@ -767,8 +773,12 @@ function DomainForm({ onSaved, onCancel }) {
             required
             className="peer sr-only"
           />
-          <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all peer-checked:bg-purple-600 peer-checked:border-purple-600 peer-focus-visible:ring-2 peer-focus-visible:ring-purple-200 shadow-[inset_0_1px_2px_rgba(255,255,255,0.7)] overflow-hidden">
-            <span className="absolute left-[6px] top-[1px] w-[5px] h-[10px] border-r-[2.5px] border-b-[2.5px] border-white rotate-45 opacity-0 scale-75 transition-all duration-150 peer-checked:opacity-100 peer-checked:scale-100 z-10" aria-hidden="true"></span>
+          <span className="relative w-5 h-5 rounded-[7px] border-2 border-purple-300 bg-white flex items-center justify-center flex-shrink-0 transition-all" style={{ backgroundColor: form.agreement.terms ? '#9333ea' : 'white', borderColor: form.agreement.terms ? '#9333ea' : '#d8b4fe' }}>
+            {form.agreement.terms && (
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="4" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+              </svg>
+            )}
           </span>
           <span className="text-sm text-gray-700 leading-snug">I confirm I own this domain and agree to the Terms & Conditions.</span>
         </label>
