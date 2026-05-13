@@ -241,7 +241,7 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/ventures` : 'http://localhost:5173/ventures';
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/ventures` : 'https://cobrother.com/ventures';
   const shareText = `Check out this venture: ${b.brandName} - Listed on CoBrother!`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;

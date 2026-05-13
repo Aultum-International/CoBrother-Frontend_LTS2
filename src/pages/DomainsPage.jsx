@@ -293,7 +293,7 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/domains` : 'http://localhost:5173/domains';
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/domains` : 'https://cobrother.com/domains';
   const shareText = `Check out this domain: ${domain.domainName}${domain.domainExtension} - Listed on CoBrother!`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
