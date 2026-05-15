@@ -1,4 +1,4 @@
-import { Navigate, useLocation, useSearchParams } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 
@@ -55,7 +55,10 @@ export function AdminGuard({ children }) {
   const { user, loading } = useAuth();
   if (loading) return <FullScreenSpinner />;
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role !== 'ADMIN') return <Navigate to="/dashboard" replace />;
+  const roleUpper = (user.role ?? '').toString().toUpperCase();
+  if (roleUpper !== 'ADMIN' && roleUpper !== 'ROLE_ADMIN') {
+    return <Navigate to="/dashboard" replace />;
+  }
   return children;
 }
 

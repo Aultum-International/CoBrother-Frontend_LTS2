@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { Home, Handshake, Users, Globe, Zap, Gavel, ShoppingBag, Settings, Bell, LogOut, Menu, X } from 'lucide-react';
+import { Home, Handshake, Users, Globe, Zap, Gavel, ShoppingBag, Settings, Bell, LogOut, Menu, X, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import coBrotherLogo from '../../assets/Cobrother_logo.png';
 import TopNavbar from '../common/TopNavbar';
@@ -15,8 +15,23 @@ const sidebarItems = [
   { icon: ShoppingBag, label: 'Purchases', to: '/purchases' },
 ];
 
+const adminNavItem = { icon: Shield, label: 'Admin panel', to: '/admin', adminAccent: true };
+
+function isAdminUser(user) {
+  const roleUpper = (user?.role ?? '').toString().toUpperCase();
+  return roleUpper === 'ADMIN' || roleUpper === 'ROLE_ADMIN';
+}
+
+function getNavItems(user) {
+  if (!isAdminUser(user)) return sidebarItems;
+  const purchasesIdx = sidebarItems.findIndex((item) => item.to === '/purchases');
+  const insertAt = purchasesIdx >= 0 ? purchasesIdx + 1 : sidebarItems.length;
+  return [...sidebarItems.slice(0, insertAt), adminNavItem, ...sidebarItems.slice(insertAt)];
+}
+
 export default function SidebarLayout({ children }) {
   const { user, logout } = useAuth();
+  const navItems = getNavItems(user);
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -49,20 +64,25 @@ export default function SidebarLayout({ children }) {
 
         {/* Navigation */}
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {sidebarItems.map((item) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.to);
+            const accent = item.adminAccent;
             return (
               <Link
                 key={item.to}
                 to={item.to}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                  active
-                    ? 'bg-white/10 text-white'
-                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                  accent
+                    ? active
+                      ? 'bg-amber-500/25 text-amber-200 border border-amber-400/30'
+                      : 'text-amber-400/90 hover:bg-amber-500/15 hover:text-amber-200 border border-transparent'
+                    : active
+                      ? 'bg-white/10 text-white'
+                      : 'text-gray-400 hover:bg-white/5 hover:text-white'
                 }`}
               >
-                <Icon size={20} className={active ? 'text-indigo-400' : ''} />
+                <Icon size={20} className={accent ? (active ? 'text-amber-300' : 'text-amber-400/80') : active ? 'text-indigo-400' : ''} />
                 <span className="font-medium text-sm">{item.label}</span>
               </Link>
             );
@@ -112,20 +132,25 @@ export default function SidebarLayout({ children }) {
 
             {/* Navigation */}
             <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-              {sidebarItems.map((item) => {
+              {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.to);
+                const accent = item.adminAccent;
                 return (
                   <Link
                     key={item.to}
                     to={item.to}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                      active
-                        ? 'bg-white/10 text-white'
-                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                      accent
+                        ? active
+                          ? 'bg-amber-500/25 text-amber-200 border border-amber-400/30'
+                          : 'text-amber-400/90 hover:bg-amber-500/15 hover:text-amber-200'
+                        : active
+                          ? 'bg-white/10 text-white'
+                          : 'text-gray-400 hover:bg-white/5 hover:text-white'
                     }`}
                   >
-                    <Icon size={20} className={active ? 'text-indigo-400' : ''} />
+                    <Icon size={20} className={accent ? (active ? 'text-amber-300' : 'text-amber-400/80') : active ? 'text-indigo-400' : ''} />
                     <span className="font-medium text-sm">{item.label}</span>
                   </Link>
                 );

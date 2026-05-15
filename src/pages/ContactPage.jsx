@@ -159,8 +159,7 @@ export default function ContactPage() {
 
       {/* Footer */}
       <footer className="py-8 border-t border-gray-200 text-center">
-        <p className="text-gray-600 text-sm mb-2"> 2026 CoBrother Aultum International. All rights reserved.</p>
-        <p className="text-gray-500 text-sm">Made with <span className="text-red-300">❤️</span> in India.</p>
+        <p className="text-gray-600 text-sm">© 2026 CoBrother Aultum International. All rights reserved.</p>
       </footer>
     </div>
   );

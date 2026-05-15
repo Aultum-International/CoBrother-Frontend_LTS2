@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import AppLayout from '../components/layout/AppLayout';
@@ -18,7 +19,6 @@ export default function DashboardPage() {
       desc: t('ventureDesc'),
       to: '/ventures',
       cta: t('manageVentures'),
-      accent: '#c8a96e',
     },
     {
       icon: CommunityIcon,
@@ -26,7 +26,6 @@ export default function DashboardPage() {
       desc: 'Connect with founders, investors, and operators',
       to: '/community',
       cta: 'Explore Disruptors',
-      accent: '#6e9ec8',
     },
     {
       icon: DomainsIcon,
@@ -34,7 +33,6 @@ export default function DashboardPage() {
       desc: t('domainsDesc'),
       to: '/domains',
       cta: t('manageDomains'),
-      accent: '#6e9ec8',
     },
     {
       icon: TechnologyIcon,
@@ -42,74 +40,121 @@ export default function DashboardPage() {
       desc: t('technologyDesc'),
       to: '/cocreation',
       cta: t('distributeSoftware'),
-      accent: '#6e9ec8',
-    }
+    },
   ];
+
+  const quickActions = [
+    { to: '/ventures/new', label: 'List Ventures', icon: <span className="text-lg font-semibold leading-none">+</span> },
+    { to: '/community', label: 'View Disruptors', icon: <img src={CommunityIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
+    { to: '/domains', label: 'Manage Domains', icon: <img src={DomainsIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
+    { to: '/cocreation', label: 'Explore Tech', icon: <img src={TechnologyIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
+  ];
+
+  const roleUpper = (user?.role ?? '').toString().toUpperCase();
+  const showAdmin = roleUpper === 'ADMIN' || roleUpper === 'ROLE_ADMIN';
 
   const firstName = user?.firstname || user?.firstName || user?.name || user?.email?.split('@')[0] || 'User';
 
   return (
     <AppLayout>
-      <div className="flex flex-col gap-6 max-w-7xl mx-auto">
-        {/* Welcome Header */}
-        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-2xl p-6 lg:p-8 text-white shadow-lg">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <p className="text-white/80 text-sm mb-1">Welcome back</p>
-              <h1 className="text-2xl lg:text-3xl font-bold">Hello, {firstName}</h1>
-              <p className="text-white/80 mt-2">What are you building today?</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="px-4 py-2 bg-white/10 backdrop-blur rounded-full">
-                <span className="text-xs text-white/70">Role</span>
-                <span className="ml-2 text-sm font-semibold">{user?.role || 'GUEST'}</span>
+      <div className="app-dashboard w-full max-w-7xl mx-auto flex flex-col gap-5 sm:gap-6 lg:gap-8 min-w-0">
+        {/* Welcome + admin banner */}
+        <section className="rounded-2xl overflow-hidden shadow-md border border-gray-100">
+          {showAdmin && (
+            <div className="border-b border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 px-4 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+              <div className="flex items-start sm:items-center gap-3 min-w-0">
+                <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 border border-amber-200">
+                  <Shield size={20} strokeWidth={2} aria-hidden />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold uppercase tracking-wide text-amber-900/80">Administrator</p>
+                  <p className="text-sm text-amber-950/80 mt-0.5 leading-snug">
+                    You have access to platform administration tools.
+                  </p>
+                </div>
               </div>
-              <div className="px-4 py-2 bg-green-500/20 backdrop-blur rounded-full">
-                <span className="text-xs text-green-200">Profile</span>
-                <span className="ml-2 text-sm font-semibold text-green-300">Complete ✓</span>
+              <Link
+                to="/admin"
+                className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center rounded-full bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold px-5 py-2.5 shadow-sm transition-colors"
+              >
+                Admin panel →
+              </Link>
+            </div>
+          )}
+
+          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 p-5 sm:p-6 lg:p-8 text-white">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+              <div className="min-w-0">
+                <p className="text-white/80 text-sm mb-1">Welcome back</p>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white break-words">
+                  Hello, {firstName}
+                </h1>
+                <p className="text-white/80 mt-2 text-sm sm:text-base">What are you building today?</p>
+              </div>
+              <div className="flex flex-wrap gap-2 sm:gap-3 shrink-0">
+                <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-white/10 backdrop-blur rounded-full">
+                  <span className="text-xs text-white/70">Role</span>
+                  <span className="text-sm font-semibold text-white">{user?.role || 'GUEST'}</span>
+                </div>
+                <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-green-500/20 backdrop-blur rounded-full">
+                  <span className="text-xs text-green-200">Profile</span>
+                  <span className="text-sm font-semibold text-green-300">Complete ✓</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Cards Grid - glow border hover effect */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {/* Feature cards — 1 col mobile, 2 col tablet, 4 col wide desktop */}
+        <section className="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-4 min-w-0">
           {cards.map((c) => (
-            <div key={c.to} className="group bg-white border border-gray-200 rounded-xl md:rounded-2xl p-3 md:p-6 flex flex-col items-center text-center hover:shadow-[0_0_30px_rgba(99,102,241,0.3),0_0_60px_rgba(168,85,247,0.2)] hover:-translate-y-1 hover:border-indigo-300 transition-all duration-300">
-              <div className="w-10 h-10 md:w-16 md:h-16 flex items-center justify-center mb-2 md:mb-4 bg-gray-50 rounded-xl md:rounded-2xl group-hover:scale-110 transition-transform">
-                <img src={c.icon} alt={c.title} className="w-6 h-6 md:w-10 md:h-10 object-contain" />
+            <article
+              key={c.to}
+              className="group bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 flex flex-col items-center text-center min-w-0 hover:shadow-[0_8px_30px_rgba(99,102,241,0.15)] hover:-translate-y-0.5 hover:border-indigo-300 transition-all duration-300"
+            >
+              <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center mb-4 bg-gray-50 rounded-2xl group-hover:scale-105 transition-transform">
+                <img src={c.icon} alt="" className="w-9 h-9 sm:w-10 sm:h-10 object-contain" />
               </div>
-              <h3 className="font-display text-sm md:text-xl font-semibold text-gray-900 mb-1 md:mb-2">{c.title}</h3>
-              <p className="text-xs md:text-sm text-gray-500 mb-2 md:mb-4 flex-1 line-clamp-2 md:line-clamp-none">{c.desc}</p>
-              <Link to={c.to} className="btn-glow btn-glow-sm w-full text-xs md:text-sm py-2 md:py-3 px-2 md:px-4 truncate">{c.cta} →</Link>
-            </div>
+              <h3 className="font-display text-base sm:text-lg font-semibold text-gray-900 mb-2 w-full">
+                {c.title}
+              </h3>
+              <p className="text-sm text-gray-500 mb-5 flex-1 w-full leading-relaxed line-clamp-3 sm:line-clamp-none">
+                {c.desc}
+              </p>
+              <Link
+                to={c.to}
+                className="btn-glow btn-glow-sm w-full text-sm py-2.5 px-3 text-center leading-snug whitespace-normal"
+              >
+                {c.cta} →
+              </Link>
+            </article>
           ))}
-        </div>
+        </section>
 
-        {/* Quick Actions */}
-        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-          <h2 className="font-display text-xl font-semibold text-gray-900 mb-5">Quick Actions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-3">
-            <Link to="/ventures/new" className="btn-glow flex items-center justify-center gap-1.5 py-2 px-2 md:py-3 md:px-3 text-xs md:text-sm">
-              <span className="text-base md:text-lg">+</span> <span className="truncate">List Ventures</span>
-            </Link>
-            <Link to="/community" className="btn-glow flex items-center justify-center gap-1.5 py-2 px-2 md:py-3 md:px-3 text-xs md:text-sm">
-              <img src={CommunityIcon} alt="Disruptors" className="w-4 h-4 md:w-5 md:h-5" /> <span className="truncate">View Disruptors</span>
-            </Link>
-            <Link to="/domains" className="btn-glow flex items-center justify-center gap-1.5 py-2 px-2 md:py-3 md:px-3 text-xs md:text-sm">
-              <img src={DomainsIcon} alt="Domains" className="w-4 h-4 md:w-5 md:h-5" /> <span className="truncate">Manage Domains</span>
-            </Link>
-            <Link to="/cocreation" className="btn-glow flex items-center justify-center gap-1.5 py-2 px-2 md:py-3 md:px-3 text-xs md:text-sm">
-              <img src={TechnologyIcon} alt="Technology" className="w-4 h-4 md:w-5 md:h-5" /> <span className="truncate">Explore Tech</span>
-            </Link>
+        {/* Quick actions */}
+        <section className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm min-w-0">
+          <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-5">
+            Quick Actions
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+            {quickActions.map((action) => (
+              <Link
+                key={action.to}
+                to={action.to}
+                className="btn-glow flex items-center justify-center gap-2 py-3 px-4 text-sm text-center min-h-[48px] whitespace-normal leading-snug"
+              >
+                {action.icon}
+                <span>{action.label}</span>
+              </Link>
+            ))}
           </div>
-        </div>
+        </section>
 
-        {/* Footer */}
-        <footer className="text-center py-4 text-sm text-gray-400">
-          <p>CoBrother Dashboard - Built for focused execution.</p>
+        <footer className="text-center py-3 sm:py-4 text-sm text-gray-400">
+          <p>CoBrother Dashboard — Built for focused execution.</p>
         </footer>
       </div>
     </AppLayout>
   );
 }
+

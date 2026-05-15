@@ -1,4 +1,3 @@
-import { Heart } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import coBrotherLogo from '../../assets/Cobrother_Green.png';
@@ -168,44 +167,13 @@ export default function HomeFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-10 sm:mt-12 pt-5 sm:pt-6 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-center sm:text-left">
-          <p className="text-slate-500 text-xs sm:text-sm order-2 sm:order-1">
+        <div className="mt-10 sm:mt-12 pt-5 sm:pt-6 border-t border-slate-800 text-center sm:text-left">
+          <p className="text-slate-500 text-xs sm:text-sm">
             {t('Copyright © {{year}} CoBrother™ Aultum International. All rights reserved.  ', { year: new Date().getFullYear() })}
           </p>
 
-          <p className="text-slate-500 text-xs sm:text-sm flex items-center justify-center sm:justify-end gap-1.5 order-1 sm:order-2">
-            {t('Made with')}
-            <span className="relative inline-flex items-center justify-center group">
-              <Heart size={18} fill="#fb7185" stroke="none" className="text-rose-400 inline-block" />
-              <Heart size={12} fill="#fb7185" stroke="none" className="floating-heart heart-1" />
-              <Heart size={12} fill="#fb7185" stroke="none" className="floating-heart heart-2" />
-              <Heart size={12} fill="#fb7185" stroke="none" className="floating-heart heart-3" />
-            </span>
-            {t('In India')}
-          </p>
         </div>
       </div>
-
-     
-
-      <style>{`
-        .floating-heart {
-          position: absolute; top: 0; left: 50%;
-          transform: translateX(-50%) translateY(0);
-          opacity: 0; pointer-events: none;
-        }
-        .group:hover .floating-heart {
-          opacity: 1; animation: heartFloat 1.4s ease-out infinite;
-        }
-        .heart-1 { animation-delay: 0s; }
-        .heart-2 { animation-delay: 0.2s; }
-        .heart-3 { animation-delay: 0.4s; }
-        @keyframes heartFloat {
-          0% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.8; }
-          25% { opacity: 1; }
-          100% { transform: translateX(-50%) translateY(-28px) scale(0.8); opacity: 0; }
-        }
-      `}</style>
     </footer>
   );
 }

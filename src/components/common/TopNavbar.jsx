@@ -77,19 +77,22 @@ export default function TopNavbar({ homeMobileMenu = false }) {
 
   return (
     <div
-      className="sticky top-0 w-full h-[40px] md:h-[45px] z-[1001] border-b border-purple/[0.18] font-body"
+      className="home-top-nav sticky top-0 w-full z-[1001] border-b border-purple/[0.18] font-body"
       style={{ background: 'linear-gradient(90deg, #0e0b1e 0%, #130d28 60%, #0f1225 100%)' }}
     >
-      <div className="w-full px-4 sm:px-6 lg:px-8 h-full flex items-center justify-end">
-        <div className="flex items-center gap-2 md:gap-5">
+      <div className="home-top-nav-inner w-full h-10 md:h-11 flex items-center justify-end">
+        <div className="flex items-center gap-1.5 sm:gap-3 md:gap-5 min-w-0 ml-auto">
           <div className="relative" ref={languageRef}>
             <button
-              className="text-white text-xs md:text-sm font-normal no-underline flex items-center gap-1 px-2.5 md:px-3 py-1.5 md:py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
+              type="button"
+              className="text-white text-xs md:text-sm font-normal no-underline flex items-center gap-1 px-2 sm:px-2.5 md:px-3 py-1.5 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200 max-w-[min(100%,11rem)]"
               onClick={() => setLanguageOpen((prev) => !prev)}
+              aria-expanded={languageOpen}
+              aria-haspopup="listbox"
             >
-              <Globe size={14} className="md:w-4 md:h-4" />
-              <span className="hidden sm:inline">{currentLanguageName}</span>
-              <ChevronDown size={14} />
+              <Globe size={14} className="shrink-0 md:w-4 md:h-4" />
+              <span className="hidden md:inline truncate">{currentLanguageName}</span>
+              <ChevronDown size={14} className="shrink-0" />
             </button>
             {languageOpen && (
               <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[140px] overflow-hidden z-[1001]">
@@ -113,7 +116,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
             )}
           </div>
 
-          <div className="relative hidden md:block">
+          <div className="relative hidden lg:block">
             <a
               href="/contact"
               className="text-white text-sm font-normal no-underline flex items-center gap-1 px-3 py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
@@ -126,7 +129,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
           <div className="relative ml-1 md:ml-2" ref={profileRef}>
             <button
               type="button"
-              className="block w-[32px] h-[32px] md:w-[40px] md:h-[40px] shrink-0 rounded-full cursor-pointer no-underline transition-all duration-500 hover:scale-110 shadow-[0_6px_24px_rgba(0,0,0,0.14)]"
+              className="block w-8 h-8 md:w-9 md:h-9 shrink-0 rounded-full cursor-pointer no-underline transition-all duration-500 hover:scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.12)]"
               style={{
                 perspective: '500px',
                 transformStyle: 'preserve-3d',
@@ -310,3 +313,4 @@ export default function TopNavbar({ homeMobileMenu = false }) {
     </div>
   );
 }
+

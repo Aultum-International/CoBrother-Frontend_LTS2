@@ -1,328 +1,318 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
-import coBrotherLogo from '../../assets/Cobrother_logo.png';
-import coBrotherLogoPurple from '../../assets/Cobrother_logo2.png';
+import logoBlack from '../../assets/Cobrother_logo.png';
+import logoGreen from '../../assets/Cobrother_Green.png';
 
-export default function HomeNavbar({
-  navRef,
-  openDropdown,
-  setOpenDropdown,
-  navigate,
-}) {
+function HomeNavLogo({ className = '' }) {
+  return (
+    <span className={`home-nav-logo-swap ${className}`.trim()}>
+      <img src={logoBlack} alt="CoBrother" className="home-nav-logo-img home-nav-logo-img--default" />
+      <img src={logoGreen} alt="" aria-hidden className="home-nav-logo-img home-nav-logo-img--hover" />
+    </span>
+  );
+}
+
+function NavDropdown({ label, open, onToggle, children }) {
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        className={`home-nav-pill ${open ? 'is-open' : ''}`}
+        onClick={onToggle}
+        aria-expanded={open}
+      >
+        <span>{label}</span>
+        <ChevronDown size={16} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="home-nav-dropdown-panel">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DropdownLink({ onClick, children }) {
+  return (
+    <button type="button" className="home-nav-dropdown-link" onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+function MobileAccordion({ title, open, onToggle, children }) {
+  return (
+    <div className="home-mobile-accordion">
+      <button type="button" className="home-mobile-accordion-trigger" onClick={onToggle} aria-expanded={open}>
+        <span>{title}</span>
+        <ChevronDown size={18} className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && <div className="home-mobile-accordion-panel">{children}</div>}
+    </div>
+  );
+}
+
+export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileAccordion, setMobileAccordion] = useState(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
+    setMobileAccordion(null);
     setOpenDropdown(null);
   };
 
+  const toggleDesktopDropdown = (id) => {
+    setOpenDropdown(openDropdown === id ? null : id);
+  };
+
+  const go = (path) => {
+    navigate(path);
+    closeMobileMenu();
+  };
+
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      document.body.classList.remove('home-menu-open');
+      return undefined;
+    }
+    document.body.classList.add('home-menu-open');
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.classList.remove('home-menu-open');
+      document.body.style.overflow = prev;
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 1280) closeMobileMenu();
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const authButton = !user ? (
+    <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/login')}>
+      {t('signIn')}
+    </button>
+  ) : (
+    <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => setShowLogoutConfirm(true)}>
+      Logout
+    </button>
+  );
+
   return (
-    <nav className="w-full bg-white border-b-0 sticky top-[40px] md:top-[45px] z-50" ref={navRef}>
-      <div className="px-4 sm:px-6 lg:px-8 h-[60px] md:h-[70px] flex items-center justify-between relative">
-        <div className="flex items-center gap-3 md:gap-6">
-          <div className="relative group cursor-pointer" onClick={() => navigate('/')}>
-            <img src={coBrotherLogo} alt="CoBrother" className="h-8 md:h-10 w-auto transition-opacity duration-300 group-hover:opacity-0" />
-            <img src={coBrotherLogoPurple} alt="CoBrother" className="h-8 md:h-10 w-auto absolute top-0 left-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-          </div>
-
-          <div className="hidden lg:flex items-center gap-1 lg:gap-4">
-            <div className="relative">
-              <button
-                className={`group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 overflow-hidden bg-white ${
-                  openDropdown === 'domains'
-                    ? 'text-black'
-                    : 'text-black hover:text-gray-900'
-                }`}
-                onClick={() => setOpenDropdown(openDropdown === 'domains' ? null : 'domains')}
-              >
-                <span className="relative z-10">{t('domains')}</span> <ChevronDown size={14} className="relative z-10" />
-                <span className="absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
-                </span>
-                <span className={`absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-opacity duration-300 ${openDropdown === 'domains' ? 'opacity-100' : 'opacity-0'}`}>
-                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
-                </span>
-              </button>
-              {openDropdown === 'domains' && (
-                <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
-                  <button
-                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
-                    onClick={() => {
-                      navigate('/domains');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    {t('exploreDomains')}
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
-                  </button>
-                  <button
-                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
-                    onClick={() => {
-                      navigate('/domains/dashboard');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    {t('listDomains')}
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
-                  </button>
-                  <button
-                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
-                    onClick={() => {
-                      navigate('/auctions');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    {t('bidDomains')}
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="relative">
-              <button
-                className={`group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 overflow-hidden bg-white ${
-                  openDropdown === 'venture'
-                    ? 'text-black'
-                    : 'text-black hover:text-gray-900'
-                }`}
-                onClick={() => setOpenDropdown(openDropdown === 'venture' ? null : 'venture')}
-              >
-                <span className="relative z-10">{t('Ventures')}</span> <ChevronDown size={14} className="relative z-10" />
-                <span className="absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
-                </span>
-                <span className={`absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-opacity duration-300 ${openDropdown === 'venture' ? 'opacity-100' : 'opacity-0'}`}>
-                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
-                </span>
-              </button>
-              {openDropdown === 'venture' && (
-                <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
-                  <button
-                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
-                    onClick={() => {
-                      navigate('/ventures');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    {t('exploreVenture')}
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
-                  </button>
-                  <button
-                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
-                    onClick={() => {
-                      navigate('/ventures/new');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    {t('listVenture')}
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
-                  </button>
-                  <button
-                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
-                    onClick={() => {
-                      navigate('/auctions');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    {t('bidVenture')}
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="relative">
-              <button
-                className={`group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 overflow-hidden bg-white ${
-                  openDropdown === 'auctions'
-                    ? 'text-black'
-                    : 'text-black hover:text-gray-900'
-                }`}
-                onClick={() => setOpenDropdown(openDropdown === 'auctions' ? null : 'auctions')}
-              >
-                <span className="relative z-10">{t('auctions')}</span> <ChevronDown size={14} className="relative z-10" />
-                <span className="absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
-                </span>
-                <span className={`absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-opacity duration-300 ${openDropdown === 'auctions' ? 'opacity-100' : 'opacity-0'}`}>
-                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
-                </span>
-              </button>
-              {openDropdown === 'auctions' && (
-                <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
-                  <button
-                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
-                    onClick={() => {
-                      navigate('/auctions');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    Domain Auction
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
-                  </button>
-                  <button
-                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
-                    onClick={() => {
-                      navigate('/venture-auction');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    Venture Auction
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
-                  </button>
-                  <button
-                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
-                    onClick={() => {
-                      navigate('/disruptors');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    Disruptor Auction
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="relative">
-              <button
-                className={`group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 overflow-hidden bg-white ${
-                  openDropdown === 'technology'
-                    ? 'text-black'
-                    : 'text-black hover:text-gray-900'
-                }`}
-                onClick={() => setOpenDropdown(openDropdown === 'technology' ? null : 'technology')}
-              >
-                <span className="relative z-10">{t('technologies')}</span> <ChevronDown size={14} className="relative z-10" />
-                <span className="absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
-                </span>
-                <span className={`absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-opacity duration-300 ${openDropdown === 'technology' ? 'opacity-100' : 'opacity-0'}`}>
-                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
-                </span>
-              </button>
-              {openDropdown === 'technology' && (
-                <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
-                  <button
-                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
-                    onClick={() => {
-                      navigate('/cocreation');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    {t('exploreTechnology')}
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="relative">
-              <button
-                className={`group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 overflow-hidden bg-white ${
-                  openDropdown === 'disruptors'
-                    ? 'text-black'
-                    : 'text-black hover:text-gray-900'
-                }`}
-                onClick={() => setOpenDropdown(openDropdown === 'disruptors' ? null : 'disruptors')}
-              >
-                <span className="relative z-10">{t('disruptors')}</span> <ChevronDown size={14} className="relative z-10" />
-                <span className="absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
-                </span>
-                <span className={`absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-opacity duration-300 ${openDropdown === 'disruptors' ? 'opacity-100' : 'opacity-0'}`}>
-                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
-                </span>
-              </button>
-              {openDropdown === 'disruptors' && (
-                <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px] z-50 overflow-hidden">
-                  <button
-                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
-                    onClick={() => {
-                      navigate('/join-form');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    {t('beTheDisruptors')}
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
-                  </button>
-                  <button
-                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
-                    onClick={() => {
-                      navigate('/community');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    {t('exploreDisruptors')}
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
-                  </button>
-                  <button
-                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
-                    onClick={() => {
-                      navigate('/auctions');
-                      setOpenDropdown(null);
-                    }}
-                  >
-                    {t('bidDisruptors')}
-                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 lg:gap-3">
+    <>
+      <nav
+        className="home-main-nav w-full bg-white border-b border-gray-100 sticky z-[1000]"
+        style={{ top: 'var(--home-topbar-height, 40px)' }}
+        ref={navRef}
+      >
+        <div className="home-main-nav-inner w-full h-14 md:h-16 flex items-center justify-between gap-3">
+          <div className="flex items-center min-w-0 flex-1 xl:flex-initial gap-3 sm:gap-5">
           <button
-            className="lg:hidden bg-transparent border-none text-gray-900 cursor-pointer transition-colors duration-200 hover:text-gray-900"
-            onClick={() => setMobileMenuOpen((prev) => !prev)}
-            aria-label="Toggle menu"
+            type="button"
+            className="home-nav-logo-btn shrink-0"
+            onClick={() => navigate('/')}
+            aria-label="CoBrother home"
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            <HomeNavLogo />
           </button>
 
-          <div className="hidden lg:flex items-center gap-2 lg:gap-3">
-            <button className="btn-glow btn-glow-md" onClick={() => navigate('/join-form')}>
-              {t('joinUs')}
-            </button>
-
-            {!user ? (
-              <button className="btn-glow btn-glow-md" onClick={() => navigate('/login')}>
-                {t('signIn')}
-              </button>
-            ) : (
-              <button
-                className="btn-glow btn-glow-md"
-                onClick={() => setShowLogoutConfirm(true)}
+          <div className="home-nav-desktop-menu">
+            <div className="flex items-center flex-wrap gap-1">
+              <NavDropdown
+                label={t('domains')}
+                open={openDropdown === 'domains'}
+                onToggle={() => toggleDesktopDropdown('domains')}
               >
-                Logout
+                <DropdownLink onClick={() => go('/domains')}>{t('exploreDomains')}</DropdownLink>
+                <DropdownLink onClick={() => go('/domains/dashboard')}>{t('listDomains')}</DropdownLink>
+                <DropdownLink onClick={() => go('/auctions')}>{t('bidDomains')}</DropdownLink>
+              </NavDropdown>
+
+              <NavDropdown
+                label={t('Ventures')}
+                open={openDropdown === 'venture'}
+                onToggle={() => toggleDesktopDropdown('venture')}
+              >
+                <DropdownLink onClick={() => go('/ventures')}>{t('exploreVenture')}</DropdownLink>
+                <DropdownLink onClick={() => go('/ventures/new')}>{t('listVenture')}</DropdownLink>
+                <DropdownLink onClick={() => go('/auctions')}>{t('bidVenture')}</DropdownLink>
+              </NavDropdown>
+
+              <NavDropdown
+                label={t('auctions')}
+                open={openDropdown === 'auctions'}
+                onToggle={() => toggleDesktopDropdown('auctions')}
+              >
+                <DropdownLink onClick={() => go('/auctions')}>Domain Auction</DropdownLink>
+                <DropdownLink onClick={() => go('/venture-auction')}>Venture Auction</DropdownLink>
+                <DropdownLink onClick={() => go('/disruptors')}>Disruptor Auction</DropdownLink>
+              </NavDropdown>
+
+              <NavDropdown
+                label={t('technologies')}
+                open={openDropdown === 'technology'}
+                onToggle={() => toggleDesktopDropdown('technology')}
+              >
+                <DropdownLink onClick={() => go('/cocreation')}>{t('exploreTechnology')}</DropdownLink>
+              </NavDropdown>
+
+              <NavDropdown
+                label={t('disruptors')}
+                open={openDropdown === 'disruptors'}
+                onToggle={() => toggleDesktopDropdown('disruptors')}
+              >
+                <DropdownLink onClick={() => go('/join-form')}>{t('beTheDisruptors')}</DropdownLink>
+                <DropdownLink onClick={() => go('/community')}>{t('exploreDisruptors')}</DropdownLink>
+                <DropdownLink onClick={() => go('/auctions')}>{t('bidDisruptors')}</DropdownLink>
+              </NavDropdown>
+            </div>
+          </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
+            <div className="home-nav-desktop-cta home-nav-cta-group">
+              <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/join-form')}>
+                {t('joinUs')}
               </button>
-            )}
+              {authButton}
+            </div>
+
+            <button
+              type="button"
+              className="home-nav-hamburger"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Logout Confirmation Dialog */}
+      {/* Mobile / tablet drawer */}
+      {mobileMenuOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <>
+          <button
+            type="button"
+            className="home-nav-overlay"
+            aria-label="Close menu"
+            onClick={closeMobileMenu}
+          />
+          <aside className="home-nav-drawer" aria-label="Main navigation">
+            <div className="home-nav-drawer-header">
+              <span className="home-nav-drawer-title">Menu</span>
+              <button type="button" className="home-nav-drawer-close" onClick={closeMobileMenu} aria-label="Close menu">
+                <X size={22} strokeWidth={2} />
+              </button>
+            </div>
+
+            <div className="home-nav-drawer-body">
+              <MobileAccordion
+                title={t('domains')}
+                open={mobileAccordion === 'domains'}
+                onToggle={() => setMobileAccordion((v) => (v === 'domains' ? null : 'domains'))}
+              >
+                <button type="button" className="home-mobile-link" onClick={() => go('/domains')}>{t('exploreDomains')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/domains/dashboard')}>{t('listDomains')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/auctions')}>{t('bidDomains')}</button>
+              </MobileAccordion>
+
+              <MobileAccordion
+                title={t('Ventures')}
+                open={mobileAccordion === 'venture'}
+                onToggle={() => setMobileAccordion((v) => (v === 'venture' ? null : 'venture'))}
+              >
+                <button type="button" className="home-mobile-link" onClick={() => go('/ventures')}>{t('exploreVenture')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/ventures/new')}>{t('listVenture')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/auctions')}>{t('bidVenture')}</button>
+              </MobileAccordion>
+
+              <MobileAccordion
+                title={t('auctions')}
+                open={mobileAccordion === 'auctions'}
+                onToggle={() => setMobileAccordion((v) => (v === 'auctions' ? null : 'auctions'))}
+              >
+                <button type="button" className="home-mobile-link" onClick={() => go('/auctions')}>Domain Auction</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/venture-auction')}>Venture Auction</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/disruptors')}>Disruptor Auction</button>
+              </MobileAccordion>
+
+              <MobileAccordion
+                title={t('technologies')}
+                open={mobileAccordion === 'technology'}
+                onToggle={() => setMobileAccordion((v) => (v === 'technology' ? null : 'technology'))}
+              >
+                <button type="button" className="home-mobile-link" onClick={() => go('/cocreation')}>{t('exploreTechnology')}</button>
+              </MobileAccordion>
+
+              <MobileAccordion
+                title={t('disruptors')}
+                open={mobileAccordion === 'disruptors'}
+                onToggle={() => setMobileAccordion((v) => (v === 'disruptors' ? null : 'disruptors'))}
+              >
+                <button type="button" className="home-mobile-link" onClick={() => go('/join-form')}>{t('beTheDisruptors')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/community')}>{t('exploreDisruptors')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/auctions')}>{t('bidDisruptors')}</button>
+              </MobileAccordion>
+            </div>
+
+            <div className="home-nav-drawer-footer">
+              <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/join-form')}>
+                {t('joinUs')}
+              </button>
+              {!user ? (
+                <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login')}>
+                  {t('signIn')}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn-glow btn-glow-md w-full"
+                  onClick={() => {
+                    closeMobileMenu();
+                    setShowLogoutConfirm(true);
+                  }}
+                >
+                  Logout
+                </button>
+              )}
+            </div>
+          </aside>
+        </>,
+        document.body,
+        )}
+
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white border border-gray-200 rounded-xl shadow-2xl p-6 max-w-sm w-full animate-slideUp">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-2xl p-6 max-w-sm w-full">
             <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
             <p className="text-gray-600 text-sm mb-6">Are you sure you want to logout?</p>
             <div className="flex gap-3">
               <button
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-200 transition-colors"
+                type="button"
+                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-200"
                 onClick={() => setShowLogoutConfirm(false)}
               >
                 Cancel
               </button>
               <button
-                className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
+                type="button"
+                className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700"
                 onClick={() => {
                   localStorage.clear();
                   window.location.href = '/';
@@ -334,93 +324,7 @@ export default function HomeNavbar({
           </div>
         </div>
       )}
-
-      {mobileMenuOpen && (
-        <>
-          <div
-            className="lg:hidden fixed top-[100px] inset-x-0 bottom-0 bg-black/50 z-40 backdrop-blur-sm"
-            onClick={closeMobileMenu}
-          />
-          <div className="lg:hidden fixed top-[100px] left-0 w-[290px] max-w-[90vw] h-[calc(100dvh-100px)] bg-white shadow-2xl z-50 animate-[slideInLeft_0.3s_ease-out] overflow-y-auto">
-            <div className="flex items-center justify-between p-5 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 m-0">Menu</h3>
-              <button
-                className="bg-transparent border-none cursor-pointer text-gray-600 transition-colors duration-200 hover:text-gray-900"
-                onClick={closeMobileMenu}
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <div className="flex flex-col py-2">
-              <button
-                className="w-full px-5 py-3.5 border-none text-left text-base text-gray-700 bg-transparent cursor-pointer transition-all duration-200 border-l-[3px] border-l-transparent hover:bg-gray-50 hover:text-gray-900 hover:border-l-gray-900"
-                onClick={() => {
-                  navigate('/domains');
-                  closeMobileMenu();
-                }}
-              >
-                {t('domains')}
-              </button>
-              <button
-                className="w-full px-5 py-3.5 border-none text-left text-base text-gray-700 bg-transparent cursor-pointer transition-all duration-200 border-l-[3px] border-l-transparent hover:bg-gray-50 hover:text-gray-900 hover:border-l-gray-900"
-                onClick={() => {
-                  navigate('/ventures');
-                  closeMobileMenu();
-                }}
-              >
-                {t('venture')}
-              </button>
-              <button
-                className="w-full px-5 py-3.5 border-none text-left text-base text-gray-700 bg-transparent cursor-pointer transition-all duration-200 border-l-[3px] border-l-transparent hover:bg-gray-50 hover:text-gray-900 hover:border-l-gray-900"
-                onClick={() => {
-                  navigate('/auctions');
-                  closeMobileMenu();
-                }}
-              >
-                {t('auctions')}
-              </button>
-              <button
-                className="w-full px-5 py-3.5 border-none text-left text-base text-gray-700 bg-transparent cursor-pointer transition-all duration-200 border-l-[3px] border-l-transparent hover:bg-gray-50 hover:text-gray-900 hover:border-l-gray-900"
-                onClick={() => {
-                  navigate('/cocreation');
-                  closeMobileMenu();
-                }}
-              >
-                {t('technologies')}
-              </button>
-              <button
-                className="w-full px-5 py-3.5 border-none text-left text-base text-gray-700 bg-transparent cursor-pointer transition-all duration-200 border-l-[3px] border-l-transparent hover:bg-gray-50 hover:text-gray-900 hover:border-l-gray-900"
-                onClick={() => {
-                  navigate('/community');
-                  closeMobileMenu();
-                }}
-              >
-                {t('disruptors')}
-              </button>
-              <div className="px-5 pt-4 pb-2 grid grid-cols-1 gap-2">
-                <button className="btn-glow btn-glow-md w-full" onClick={() => { navigate('/join-form'); closeMobileMenu(); }}>
-                  {t('joinUs')}
-                </button>
-                {!user ? (
-                  <button className="btn-glow btn-glow-md w-full" onClick={() => { navigate('/login'); closeMobileMenu(); }}>
-                    {t('signIn')}
-                  </button>
-                ) : (
-                  <button
-                    className="btn-glow btn-glow-md w-full"
-                    onClick={() => {
-                      setShowLogoutConfirm(true);
-                      closeMobileMenu();
-                    }}
-                  >
-                    Logout
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-    </nav>
+    </>
   );
 }
+

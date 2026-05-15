@@ -98,28 +98,53 @@ export default function VenturesPage() {
 
   return (
     <AppLayout>
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('venture')}</h1>
-            <p className="text-gray-600 mt-1">Discover and co-venture on exciting opportunities.</p>
+      <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-start lg:justify-between min-w-0">
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 m-0">{t('venture')}</h1>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">Discover and co-venture on exciting opportunities.</p>
           </div>
-          <div className="flex gap-2 md:gap-3 flex-wrap">
-            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/ventures/dashboard')}>
-              <img src={DashboardIcon} alt="Dashboard" className="w-4 h-4 md:w-[18px] md:h-[18px]" /> <span className="truncate">{t('dashboard')}</span>
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2 w-full lg:w-auto lg:justify-end shrink-0">
+            <button
+              type="button"
+              className="btn-glow btn-glow-sm flex items-center justify-center gap-2 text-sm py-2.5 px-4 min-h-[44px] flex-1 sm:flex-none"
+              onClick={() => navigate('/ventures/dashboard')}
+            >
+              <img src={DashboardIcon} alt="" className="w-[18px] h-[18px] shrink-0" />
+              <span>{t('dashboard')}</span>
             </button>
-            <button className="btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/ventures/analytics')}>
-              📈 <span className="truncate">Analytics</span>
+            <button
+              type="button"
+              className="btn-glow btn-glow-sm flex items-center justify-center gap-2 text-sm py-2.5 px-4 min-h-[44px] flex-1 sm:flex-none"
+              onClick={() => navigate('/ventures/analytics')}
+            >
+              <span aria-hidden>📈</span>
+              <span>Analytics</span>
             </button>
-            <Link to="/ventures/new" className="btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 truncate">+ List Venture</Link>
+            <Link
+              to="/ventures/new"
+              className="btn-glow btn-glow-sm flex items-center justify-center gap-2 text-sm py-2.5 px-4 min-h-[44px] flex-1 sm:flex-none whitespace-nowrap"
+            >
+              + List Venture
+            </Link>
           </div>
         </div>
 
         {/* ── Tabs ── */}
-        <div className="flex gap-2 mb-6">
-          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('all')}>All Ventures</button>
-          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('mine')}>My Ventures</button>
+        <div className="flex flex-wrap gap-2 mb-6">
+          <button
+            type="button"
+            className={`btn-glow btn-glow-sm text-sm py-2.5 px-4 min-h-[44px] ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+            onClick={() => setFilterTab('all')}
+          >
+            All Ventures
+          </button>
+          <button
+            type="button"
+            className={`btn-glow btn-glow-sm text-sm py-2.5 px-4 min-h-[44px] ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+            onClick={() => setFilterTab('mine')}
+          >
+            My Ventures
+          </button>
         </div>
 
         {/* ── Filter bar ── */}

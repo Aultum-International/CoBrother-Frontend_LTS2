@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Calendar } from 'lucide-react';
 import { adminAPI, meetingAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import VentureIcon from '../assets/Coventure_logo.png';
@@ -133,7 +134,7 @@ export default function AdminDashboardPage() {
     { id: 'requests',           label: 'CoBrother Requests',icon: RequestIcon    },
     { id: 'auctions',           label: 'Domain Auctions',   icon: AuctionIcon    },
     { id: 'venture-auctions',   label: 'Venture Auctions',  icon: AuctionIcon    },
-    { id: 'meetings',           label: '📅 Meetings',       icon: null           },
+    { id: 'meetings',           label: 'Meetings',          icon: null, Icon: Calendar },
     { id: 'homepage-features',  label: 'Homepage Features', icon: PurchaseIcon   },
     { id: 'software-auctions', label: 'Software Auctions', icon: AuctionIcon },
     { id: 'addon-orders',       label: 'Addon Orders', icon: PurchaseIcon     },
@@ -141,62 +142,92 @@ export default function AdminDashboardPage() {
 
   return (
     <AppLayout>
-      <div>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Admin Dashboard</h1>
-            <p className="text-gray-600 mt-1">Manage all platform activity.</p>
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 md:p-6 mb-6 relative overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600" />
+          <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="min-w-0">
+              <h1 className="font-display text-3xl md:text-4xl font-bold text-gray-900 m-0">
+                Admin Dashboard
+              </h1>
+              <p className="text-gray-600 mt-2">Manage all platform activity.</p>
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-4 mb-6">
-          {tabs.map(t => (
-            <button key={t.id}
-              className={`filter-tab ${tab === t.id ? 'active' : ''}`}
-              onClick={() => setTab(t.id)}>
-              {t.icon && <img src={t.icon} alt="" className="inline-block w-4 h-4 mr-1.5 object-contain" />}
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {loading ? (
-          <div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div>
-        ) : tab === 'domain-enquiries' ? (
-          <DomainEnquiriesTable
-            enquiries={data}
-            onForward={(entityId, type) => setForwardModal({ entityId, type })}
-          />
-        ) : tab === 'auctions' ? ( <AuctionsAdminTable auctions={data} />
-        ) : tab === 'venture-auctions' ? ( <VentureAuctionsAdminTable auctions={data} />
-        ) : tab === 'addon-orders' ? ( <AddonOrdersTable orders={data} />
-        ) : tab === 'software-auctions' ? ( <SoftwareAuctionAdminTab auctions={softwareAuctions} onRefresh={loadSoftwareAuctions} />
-        ) : tab === 'meetings' ? ( <MeetingsAdminTab meetings={data} />
-        ) : tab === 'homepage-features' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <HomepageFeatureSelector type="domain" />
-            <HomepageFeatureSelector type="venture" />
-            <HomepageFeatureSelector type="software" />
-            <HomepageFeatureSelector type="community" />
-          </div>
-        ) : tab === 'requests' ? (
-          <RequestsTable requests={requests} />
-        ) : data.length === 0 ? (
-          <div className="text-center py-20"><h3 className="font-display text-2xl font-bold text-gray-900">No records found</h3></div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {data.map(item => (
-              <AdminRow
-                key={item.id}
-                item={item}
-                tabType={tab}
-                onForward={(entityId, type) => setForwardModal({ entityId, type })}
-                onTakeDown={handleTakeDown}
-                onRestore={handleRestore}
-              />
+        <div className="mb-6">
+          <div className="admin-dashboard-tabs">
+            {tabs.map(t => (
+              <button
+                key={t.id}
+                type="button"
+                className={`admin-dashboard-tab ${tab === t.id ? 'active' : ''}`}
+                aria-pressed={tab === t.id}
+                onClick={() => setTab(t.id)}
+              >
+                {t.icon ? (
+                  <img src={t.icon} alt="" className="admin-dashboard-tab-icon" />
+                ) : t.Icon ? (
+                  <span className="admin-dashboard-tab-lucide" aria-hidden>
+                    <t.Icon size={22} strokeWidth={2} />
+                  </span>
+                ) : (
+                  <span className="admin-dashboard-tab-icon-spacer" aria-hidden />
+                )}
+                <span className="admin-dashboard-tab-label">{t.label}</span>
+              </button>
             ))}
           </div>
-        )}
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-6 text-gray-900">
+          {loading ? (
+            <div className="flex items-center justify-center py-16 md:py-20">
+              <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
+            </div>
+          ) : tab === 'domain-enquiries' ? (
+            <DomainEnquiriesTable
+              enquiries={data}
+              onForward={(entityId, type) => setForwardModal({ entityId, type })}
+            />
+          ) : tab === 'auctions' ? (
+            <AuctionsAdminTable auctions={data} />
+          ) : tab === 'venture-auctions' ? (
+            <VentureAuctionsAdminTable auctions={data} />
+          ) : tab === 'addon-orders' ? (
+            <AddonOrdersTable orders={data} />
+          ) : tab === 'software-auctions' ? (
+            <SoftwareAuctionAdminTab auctions={softwareAuctions} onRefresh={loadSoftwareAuctions} />
+          ) : tab === 'meetings' ? (
+            <MeetingsAdminTab meetings={data} />
+          ) : tab === 'homepage-features' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <HomepageFeatureSelector type="domain" />
+              <HomepageFeatureSelector type="venture" />
+              <HomepageFeatureSelector type="software" />
+              <HomepageFeatureSelector type="community" />
+            </div>
+          ) : tab === 'requests' ? (
+            <RequestsTable requests={requests} />
+          ) : data.length === 0 ? (
+            <div className="text-center py-20">
+              <h3 className="font-display text-2xl font-bold text-gray-900">No records found</h3>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {data.map(item => (
+                <AdminRow
+                  key={item.id}
+                  item={item}
+                  tabType={tab}
+                  onForward={(entityId, type) => setForwardModal({ entityId, type })}
+                  onTakeDown={handleTakeDown}
+                  onRestore={handleRestore}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {forwardModal && (

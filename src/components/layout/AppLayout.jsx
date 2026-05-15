@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Handshake, Globe, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft } from 'lucide-react';
+import { Home, Handshake, Globe, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { notificationAPI } from '../../api/services';
@@ -18,14 +18,31 @@ const sidebarItems = [
   { icon: ShoppingBag, label: 'Purchases', to: '/purchases', isImage: false },
 ];
 
+const adminNavItem = { icon: Shield, label: 'Admin panel', to: '/admin', isImage: false, adminAccent: true };
+
+function isAdminUser(user) {
+  const roleUpper = (user?.role ?? '').toString().toUpperCase();
+  return roleUpper === 'ADMIN' || roleUpper === 'ROLE_ADMIN';
+}
+
+function getNavItems(user) {
+  if (!isAdminUser(user)) return sidebarItems;
+  const purchasesIdx = sidebarItems.findIndex((item) => item.to === '/purchases');
+  const insertAt = purchasesIdx >= 0 ? purchasesIdx + 1 : sidebarItems.length;
+  return [...sidebarItems.slice(0, insertAt), adminNavItem, ...sidebarItems.slice(insertAt)];
+}
+
 export default function AppLayout({ children }) {
   const { user, logout } = useAuth();
+  const navItems = getNavItems(user);
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('sidebarCollapsed') === 'true';
+      const saved = localStorage.getItem('sidebarCollapsed');
+      if (saved !== null) return saved === 'true';
+      return window.innerWidth < 1280;
     }
     return false;
   });
@@ -146,23 +163,29 @@ export default function AppLayout({ children }) {
 
         {/* Navigation */}
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {sidebarItems.map((item) => {
+          {navItems.map((item) => {
             const active = isActive(item.to);
+            const Icon = item.icon;
+            const accent = item.adminAccent;
             return (
               <Link
                 key={item.to}
                 to={item.to}
                 className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-lg transition-all duration-200 ${
-                  active
-                    ? 'bg-white/10 text-white'
-                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                  accent
+                    ? active
+                      ? 'bg-amber-500/25 text-amber-200 border border-amber-400/30'
+                      : 'text-amber-400/90 hover:bg-amber-500/15 hover:text-amber-200 border border-transparent'
+                    : active
+                      ? 'bg-white/10 text-white'
+                      : 'text-gray-400 hover:bg-white/5 hover:text-white'
                 }`}
                 title={sidebarCollapsed ? item.label : ''}
               >
                 {item.isImage ? (
                   <img src={item.icon} alt={item.label} className={`w-5 h-5 object-contain brightness-0 invert ${active ? 'opacity-100' : 'opacity-70'}`} />
                 ) : (
-                  <item.icon size={20} className={active ? 'text-indigo-400' : ''} />
+                  <Icon size={20} className={accent ? (active ? 'text-amber-300' : 'text-amber-400/80') : active ? 'text-indigo-400' : ''} />
                 )}
                 {!sidebarCollapsed && <span className="font-medium text-sm">{item.label}</span>}
               </Link>
@@ -235,23 +258,29 @@ export default function AppLayout({ children }) {
 
             {/* Navigation */}
             <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-              {sidebarItems.map((item) => {
+              {navItems.map((item) => {
                 const active = isActive(item.to);
+                const Icon = item.icon;
+                const accent = item.adminAccent;
                 return (
                   <Link
                     key={item.to}
                     to={item.to}
                     onClick={() => setMobileOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                      active
-                        ? 'bg-white/10 text-white'
-                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                      accent
+                        ? active
+                          ? 'bg-amber-500/25 text-amber-200 border border-amber-400/30'
+                          : 'text-amber-400/90 hover:bg-amber-500/15 hover:text-amber-200'
+                        : active
+                          ? 'bg-white/10 text-white'
+                          : 'text-gray-400 hover:bg-white/5 hover:text-white'
                     }`}
                   >
                     {item.isImage ? (
                       <img src={item.icon} alt={item.label} className={`w-5 h-5 object-contain ${active ? 'opacity-100' : 'opacity-70'}`} />
                     ) : (
-                      <item.icon size={20} className={active ? 'text-indigo-400' : ''} />
+                      <Icon size={20} className={accent ? (active ? 'text-amber-300' : 'text-amber-400/80') : active ? 'text-indigo-400' : ''} />
                     )}
                     <span className="font-medium text-sm">{item.label}</span>
                   </Link>
@@ -302,7 +331,7 @@ export default function AppLayout({ children }) {
       )}
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-h-screen overflow-y-auto lg:ml-0">
+      <main className="flex-1 flex flex-col min-h-screen min-w-0 overflow-hidden lg:ml-0">
         {/* Top Header */}
         <header className="bg-white border-b border-gray-200 px-4 lg:px-8 py-4 flex items-center justify-between shrink-0 relative">
           <div className="flex items-center gap-4">
@@ -412,8 +441,8 @@ export default function AppLayout({ children }) {
         </header>
 
         {/* Scrollable Content - with proper padding for sidebar */}
-        <div className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="p-4 lg:p-8">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 min-w-0">
+          <div className="app-main-content p-4 sm:p-5 lg:p-6 xl:p-8 min-w-0 max-w-[100%]">
             {children}
           </div>
         </div>
