@@ -1,93 +1,50 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, Menu, X } from 'lucide-react';
+import { Home, Handshake, Globe, Gavel, ShoppingBag, User, Bell, LogOut, Menu, X, PanelLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import TopNavbar from '../common/TopNavbar';
-import coBrotherLogo from '../../assets/Cobrother_logo.png';
 import { useAuth } from '../../context/AuthContext';
 import { notificationAPI } from '../../api/services';
-import DashboardIcon from '../../assets/Dashboard.png';
-import VentureIcon from '../../assets/Coventure_logo.png';
-import CommunityIcon from '../../assets/Community-profileicon.png';
-import DomainsIcon from '../../assets/CoBranding.png';
+import coBrotherLogo from '../../assets/Cobrother_Green.png';
 import TechnologyIcon from '../../assets/CoCreation.png';
-import AuctionIcon from '../../assets/Auction.png';
-import PurchaseIcon from '../../assets/purchase.png';
-import NotificationIcon from '../../assets/notification.png';
-import AdminIcon from '../../assets/Community-profileicon.png';
+import CommunityIcon from '../../assets/CoBrother_profileW.png';
 
-const TYPE_ICONS = {
-  COVENTURE_APPLICATION_RECEIVED: 'ðŸ“‹',
-  COVENTURE_APPLICATION_STATUS_CHANGED: 'ðŸ“£',
-  DOMAIN_SOLD: 'â—‡',
-  SOFTWARE_PURCHASED: 'âŸ',
-  SOFTWARE_MARKED_COMPLETE: 'âœ“',
-  PROFILE_VIEWED: 'ðŸ‘',
-  NEW_LISTING_IN_INDUSTRY: 'ðŸ†•',
-};
-
-function timeAgo(dateStr) {
-  const diff = (Date.now() - new Date(dateStr)) / 1000;
-  if (diff < 60) return 'just now';
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
-}
-
-function renderNavIcon(icon, label) {
-  const isImageSource = typeof icon === 'string' && /^(data:|https?:|\/)/.test(icon);
-
-  if (isImageSource) {
-    return (
-      <span className="inline-flex items-center justify-center w-5 h-5">
-        <img src={icon} alt="" className="w-full h-full object-contain" />
-      </span>
-    );
-  }
-
-  return (
-    <span
-      className="inline-flex items-center justify-center w-5 h-5 text-base leading-none"
-      aria-hidden="true"
-      title={label}
-    >
-      {icon}
-    </span>
-  );
-}
+const sidebarItems = [
+  { icon: Home, label: 'Dashboard', to: '/dashboard', isImage: false },
+  { icon: Handshake, label: 'Ventures', to: '/ventures', isImage: false },
+  { icon: Globe, label: 'Domains', to: '/domains', isImage: false },
+  { icon: TechnologyIcon, label: 'Technology', to: '/cocreation', isImage: true },
+  { icon: CommunityIcon, label: 'Disruptor', to: '/community', isImage: true },
+  { icon: Gavel, label: 'Auctions', to: '/auctions', isImage: false },
+  { icon: ShoppingBag, label: 'Purchases', to: '/purchases', isImage: false },
+];
 
 export default function AppLayout({ children }) {
-  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('sidebarCollapsed') === 'true';
+    }
+    return false;
+  });
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const bellRef = useRef(null);
+  
+  const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
+  
+  const firstName = user?.firstname || user?.firstName || user?.name || user?.email?.split('@')[0] || 'User';
 
-  const navLinks = [
-    { to: '/dashboard', label: t('dashboard'), icon: DashboardIcon },
-    { to: '/ventures', label: t('venture'), icon: VentureIcon },
-    { to: '/domains', label: t('domains'), icon: DomainsIcon },
-    { to: '/cocreation', label: t('technology'), icon: TechnologyIcon },
-    { to: '/community', label: t('disruptor'), icon: CommunityIcon },
-    { to: '/auctions', label: t('auctions'), icon: AuctionIcon },
-    { to: '/purchases', label: t('purchases'), icon: PurchaseIcon },
-  ];
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
-  const coBrotherLinks = [{ to: '/cobrother', label: 'CoBrother', icon: 'â—†' }];
-
-  const adminLinks = [...navLinks, { to: '/admin', label: 'Admin', icon: AdminIcon }];
-
-  const visibleLinks =
-    user?.role === 'COBROTHER'
-      ? coBrotherLinks
-      : user?.role === 'ADMIN'
-        ? adminLinks
-        : navLinks;
-
+  // Fetch unread count on mount
   useEffect(() => {
     const fetchCount = () =>
       notificationAPI
@@ -100,20 +57,26 @@ export default function AppLayout({ children }) {
     return () => clearInterval(interval);
   }, []);
 
+  // Close bell dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
       if (bellRef.current && !bellRef.current.contains(e.target)) {
         setBellOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
+
+  // Persist sidebar collapsed state
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', sidebarCollapsed.toString());
+  }, [sidebarCollapsed]);
 
   const handleBellOpen = async () => {
     if (!bellOpen) {
@@ -141,226 +104,344 @@ export default function AppLayout({ children }) {
       );
       setUnreadCount((count) => Math.max(0, count - 1));
     }
-
     setBellOpen(false);
     if (notification.link) navigate(notification.link);
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+  const timeAgo = (dateStr) => {
+    const diff = (Date.now() - new Date(dateStr)) / 1000;
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <TopNavbar />
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      {/* Desktop Left Sidebar - Collapsible */}
+      <aside 
+        className={`hidden lg:flex bg-[#0f0f1a] flex-col flex-shrink-0 h-screen sticky top-0 transition-all duration-300 ${
+          sidebarCollapsed ? 'w-20' : 'w-64'
+        }`}
+      >
+        {/* Logo & Collapse Toggle */}
+        <div className={`p-4 border-b border-white/10 flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+          {!sidebarCollapsed && (
+            <Link to="/" className="flex items-center">
+              <img src={coBrotherLogo} alt="CoBrother" className="h-10 w-auto" />
+            </Link>
+          )}
+          <button
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            className="group relative w-10 h-10 rounded-xl bg-[#1e293b] border border-gray-600 text-gray-300 hover:text-white hover:bg-[#334155] hover:border-gray-500 hover:shadow-[0_0_15px_rgba(99,102,241,0.3)] active:scale-95 transition-all duration-200 flex items-center justify-center"
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <PanelLeft 
+              size={22} 
+              className={`transition-transform duration-300 ${sidebarCollapsed ? 'rotate-180' : ''}`} 
+              strokeWidth={2}
+            />
+          </button>
+        </div>
 
-      <nav className="sticky top-[40px] md:top-[45px] z-[100] flex items-center gap-3 md:gap-5 px-4 sm:px-6 xl:px-8 h-[60px] md:h-16 bg-white border-b border-gray-200 min-w-0">
-        <Link to="/" className="flex items-center gap-0 no-underline shrink-0">
-          <img
-            src={coBrotherLogo}
-            alt="CoBrother"
-            className="w-[122px] h-9 object-contain md:w-[140px] md:h-[42px]"
-          />
-        </Link>
-
-        <div className="hidden xl:flex items-center gap-1 flex-1 min-w-0">
-          {visibleLinks.map((link) => {
-            const isActive = location.pathname.startsWith(link.to);
+        {/* Navigation */}
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+          {sidebarItems.map((item) => {
+            const active = isActive(item.to);
             return (
               <Link
-                key={link.to}
-                to={link.to}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white text-sm font-semibold text-gray-800 no-underline transition-all duration-200 hover:text-gray-900 hover:border-gray-300 hover:shadow-[-18px_0_28px_-8px_rgba(0,195,255,0.45),18px_0_28px_-8px_rgba(147,51,234,0.40),0_0_18px_-4px_rgba(120,80,220,0.24)] active:translate-y-[1px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-300/60 ${
-                  isActive
-                    ? 'text-gray-900 bg-white border-gray-300 shadow-[-18px_0_28px_-8px_rgba(0,195,255,0.45),18px_0_28px_-8px_rgba(147,51,234,0.40),0_0_18px_-4px_rgba(120,80,220,0.24)]'
-                    : ''
+                key={item.to}
+                to={item.to}
+                className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-lg transition-all duration-200 ${
+                  active
+                    ? 'bg-white/10 text-white'
+                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
                 }`}
+                title={sidebarCollapsed ? item.label : ''}
               >
-                {renderNavIcon(link.icon, link.label)}
-                <span className={isActive ? 'bg-gradient-to-r from-indigo-600 to-fuchsia-500 text-transparent bg-clip-text' : ''}>
-                  {link.label}
-                </span>
+                {item.isImage ? (
+                  <img src={item.icon} alt={item.label} className={`w-5 h-5 object-contain brightness-0 invert ${active ? 'opacity-100' : 'opacity-70'}`} />
+                ) : (
+                  <item.icon size={20} className={active ? 'text-indigo-400' : ''} />
+                )}
+                {!sidebarCollapsed && <span className="font-medium text-sm">{item.label}</span>}
               </Link>
             );
           })}
-        </div>
+        </nav>
 
-        <div className="ml-auto flex items-center gap-2 md:gap-3 shrink-0">
-          <div className="relative max-xl:hidden" ref={bellRef}>
-            <button
-              className="relative bg-white border border-gray-200 cursor-pointer p-2.5 rounded-xl text-gray-600 transition-all duration-150 leading-none hover:bg-gray-100 hover:text-gray-900 hover:border-gray-300 flex items-center justify-center"
-              onClick={handleBellOpen}
-              title="Notifications"
-            >
-              <img
-                src={NotificationIcon}
-                alt="Notifications"
-                className="w-5 h-5 object-contain flex-shrink-0"
-              />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-[#c86e6e] text-white text-[0.65rem] font-bold min-w-[18px] h-[18px] rounded-lg flex items-center justify-center px-[5px] pointer-events-none">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </button>
-
-            {bellOpen && (
-              <div className="absolute top-[calc(100%+10px)] right-0 w-[360px] bg-white border border-gray-200 rounded-[14px] shadow-[0_20px_60px_rgba(0,0,0,0.5)] z-[1000] overflow-hidden">
-                <div className="flex justify-between items-center px-4 py-3.5 border-b border-gray-100 font-semibold text-sm text-gray-900">
-                  <span>Notifications</span>
-                  {unreadCount > 0 && (
-                    <button
-                      className="bg-transparent border-none text-gray-700 text-xs cursor-pointer p-0 hover:underline"
-                      onClick={handleMarkAllRead}
-                    >
-                      Mark all read
-                    </button>
-                  )}
-                </div>
-
-                <div className="max-h-[380px] overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <div className="py-8 px-4 text-center text-gray-500 text-sm">
-                      No notifications yet
-                    </div>
-                  ) : (
-                    notifications.map((notification) => (
-                      <div
-                        key={notification.id}
-                        className={`flex items-start gap-3 px-4 py-3.5 border-b border-gray-100 cursor-pointer transition-colors duration-150 relative last:border-b-0 hover:bg-gray-50 ${
-                          !notification.read ? 'bg-[#f8faff]' : ''
-                        }`}
-                        onClick={() => handleNotificationClick(notification)}
-                      >
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gray-100 flex-shrink-0">
-                          {TYPE_ICONS[notification.type] || 'ðŸ””'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[0.82rem] font-semibold text-gray-900 mb-0.5">
-                            {notification.title}
-                          </div>
-                          <div className="text-[0.77rem] text-gray-500 leading-snug whitespace-nowrap overflow-hidden text-ellipsis">
-                            {notification.message}
-                          </div>
-                          <div className="text-[0.7rem] text-gray-400 mt-1">
-                            {timeAgo(notification.createdAt)}
-                          </div>
-                        </div>
-                        {!notification.read && (
-                          <div className="w-[7px] h-[7px] rounded-full bg-gray-600 flex-shrink-0 mt-1.5" />
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <div className="px-4 py-3 border-t border-gray-100 text-center">
-                  <Link
-                    to="/notifications"
-                    onClick={() => setBellOpen(false)}
-                    className="text-[0.78rem] text-gray-700 no-underline hover:underline"
-                  >
-                    View all notifications
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <div className="w-[34px] h-[34px] bg-gray-100 text-gray-700 rounded-full flex items-center justify-center font-semibold text-sm">
-              {user?.firstname?.[0]?.toUpperCase() ||
-                user?.email?.[0]?.toUpperCase() ||
-                '?'}
-            </div>
-            <span className="text-sm font-medium text-gray-700 max-xl:hidden">
-              {user?.firstname?.toUpperCase() || user?.email?.split('@')[0]?.toUpperCase()}
-            </span>
-            <button
-              className="max-xl:hidden bg-transparent border border-gray-200 text-gray-600 rounded-lg p-1.5 cursor-pointer transition-all duration-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-              onClick={handleLogout}
-              title="Logout"
-            >
-              <LogOut size={16} />
-            </button>
-          </div>
-
-          <button
-            type="button"
-            aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
-            aria-expanded={mobileOpen}
-            className="xl:hidden inline-flex items-center justify-center rounded-xl border border-gray-200 bg-white p-2 text-gray-900 cursor-pointer transition-all duration-200 hover:border-gray-300 hover:bg-gray-50"
-            onClick={() => setMobileOpen((open) => !open)}
+        {/* Bottom Actions - Home, Notification, Update Profile, Logout */}
+        <div className="p-3 border-t border-white/10 space-y-1">
+          <Link
+            to="/"
+            className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all`}
+            title={sidebarCollapsed ? 'Home' : ''}
           >
-            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+            <Home size={20} />
+            {!sidebarCollapsed && <span className="font-medium text-sm">Home</span>}
+          </Link>
+          <button 
+            onClick={handleBellOpen}
+            className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all w-full relative`}
+            title={sidebarCollapsed ? 'Notifications' : ''}
+          >
+            <Bell size={20} />
+            {!sidebarCollapsed && <span className="font-medium text-sm">Notifications</span>}
+            {unreadCount > 0 && (
+              <span className={`bg-red-500 text-white text-xs font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 ${sidebarCollapsed ? 'absolute -top-1 -right-1' : 'ml-auto'}`}>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </button>
+          <Link
+            to="/complete-profile"
+            className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all`}
+            title={sidebarCollapsed ? 'Update Profile' : ''}
+          >
+            <User size={20} />
+            {!sidebarCollapsed && <span className="font-medium text-sm">Update Profile</span>}
+          </Link>
+          <button
+            onClick={() => setShowLogoutConfirm(true)}
+            className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-lg text-red-400 hover:bg-red-500/10 transition-all w-full`}
+            title={sidebarCollapsed ? 'Logout' : ''}
+          >
+            <LogOut size={20} />
+            {!sidebarCollapsed && <span className="font-medium text-sm">Logout</span>}
           </button>
         </div>
-      </nav>
+      </aside>
 
+      {/* Mobile Sidebar Overlay */}
       {mobileOpen && (
         <>
           <div
-            className="xl:hidden fixed top-[100px] md:top-[109px] inset-x-0 bottom-0 bg-black/30 z-[90]"
+            className="lg:hidden fixed inset-0 bg-black/50 z-40"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="xl:hidden fixed top-[100px] md:top-[109px] inset-x-0 bg-white border-b border-gray-200 z-[110] p-4 max-h-[calc(100dvh-100px)] md:max-h-[calc(100dvh-109px)] overflow-y-auto">
-            <div className="flex flex-col gap-1">
-              {visibleLinks.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`flex items-center gap-2 px-3.5 py-2.5 rounded-[14px] border border-gray-200 bg-white text-sm font-semibold text-gray-800 no-underline transition-all duration-200 hover:text-gray-900 hover:border-gray-300 hover:shadow-[-18px_0_28px_-8px_rgba(0,195,255,0.40),18px_0_28px_-8px_rgba(147,51,234,0.34),0_0_18px_-4px_rgba(120,80,220,0.20)] active:translate-y-[1px] ${
-                    location.pathname.startsWith(link.to)
-                      ? 'text-gray-900 bg-white border-gray-300 shadow-[-18px_0_28px_-8px_rgba(0,195,255,0.40),18px_0_28px_-8px_rgba(147,51,234,0.34),0_0_18px_-4px_rgba(120,80,220,0.20)]'
-                      : ''
-                  }`}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {renderNavIcon(link.icon, link.label)}
-                  <span>{link.label}</span>
-                </Link>
-              ))}
-
-              <Link
-                to="/notifications"
-                className="flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-[12px] text-sm font-semibold text-gray-700 no-underline transition-all duration-200 hover:text-gray-900 hover:bg-gray-100"
+          <aside className="lg:hidden fixed inset-y-0 left-0 w-64 bg-[#0f0f1a] z-50 flex flex-col">
+            {/* Mobile Logo */}
+            <div className="p-4 border-b border-white/10 flex items-center justify-between">
+              <Link to="/" className="flex items-center" onClick={() => setMobileOpen(false)}>
+                <img src={coBrotherLogo} alt="CoBrother" className="h-8 w-auto" />
+              </Link>
+              <button
                 onClick={() => setMobileOpen(false)}
+                className="p-2 text-gray-400 hover:text-white"
               >
-                <span className="flex items-center gap-2">
-                  <span className="inline-flex items-center justify-center w-5 h-5">
-                    <img src={NotificationIcon} alt="" className="w-4 h-4 object-contain" />
-                  </span>
-                  Notifications
-                </span>
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+              {sidebarItems.map((item) => {
+                const active = isActive(item.to);
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                      active
+                        ? 'bg-white/10 text-white'
+                        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                    }`}
+                  >
+                    {item.isImage ? (
+                      <img src={item.icon} alt={item.label} className={`w-5 h-5 object-contain ${active ? 'opacity-100' : 'opacity-70'}`} />
+                    ) : (
+                      <item.icon size={20} className={active ? 'text-indigo-400' : ''} />
+                    )}
+                    <span className="font-medium text-sm">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Bottom Actions */}
+            <div className="p-3 border-t border-white/10 space-y-1">
+              <Link
+                to="/"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all"
+              >
+                <Home size={20} />
+                <span className="font-medium text-sm">Home</span>
+              </Link>
+              <button 
+                onClick={handleBellOpen}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all w-full"
+              >
+                <Bell size={20} />
+                <span className="font-medium text-sm">Notifications</span>
                 {unreadCount > 0 && (
-                  <span className="bg-[#c86e6e] text-white text-[0.7rem] font-bold min-w-[18px] h-[18px] rounded-lg flex items-center justify-center px-[5px]">
+                  <span className="ml-auto bg-red-500 text-white text-xs font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
-              </Link>
-
-              <button
-                type="button"
-                className="flex items-center gap-2 px-3.5 py-2.5 rounded-[12px] text-sm font-semibold text-red-600 bg-white border border-red-200 cursor-pointer transition-all duration-200 hover:bg-red-50"
-                onClick={async () => {
-                  setMobileOpen(false);
-                  await handleLogout();
-                }}
+              </button>
+              <Link
+                to="/complete-profile"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all"
               >
-                <span className="inline-flex items-center justify-center w-5 h-5">
-                  <LogOut size={16} />
-                </span>
+                <User size={20} />
+                <span className="font-medium text-sm">Update Profile</span>
+              </Link>
+              <button
+                onClick={() => setShowLogoutConfirm(true)}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/10 transition-all w-full"
+              >
+                <LogOut size={20} />
+                <span className="font-medium text-sm">Logout</span>
+              </button>
+            </div>
+          </aside>
+        </>
+      )}
+
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col min-h-screen overflow-y-auto lg:ml-0">
+        {/* Top Header */}
+        <header className="bg-white border-b border-gray-200 px-4 lg:px-8 py-4 flex items-center justify-between shrink-0 relative">
+          <div className="flex items-center gap-4">
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="lg:hidden p-2 text-gray-600 hover:text-gray-900"
+            >
+              <Menu size={24} />
+            </button>
+            
+            {/* Logo for mobile */}
+            <Link to="/" className="lg:hidden flex items-center">
+              <img src={coBrotherLogo} alt="CoBrother" className="h-7 w-auto" />
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Working Bell Icon with Notification Panel */}
+            <div className="relative" ref={bellRef}>
+              <button 
+                onClick={handleBellOpen}
+                className="relative p-2 text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <Bell size={20} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold min-w-[16px] h-[16px] rounded-full flex items-center justify-center px-1">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Dropdown Panel */}
+              {bellOpen && (
+                <div className="absolute top-full right-0 mt-2 w-[360px] bg-white border border-gray-200 rounded-xl shadow-2xl z-[1000] overflow-hidden">
+                  <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100">
+                    <span className="font-semibold text-sm text-gray-900">Notifications</span>
+                    {unreadCount > 0 && (
+                      <button
+                        className="text-xs text-gray-500 hover:text-gray-700"
+                        onClick={handleMarkAllRead}
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-[380px] overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="py-8 px-4 text-center text-gray-500 text-sm">
+                        No notifications yet
+                      </div>
+                    ) : (
+                      notifications.map((notification) => (
+                        <div
+                          key={notification.id}
+                          className={`flex items-start gap-3 px-4 py-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
+                            !notification.read ? 'bg-blue-50/50' : ''
+                          }`}
+                          onClick={() => handleNotificationClick(notification)}
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-sm flex-shrink-0">
+                            {notification.type?.includes('VENTURE') ? '🤝' : 
+                             notification.type?.includes('DOMAIN') ? '🌐' : 
+                             notification.type?.includes('AUCTION') ? '🔨' : '🔔'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-gray-900 mb-0.5">
+                              {notification.title}
+                            </div>
+                            <div className="text-xs text-gray-500 line-clamp-2">
+                              {notification.message}
+                            </div>
+                            <div className="text-[10px] text-gray-400 mt-1">
+                              {timeAgo(notification.createdAt)}
+                            </div>
+                          </div>
+                          {!notification.read && (
+                            <div className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1" />
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <div className="px-4 py-3 border-t border-gray-100 text-center">
+                    <Link
+                      to="/notifications"
+                      onClick={() => setBellOpen(false)}
+                      className="text-xs text-gray-600 hover:text-gray-900"
+                    >
+                      View all notifications
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                {firstName.charAt(0).toUpperCase()}
+              </div>
+              <div className="hidden md:block">
+                <p className="text-sm font-semibold text-gray-900">{firstName}</p>
+                <p className="text-xs text-gray-500">{user?.role || 'USER'}</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Scrollable Content - with proper padding for sidebar */}
+        <div className="flex-1 overflow-y-auto bg-gray-50">
+          <div className="p-4 lg:p-8">
+            {children}
+          </div>
+        </div>
+      </main>
+
+      {/* Logout Confirmation Dialog */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-2xl p-6 max-w-sm w-full">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
+            <p className="text-gray-600 text-sm mb-6">Are you sure you want to logout?</p>
+            <div className="flex gap-3">
+              <button
+                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-200 transition-colors"
+                onClick={() => setShowLogoutConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
+                onClick={handleLogout}
+              >
                 Logout
               </button>
             </div>
           </div>
-        </>
+        </div>
       )}
-
-      <main className="flex-1 p-8 max-w-none m-0 w-full bg-gray-50 max-md:p-4">
-        {children}
-      </main>
     </div>
   );
 }

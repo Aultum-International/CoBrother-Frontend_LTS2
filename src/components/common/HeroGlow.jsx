@@ -30,17 +30,20 @@ export default function HeroGlow() {
       <style>{`
         @property --glow-hue {
           syntax: '<number>';
-          initial-value: 270;
+          initial-value: 200;
           inherits: false;
         }
 
         @keyframes hueRotate {
-          from { --glow-hue: 270; }
-          to   { --glow-hue: 630; }
+          0% { --glow-hue: 200; }
+          25% { --glow-hue: 220; }
+          50% { --glow-hue: 190; }
+          75% { --glow-hue: 170; }
+          100% { --glow-hue: 200; }
         }
 
         .glow-layer {
-          animation: hueRotate 24s linear infinite;
+          animation: hueRotate 12s ease-in-out infinite;
           background: radial-gradient(
             ellipse 100% 85% at 45% 0%,
             hsl(var(--glow-hue), 80%, 62%, 0.62) 0%,

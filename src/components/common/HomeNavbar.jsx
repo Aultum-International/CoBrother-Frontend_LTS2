@@ -3,7 +3,7 @@ import { ChevronDown, Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import coBrotherLogo from '../../assets/Cobrother_logo.png';
-import { User } from 'lucide-react';
+import coBrotherLogoPurple from '../../assets/Cobrother_logo2.png';
 
 export default function HomeNavbar({
   navRef,
@@ -14,6 +14,7 @@ export default function HomeNavbar({
   const { t } = useTranslation();
   const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
@@ -24,48 +25,60 @@ export default function HomeNavbar({
     <nav className="w-full bg-white border-b-0 sticky top-[40px] md:top-[45px] z-50" ref={navRef}>
       <div className="px-4 sm:px-6 lg:px-8 h-[60px] md:h-[70px] flex items-center justify-between relative">
         <div className="flex items-center gap-3 md:gap-6">
-          <img src={coBrotherLogo} alt="CoBrother" className="h-8 md:h-10 w-auto" />
+          <div className="relative group cursor-pointer" onClick={() => navigate('/')}>
+            <img src={coBrotherLogo} alt="CoBrother" className="h-8 md:h-10 w-auto transition-opacity duration-300 group-hover:opacity-0" />
+            <img src={coBrotherLogoPurple} alt="CoBrother" className="h-8 md:h-10 w-auto absolute top-0 left-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          </div>
 
           <div className="hidden lg:flex items-center gap-1 lg:gap-4">
             <div className="relative">
               <button
-                className={`flex items-center gap-2 px-3 lg:px-4 py-2 border-none rounded-lg text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 ${
+                className={`group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 overflow-hidden bg-white ${
                   openDropdown === 'domains'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'bg-transparent text-gray-900 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'text-black'
+                    : 'text-black hover:text-gray-900'
                 }`}
                 onClick={() => setOpenDropdown(openDropdown === 'domains' ? null : 'domains')}
               >
-                {t('domains')} <ChevronDown size={14} />
+                <span className="relative z-10">{t('domains')}</span> <ChevronDown size={14} className="relative z-10" />
+                <span className="absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
+                </span>
+                <span className={`absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-opacity duration-300 ${openDropdown === 'domains' ? 'opacity-100' : 'opacity-0'}`}>
+                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
+                </span>
               </button>
               {openDropdown === 'domains' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
                     onClick={() => {
                       navigate('/domains');
                       setOpenDropdown(null);
                     }}
                   >
                     {t('exploreDomains')}
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
                     onClick={() => {
                       navigate('/domains/dashboard');
                       setOpenDropdown(null);
                     }}
                   >
                     {t('listDomains')}
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
                     onClick={() => {
                       navigate('/auctions');
                       setOpenDropdown(null);
                     }}
                   >
                     {t('bidDomains')}
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
                   </button>
                 </div>
               )}
@@ -73,43 +86,52 @@ export default function HomeNavbar({
 
             <div className="relative">
               <button
-                className={`flex items-center gap-2 px-3 lg:px-4 py-2 border-none rounded-lg text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 ${
+                className={`group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 overflow-hidden bg-white ${
                   openDropdown === 'venture'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'bg-transparent text-gray-900 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'text-black'
+                    : 'text-black hover:text-gray-900'
                 }`}
                 onClick={() => setOpenDropdown(openDropdown === 'venture' ? null : 'venture')}
               >
-                {t('Ventures')} <ChevronDown size={14} />
+                <span className="relative z-10">{t('Ventures')}</span> <ChevronDown size={14} className="relative z-10" />
+                <span className="absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
+                </span>
+                <span className={`absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-opacity duration-300 ${openDropdown === 'venture' ? 'opacity-100' : 'opacity-0'}`}>
+                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
+                </span>
               </button>
               {openDropdown === 'venture' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
                     onClick={() => {
                       navigate('/ventures');
                       setOpenDropdown(null);
                     }}
                   >
                     {t('exploreVenture')}
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
                     onClick={() => {
                       navigate('/ventures/new');
                       setOpenDropdown(null);
                     }}
                   >
                     {t('listVenture')}
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
                     onClick={() => {
                       navigate('/auctions');
                       setOpenDropdown(null);
                     }}
                   >
                     {t('bidVenture')}
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
                   </button>
                 </div>
               )}
@@ -117,43 +139,52 @@ export default function HomeNavbar({
 
             <div className="relative">
               <button
-                className={`flex items-center gap-2 px-3 lg:px-4 py-2 border-none rounded-lg text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 ${
+                className={`group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 overflow-hidden bg-white ${
                   openDropdown === 'auctions'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'bg-transparent text-gray-900 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'text-black'
+                    : 'text-black hover:text-gray-900'
                 }`}
                 onClick={() => setOpenDropdown(openDropdown === 'auctions' ? null : 'auctions')}
               >
-                {t('auctions')} <ChevronDown size={14} />
+                <span className="relative z-10">{t('auctions')}</span> <ChevronDown size={14} className="relative z-10" />
+                <span className="absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
+                </span>
+                <span className={`absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-opacity duration-300 ${openDropdown === 'auctions' ? 'opacity-100' : 'opacity-0'}`}>
+                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
+                </span>
               </button>
               {openDropdown === 'auctions' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
                     onClick={() => {
                       navigate('/auctions');
                       setOpenDropdown(null);
                     }}
                   >
                     Domain Auction
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
                     onClick={() => {
                       navigate('/venture-auction');
                       setOpenDropdown(null);
                     }}
                   >
                     Venture Auction
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
                     onClick={() => {
                       navigate('/disruptors');
                       setOpenDropdown(null);
                     }}
                   >
                     Disruptor Auction
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
                   </button>
                 </div>
               )}
@@ -161,25 +192,32 @@ export default function HomeNavbar({
 
             <div className="relative">
               <button
-                className={`flex items-center gap-2 px-3 lg:px-4 py-2 border-none rounded-lg text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 ${
+                className={`group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 overflow-hidden bg-white ${
                   openDropdown === 'technology'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'bg-transparent text-gray-900 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'text-black'
+                    : 'text-black hover:text-gray-900'
                 }`}
                 onClick={() => setOpenDropdown(openDropdown === 'technology' ? null : 'technology')}
               >
-                {t('technologies')} <ChevronDown size={14} />
+                <span className="relative z-10">{t('technologies')}</span> <ChevronDown size={14} className="relative z-10" />
+                <span className="absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
+                </span>
+                <span className={`absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-opacity duration-300 ${openDropdown === 'technology' ? 'opacity-100' : 'opacity-0'}`}>
+                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
+                </span>
               </button>
               {openDropdown === 'technology' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
                     onClick={() => {
                       navigate('/cocreation');
                       setOpenDropdown(null);
                     }}
                   >
                     {t('exploreTechnology')}
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
                   </button>
                 </div>
               )}
@@ -187,43 +225,52 @@ export default function HomeNavbar({
 
             <div className="relative">
               <button
-                className={`flex items-center gap-2 px-3 lg:px-4 py-2 border-none rounded-lg text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 ${
+                className={`group relative flex items-center gap-2 px-3 lg:px-4 py-2 rounded-full text-[14px] lg:text-[15px] font-semibold cursor-pointer transition-all duration-200 overflow-hidden bg-white ${
                   openDropdown === 'disruptors'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'bg-transparent text-gray-900 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'text-black'
+                    : 'text-black hover:text-gray-900'
                 }`}
                 onClick={() => setOpenDropdown(openDropdown === 'disruptors' ? null : 'disruptors')}
               >
-                {t('disruptors')} <ChevronDown size={14} />
+                <span className="relative z-10">{t('disruptors')}</span> <ChevronDown size={14} className="relative z-10" />
+                <span className="absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
+                </span>
+                <span className={`absolute inset-0 rounded-full p-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-opacity duration-300 ${openDropdown === 'disruptors' ? 'opacity-100' : 'opacity-0'}`}>
+                  <span className="absolute inset-[2px] rounded-full bg-white"></span>
+                </span>
               </button>
               {openDropdown === 'disruptors' && (
                 <div className="absolute top-full left-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px] z-50 overflow-hidden">
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
                     onClick={() => {
                       navigate('/join-form');
                       setOpenDropdown(null);
                     }}
                   >
                     {t('beTheDisruptors')}
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
                     onClick={() => {
                       navigate('/community');
                       setOpenDropdown(null);
                     }}
                   >
                     {t('exploreDisruptors')}
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
                   </button>
                   <button
-                    className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
+                    className="group relative block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900 overflow-hidden"
                     onClick={() => {
                       navigate('/auctions');
                       setOpenDropdown(null);
                     }}
                   >
                     {t('bidDisruptors')}
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out"></span>
                   </button>
                 </div>
               )}
@@ -250,57 +297,43 @@ export default function HomeNavbar({
                 {t('signIn')}
               </button>
             ) : (
-              <div className="relative">
-                <button
-                  className={`flex items-center gap-2 px-3 py-2 border-none rounded-lg text-[14px] font-semibold cursor-pointer transition-all duration-200 ${
-                    openDropdown === 'profile'
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'bg-transparent text-gray-900 hover:bg-gray-100'
-                  }`}
-                  onClick={() => setOpenDropdown(openDropdown === 'profile' ? null : 'profile')}
-                >
-                  {user.picture ? (
-                    <img
-                      src={user.picture}
-                      alt="Profile"
-                      className="w-8 h-8 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                      <User size={16} className="text-gray-600" />
-                    </div>
-                  )}
-                  <span className="max-w-[100px] truncate">{user.name || user.email}</span>
-                  <ChevronDown size={14} />
-                </button>
-
-                {openDropdown === 'profile' && (
-                  <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[180px] z-50 overflow-hidden">
-                    <button
-                      className="block w-full px-4 py-3 border-none text-left text-sm text-gray-700 bg-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 hover:text-gray-900"
-                      onClick={() => {
-                        navigate('/complete-profile');
-                        setOpenDropdown(null);
-                      }}
-                    >
-                      Update Profile
-                    </button>
-                    <button
-                      className="block w-full px-4 py-3 border-none text-left text-sm text-red-600 bg-transparent cursor-pointer transition-all duration-200 hover:bg-red-50"
-                      onClick={() => {
-                        localStorage.clear();
-                        window.location.href = '/';
-                      }}
-                    >
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
+              <button
+                className="btn-glow btn-glow-md"
+                onClick={() => setShowLogoutConfirm(true)}
+              >
+                Logout
+              </button>
             )}
           </div>
         </div>
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-2xl p-6 max-w-sm w-full animate-slideUp">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
+            <p className="text-gray-600 text-sm mb-6">Are you sure you want to logout?</p>
+            <div className="flex gap-3">
+              <button
+                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-200 transition-colors"
+                onClick={() => setShowLogoutConfirm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.href = '/';
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {mobileMenuOpen && (
         <>
@@ -373,24 +406,15 @@ export default function HomeNavbar({
                     {t('signIn')}
                   </button>
                 ) : (
-                  <>
-                    <button
-                      className="w-full px-5 py-3.5 border-none text-left text-base text-gray-700 bg-transparent cursor-pointer transition-all duration-200 border-l-[3px] border-l-transparent hover:bg-gray-50 hover:text-gray-900 hover:border-l-gray-900"
-                      onClick={() => { navigate('/complete-profile'); closeMobileMenu(); }}
-                    >
-                      Update Profile
-                    </button>
-                    <button
-                      className="btn-glow btn-glow-md w-full"
-                      onClick={() => {
-                        localStorage.clear();
-                        window.location.href = '/';
-                        closeMobileMenu();
-                      }}
-                    >
-                      Logout
-                    </button>
-                  </>
+                  <button
+                    className="btn-glow btn-glow-md w-full"
+                    onClick={() => {
+                      setShowLogoutConfirm(true);
+                      closeMobileMenu();
+                    }}
+                  >
+                    Logout
+                  </button>
                 )}
               </div>
             </div>

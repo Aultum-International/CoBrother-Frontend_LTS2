@@ -6,23 +6,34 @@ import cobrotherProfile from '../../assets/CoBrother_profileW.png';
 
 export default function TopNavbar({ homeMobileMenu = false }) {
   const { t, i18n } = useTranslation();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [languageOpen, setLanguageOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showInitial, setShowInitial] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const languageRef = useRef(null);
+  const profileRef = useRef(null);
 
-  // Close language dropdown on outside click
+  // Close language and profile dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (languageRef.current && !languageRef.current.contains(event.target)) {
         setLanguageOpen(false);
       }
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileDropdownOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Refresh user data when profile dropdown opens to get latest name
+  useEffect(() => {
+    if (profileDropdownOpen && refreshUser) {
+      refreshUser();
+    }
+  }, [profileDropdownOpen, refreshUser]);
 
   const languages = [
     { code: 'en', name: 'English (IND)', currency: '₹' },
@@ -111,17 +122,8 @@ export default function TopNavbar({ homeMobileMenu = false }) {
             </a>
           </div>
 
-          <div className="relative hidden md:block">
-            <a
-              href="/account"
-              className="text-white text-sm font-normal no-underline flex items-center gap-1 px-3 py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
-            >
-              My Profile
-            </a>
-          </div>
-
           {/* Profile/Initial Icon with Slow Flip */}
-          <div className="relative ml-1 md:ml-2">
+          <div className="relative ml-1 md:ml-2" ref={profileRef}>
             <button
               type="button"
               className="block w-[32px] h-[32px] md:w-[40px] md:h-[40px] shrink-0 rounded-full cursor-pointer no-underline transition-all duration-500 hover:scale-110 shadow-[0_6px_24px_rgba(0,0,0,0.14)]"
@@ -164,32 +166,56 @@ export default function TopNavbar({ homeMobileMenu = false }) {
                   <>
                     {/* User info header */}
                     <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-xs font-semibold text-gray-900 truncate">
-                        {user.fullName || user.name || 'User'}
+                      <p className="text-sm font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent truncate">
+                        {(() => {
+                          // Debug: log all user fields to console
+                          console.log('User object:', user);
+                          
+                          // Check all possible field names from backend (case insensitive)
+                          const fName = user.firstName || user.firstname || user.FIRSTNAME || user.FirstName || '';
+                          const lName = user.lastName || user.lastname || user.LASTNAME || user.LastName || '';
+                          const full = user.fullName || user.fullname || user.FULLNAME || user.name || user.NAME || user.Name || '';
+                          
+                          console.log('Extracted:', { fName, lName, full, email: user.email });
+                          
+                          if (full) return full;
+                          if (fName && lName) return `${fName} ${lName}`;
+                          if (fName) return fName;
+                          if (lName) return lName;
+                          
+                          // Fallback to email username
+                          if (user.email) {
+                            const username = user.email.split('@')[0];
+                            // Remove dots and capitalize first letter
+                            const cleanUsername = username.replace(/\./g, ' ');
+                            return cleanUsername.charAt(0).toUpperCase() + cleanUsername.slice(1);
+                          }
+                          return 'User';
+                        })()}
                       </p>
                       <p className="text-xs text-gray-500 truncate">{user.email}</p>
                     </div>
 
                     <a
-                      href="/complete-profile"
-                      className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
-                      onClick={() => setProfileDropdownOpen(false)}
-                    >
-                      Update Profile
-                    </a>
-
-                    <a
                       href="/dashboard"
-                      className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
+                      className="menu-item-gradient block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
                       onClick={() => setProfileDropdownOpen(false)}
                     >
                       Dashboard
                     </a>
 
+                    <a
+                      href="/complete-profile"
+                      className="menu-item-gradient block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
+                      onClick={() => setProfileDropdownOpen(false)}
+                    >
+                      Update Profile
+                    </a>
+
                     {/* Contact Us - visible only on mobile (md has it in navbar) */}
                     <a
                       href="/contact"
-                      className="md:hidden block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
+                      className="menu-item-gradient md:hidden block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
                       onClick={() => setProfileDropdownOpen(false)}
                     >
                       {t('contactUs')}
@@ -197,7 +223,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
 
                     <div className="border-t border-gray-100">
                       <button
-                        className="w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors bg-transparent border-none cursor-pointer"
+                        className="menu-item-logout w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors bg-transparent border-none cursor-pointer font-medium"
                         onClick={() => {
                           localStorage.clear();
                           window.location.href = '/';
@@ -245,6 +271,42 @@ export default function TopNavbar({ homeMobileMenu = false }) {
           </div>
         </div>
       )}
+
+      <style>{`
+        .menu-item-gradient {
+          position: relative;
+          overflow: hidden;
+        }
+        .menu-item-gradient::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
+          opacity: 0;
+          transition: opacity 0.2s ease;
+          z-index: -1;
+        }
+        .menu-item-gradient:hover::before {
+          opacity: 0.08;
+        }
+        .menu-item-gradient:hover {
+          background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          font-weight: 600;
+        }
+        .menu-item-logout:hover {
+          background: linear-gradient(90deg, #dc2626 0%, #b91c1c 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          font-weight: 600;
+        }
+      `}</style>
     </div>
   );
 }

@@ -1,16 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { profileAPI } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
 
 
 export default function ProfileCompletionModal({ forceOpen = false }) {
-  const { refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ firstname: '', lastname: '', phoneNumber: '', address: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [step, setStep] = useState(1); // 1 = name, 2 = phone (optional)
+
+  // Pre-fill form with existing user data
+  useEffect(() => {
+    if (user) {
+      setForm({
+        firstname: user.firstName || user.firstname || '',
+        lastname: user.lastName || user.lastname || '',
+        phoneNumber: user.phoneNumber || user.phone || '',
+        address: user.address || ''
+      });
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -117,17 +129,27 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
             </div>
           )}
 
-          <button 
-            type="submit" 
-            className="btn-glow w-full"
-            disabled={loading}
-          >
-            {loading ? (
-              <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" />
-            ) : (
-              'Update Profile →'
-            )}
-          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-[10px] border border-gray-300 hover:bg-gray-200 transition-colors"
+              onClick={() => navigate(-1)}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-glow flex-1"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="w-4 h-4 border-2 border-purple-300 border-t-purple-600 rounded-full animate-spin" />
+              ) : (
+                'Update Profile →'
+              )}
+            </button>
+          </div>
         </form>
 
         <div className="relative z-10 px-8 pb-8 pt-4 text-center text-xs text-gray-400">

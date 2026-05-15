@@ -130,22 +130,22 @@ export default function CoCreationPage() {
             </div>
             <p className="text-gray-600">{t('buyAndSellSoftware')}</p>
           </div>
-          <div className="flex gap-3">
-            <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => navigate('/cocreation/dashboard')}>
-              <LayoutDashboard size={16} /> {t('dashboard')}
+          <div className="flex gap-2 md:gap-3">
+            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/cocreation/dashboard')}>
+              <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
             </button>
             {user && (
-              <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => setShowForm(true)}>
-                <Plus size={16} /> {t('listTechnology')}
+              <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => setShowForm(true)}>
+                <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listTechnology')}</span>
               </button>
             )}
           </div>
         </div>
 
         <div className="flex gap-2 mb-6">
-          <button className={`btn-glow btn-glow-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
             onClick={() => setFilterTab('all')}>{t('allTechnology')}</button>
-          <button className={`btn-glow btn-glow-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
             onClick={() => setFilterTab('mine')}>{t('myListings')}</button>
         </div>
 
@@ -177,7 +177,7 @@ export default function CoCreationPage() {
         )}
 
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : paginated.length === 0 ? (
@@ -425,9 +425,23 @@ function SoftwareForm({ onSaved, onCancel }) {
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
+  // GitHub URL validation
+  const isValidGithubUrl = (url) => {
+    const githubRegex = /^https:\/\/github\.com\/[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)?\/?$/;
+    return githubRegex.test(url);
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true); setError('');
+
+    // Validate GitHub URL
+    if (!isValidGithubUrl(form.githubLink)) {
+      setError('Please enter a valid GitHub URL (e.g., https://github.com/username/repo)');
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data } = await cocreationAPI.create(form);
       setSavedSoftware(data);
@@ -708,7 +722,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[520px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
+      <div className="relative w-full max-w-[520px] max-h-[90vh] overflow-y-auto bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
 

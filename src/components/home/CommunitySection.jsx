@@ -37,7 +37,7 @@ export default function CommunitySection() {
       <section className="bg-white py-4 md:py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1200px] mx-auto">
           <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
-            {t('Communities')}
+            {t('disruptors')}
           </h3>
           <div className="flex items-center justify-center py-20">
             <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
@@ -52,9 +52,9 @@ export default function CommunitySection() {
       <section className="bg-white py-4 md:py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1200px] mx-auto">
           <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
-            {t('community')}
+            {t('disruptors')}
           </h3>
-          <p className="text-center text-gray-500 py-12">{t('No Community')}</p>
+          <p className="text-center text-gray-500 py-12">{t('No Disruptor available yet.')}</p>
         </div>
       </section>
     );
@@ -64,7 +64,7 @@ export default function CommunitySection() {
     <section className="bg-white py-4 md:py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-[1200px] mx-auto">
         <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
-          {t('community')}
+          {t('disruptors')}
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">

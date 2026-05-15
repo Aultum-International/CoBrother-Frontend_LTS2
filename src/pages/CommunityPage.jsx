@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Search } from 'lucide-react';
 import { communityAPI, communityAuctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import AppLayout from '../components/layout/AppLayout';
+import DisruptorIcon from '../assets/Cobrother_Profile.png';
 import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
 
@@ -46,6 +48,21 @@ export default function CommunityPage() {
   const [linkedInSuccess, setLinkedInSuccess] = useState('');
 
   const [showAuctionModal, setShowAuctionModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter profiles based on search
+  const filteredProfiles = profiles.filter(p => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      p.user?.firstname?.toLowerCase().includes(query) ||
+      p.user?.lastname?.toLowerCase().includes(query) ||
+      p.headline?.toLowerCase().includes(query) ||
+      p.skills?.toLowerCase().includes(query) ||
+      p.industry?.toLowerCase().includes(query) ||
+      p.role?.toLowerCase().includes(query)
+    );
+  });
 
   // ── Handle LinkedIn redirect back ─────────────────────────────────────────
   useEffect(() => {
@@ -194,6 +211,20 @@ export default function CommunityPage() {
           </div>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search disruptors by name, skills, industry..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
+            />
+          </div>
+        </div>
+
         {linkedInError && (
           <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-sm text-red-600 mb-6">{linkedInError}</div>
         )}
@@ -217,18 +248,26 @@ export default function CommunityPage() {
           <div className="flex items-center justify-center py-20">
             <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
           </div>
-        ) : profiles.length === 0 ? (
+        ) : filteredProfiles.length === 0 ? (
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">◉</div>
-            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">No community members yet</h3>
-            <p className="text-gray-600 mb-6">Connect your LinkedIn to join.</p>
-            <button className="px-5 py-2 bg-[#0077B5] text-white rounded-full text-sm font-semibold hover:bg-[#006399] flex items-center gap-2 mx-auto" onClick={handleConnectLinkedIn}>
-              <LinkedInIcon /> Connect with LinkedIn
-            </button>
+            <div className="mb-4 flex justify-center">
+              <img src={DisruptorIcon} alt="Disruptors" className="w-16 h-16 opacity-50" />
+            </div>
+            <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
+              {searchQuery ? 'No disruptors found' : 'No Disruptors yet'}
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {searchQuery ? 'Try adjusting your search terms.' : 'Connect your LinkedIn to join.'}
+            </p>
+            {!searchQuery && (
+              <button className="px-5 py-2 bg-[#0077B5] text-white rounded-full text-sm font-semibold hover:bg-[#006399] flex items-center gap-2 mx-auto" onClick={handleConnectLinkedIn}>
+                <LinkedInIcon size={16} /> Connect LinkedIn
+              </button>
+            )}
           </div>
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-5">
-            {profiles.map(p => (
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+            {filteredProfiles.map(p => (
               <CommunityCard
                 key={p.id} profile={p}
                 isMe={p.appUser?.id === user?.id}

@@ -14,6 +14,7 @@ import Pagination from '../components/common/Pagination';
 import SkeletonCard from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import DashboardIcon from '../assets/Dashboard.png';
+import VentureLogo from '../assets/Coventure_logo.png';
 
 const TYPE_LABELS = {
   FIFTY_FIFTY: '50:50', SIXTY_FORTY: '60:40', SEVENTY_THIRTY: '70:30',
@@ -97,28 +98,27 @@ export default function VenturesPage() {
 
   return (
     <AppLayout>
-      <div>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('venture')}</h1>
             <p className="text-gray-600 mt-1">Discover and co-venture on exciting opportunities.</p>
           </div>
-          <div className="flex gap-3 flex-wrap">
-            <button className="btn-glow btn-glow-sm flex items-center gap-2" onClick={() => navigate('/ventures/dashboard')}>
-              <img src={DashboardIcon} alt="Dashboard" style={{width: '18px', height: '18px'}} /> {t('dashboard')}
+          <div className="flex gap-2 md:gap-3 flex-wrap">
+            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/ventures/dashboard')}>
+              <img src={DashboardIcon} alt="Dashboard" className="w-4 h-4 md:w-[18px] md:h-[18px]" /> <span className="truncate">{t('dashboard')}</span>
             </button>
-            <button className="btn-glow btn-glow-sm" onClick={() => navigate('/ventures/analytics')}>
-              📈 Analytics    
+            <button className="btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/ventures/analytics')}>
+              📈 <span className="truncate">Analytics</span>
             </button>
-            <Link to="/ventures/new" className="btn-glow btn-glow-sm">+ List Venture</Link>
+            <Link to="/ventures/new" className="btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 truncate">+ List Venture</Link>
           </div>
         </div>
 
         {/* ── Tabs ── */}
         <div className="flex gap-2 mb-6">
-          <button className={`btn-glow btn-glow-sm ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
             onClick={() => setFilterTab('all')}>All Ventures</button>
-          <button className={`btn-glow btn-glow-sm ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
+          <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
             onClick={() => setFilterTab('mine')}>My Ventures</button>
         </div>
 
@@ -144,12 +144,14 @@ export default function VenturesPage() {
 
         {/* ── Content ── */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : paginated.length === 0 ? (
           <div className="text-center py-20">
-            <div className="text-6xl mb-4">◈</div>
+            <div className="mb-4 flex justify-center">
+              <img src={VentureLogo} alt="Ventures" className="w-16 h-16 opacity-50" />
+            </div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
               {activeFilterCount > 0 ? 'No ventures match your filters' :
                filterTab === 'mine' ? "You haven't listed any ventures yet" :
@@ -167,7 +169,7 @@ export default function VenturesPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
               {paginated.map(v => (
                 <VentureCard
                   key={v.id}
@@ -188,7 +190,6 @@ export default function VenturesPage() {
             />
           </>
         )}
-      </div>
 
       {/* ── Modals ── */}
       {detailTarget && (
@@ -224,23 +225,28 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
                         likeState, onLike }) {
   const navigate = useNavigate();
   const [shareOpen, setShareOpen] = useState(false);
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const shareRef = useRef(null);
+  const optionsRef = useRef(null);
   const b = venture.brandDetails || {};
   const shortDesc = `${b.description?.slice(0, 130) || ''}${b.description?.length > 130 ? '…' : ''}`;
   const isAuction = venture.saleType === 'AUCTION';
   const auction   = venture.auction;
 
-  // Close share dropdown on outside click
+  // Close share and options dropdowns on outside click
   useEffect(() => {
     const handleClick = (e) => {
       if (shareRef.current && !shareRef.current.contains(e.target)) {
         setShareOpen(false);
       }
+      if (optionsRef.current && !optionsRef.current.contains(e.target)) {
+        setOptionsOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
-
+// Share URL when `window` is undefined (SSR); browser uses `window.location.origin`.
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/ventures` : 'https://cobrother.com/ventures';
   const shareText = `Check out this venture: ${b.brandName} - Listed on CoBrother!`;
 
@@ -278,12 +284,12 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
                   {b.brandName?.[0] || '?'}
                 </div>
             }
-            <div>
-              <span className={`px-2 py-[3px] text-[10px] font-bold rounded-md uppercase tracking-wide ${isAuction ? 'bg-yellow-400 text-gray-900' : 'bg-white/25 backdrop-blur-sm text-white'}`}>
+            <div className="flex flex-wrap items-center gap-1">
+              <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded uppercase tracking-wide ${isAuction ? 'bg-yellow-400 text-gray-900' : 'bg-white/25 backdrop-blur-sm text-white'}`}>
                 {isAuction ? '🔨 Auction' : '🤝 Regular'}
               </span>
               {isOwner && (
-                <span className="ml-1.5 px-2 py-[3px] bg-white text-indigo-600 text-[10px] font-extrabold rounded-md uppercase tracking-wide shadow-sm">
+                <span className="px-1.5 py-0.5 bg-white text-indigo-600 text-[9px] font-extrabold rounded uppercase tracking-wide shadow-sm">
                   ✦ Owner
                 </span>
               )}
@@ -295,8 +301,8 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
       {/* Body */}
       <div className="relative px-4 pb-4 pt-3 flex flex-col flex-1">
         {/* Brand name + tags row */}
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="font-display text-[0.95rem] font-extrabold text-gray-900 truncate leading-snug">
+        <div className="flex flex-col gap-1 mb-1">
+          <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug break-words">
             {b.brandName}
           </h3>
           <div className="flex items-center gap-1 flex-shrink-0">
@@ -318,43 +324,43 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
 
         {/* Price block */}
         {isAuction && auction ? (
-          <div className={`rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 px-3 py-2 mb-3`}>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-extrabold text-purple-700 tracking-tight">
+          <div className={`rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3`}>
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg md:text-xl font-extrabold text-purple-700 tracking-tight">
                 ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : (auction.minBidPrice || 0)).toLocaleString('en-IN')}
               </span>
-              <span className="text-[10px] text-purple-400 font-semibold">
+              <span className="text-[9px] md:text-[10px] text-purple-400 font-semibold">
                 {auction.currentHighestBid > 0 ? 'highest' : 'min bid'}
               </span>
             </div>
-            <span className="text-[10px] text-purple-400">{auction.totalBids} bid{auction.totalBids !== 1 ? 's' : ''}</span>
+            <span className="text-[9px] md:text-[10px] text-purple-400">{auction.totalBids} bid{auction.totalBids !== 1 ? 's' : ''}</span>
           </div>
         ) : b.dealValue ? (
-          <div className="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 px-3 py-2 mb-3">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-extrabold text-emerald-700 tracking-tight">
+          <div className="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
+            <div className="flex items-baseline gap-1">
+              <span className="text-lg md:text-xl font-extrabold text-emerald-700 tracking-tight">
                 ₹{Number(b.dealValue).toLocaleString('en-IN')}
               </span>
-              <span className="text-[10px] text-emerald-400 font-semibold">deal value</span>
+              <span className="text-[9px] md:text-[10px] text-emerald-400 font-semibold">deal value</span>
             </div>
           </div>
         ) : null}
 
         {/* Stats row */}
-        <div className="flex items-center gap-2.5 text-[11px] text-gray-400 font-medium py-2 border-t border-gray-100 mt-auto">
-          <span className="flex items-center gap-1">👁 {venture.views || 0}</span>
+        <div className="flex items-center gap-1.5 md:gap-2.5 text-[10px] md:text-[11px] text-gray-400 font-medium py-1.5 md:py-2 border-t border-gray-100 mt-auto">
+          <span className="flex items-center gap-0.5 md:gap-1">👁 {venture.views || 0}</span>
           {!isAuction && (
-            <span className="flex items-center gap-1">📋 {venture.coVentureApplicationCount || 0}</span>
+            <span className="flex items-center gap-0.5 md:gap-1">📋 {venture.coVentureApplicationCount || 0}</span>
           )}
           <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
 
           <div className="relative ml-auto" ref={shareRef}>
             <button
-              className="p-1 rounded-md hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
+              className="p-0.5 md:p-1 rounded-md hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
               onClick={(e) => { e.stopPropagation(); setShareOpen(!shareOpen); }}
               title="Share"
             >
-              <Share2 size={13} />
+              <Share2 size={11} className="md:w-[13px] md:h-[13px]" />
             </button>
 
             {shareOpen && (
@@ -383,36 +389,41 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 mt-1" onClick={e => e.stopPropagation()}>
+        <div className="flex gap-2 mt-2" onClick={e => e.stopPropagation()}>
+          {/* Website Link */}
+          <a href={b.website || '#'} target="_blank" rel="noreferrer"
+             className="flex-1 py-1.5 bg-gray-100 text-gray-800 text-[10px] font-bold rounded transition-all hover:bg-gray-200 hover:text-black flex items-center justify-center gap-1"
+             onClick={e => !b.website && e.preventDefault()}>
+            Website ↗
+          </a>
+
+          {/* Options Dropdown for Owner */}
           {isOwner ? (
-            <>
-              <button className="flex-1 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg transition-all hover:bg-gray-200" onClick={onView}>View</button>
-              <button className="flex-1 py-2 bg-gray-900 text-white text-xs font-bold rounded-lg transition-all hover:bg-gray-800" onClick={onEdit}>Edit</button>
-              <button className="px-3 py-2 bg-red-500 text-white text-xs font-bold rounded-lg transition-all hover:bg-red-600" onClick={onDelete}>Delete</button>
-              {b.website && (
-                <a href={b.website} target="_blank" rel="noreferrer"
-                   className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center transition-all hover:bg-gray-200"
-                   onClick={e => e.stopPropagation()}>
-                  <ArrowUpRight size={14} />
-                </a>
+            <div className="relative flex-1" ref={optionsRef}>
+              <button
+                className="w-full py-1.5 bg-gray-900 text-white text-[10px] font-bold rounded transition-all hover:bg-gray-800 flex items-center justify-center gap-1"
+                onClick={(e) => { e.stopPropagation(); setOptionsOpen(!optionsOpen); }}>
+                Options ▼
+              </button>
+              {optionsOpen && (
+                <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden min-w-[100px]">
+                  <button className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onView(); }}>View</button>
+                  <button className="w-full px-3 py-2 text-xs text-gray-700 hover:bg-gray-100 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onEdit(); }}>Edit</button>
+                  <button className="w-full px-3 py-2 text-xs text-red-600 hover:bg-red-50 text-left" onClick={(e) => { e.stopPropagation(); setOptionsOpen(false); onDelete(); }}>Delete</button>
+                </div>
               )}
-            </>
+            </div>
           ) : (
+            /* Apply/Bid for non-owner */
             <>
-              <button className="flex-1 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-lg transition-all hover:bg-gray-200" onClick={onView}>View Details</button>
               {isAuction && auction?.id && auction.status !== 'DRAFT' ? (
-                <button className={`flex-1 py-2 bg-gradient-to-r ${accentGrad} text-white text-xs font-bold rounded-lg transition-all hover:opacity-90`}
-                  onClick={() => navigate(`/venture-auction/${auction.id}`)}>🔨 Bid Now</button>
+                <button className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded transition-all hover:opacity-90`}
+                  onClick={() => navigate(`/venture-auction/${auction.id}`)}>🔨 Bid</button>
               ) : !isAuction ? (
-                <button className={`flex-1 py-2 bg-gradient-to-r ${accentGrad} text-white text-xs font-bold rounded-lg transition-all hover:opacity-90`}
-                  onClick={onApply}>Co-Venture →</button>
-              ) : null}
-              {b.website && (
-                <a href={b.website} target="_blank" rel="noreferrer"
-                   className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center transition-all hover:bg-gray-200"
-                   onClick={e => e.stopPropagation()}>
-                  <ArrowUpRight size={14} />
-                </a>
+                <button className={`flex-1 py-1.5 bg-gradient-to-r ${accentGrad} text-white text-[10px] font-bold rounded transition-all hover:opacity-90`}
+                  onClick={onApply}>Apply</button>
+              ) : (
+                <button className="flex-1 py-1.5 bg-gray-100 text-gray-400 text-[10px] font-bold rounded cursor-not-allowed">View</button>
               )}
             </>
           )}

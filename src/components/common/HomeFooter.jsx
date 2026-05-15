@@ -1,5 +1,5 @@
 import { Heart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import coBrotherLogo from '../../assets/Cobrother_Green.png';
 
@@ -63,6 +63,26 @@ const socialHoverStyles = {
 const linkClass =
   'text-sm text-slate-400 hover:text-white hover:translate-x-1 transition-all duration-200 no-underline block py-1.5';
 
+// Scroll to top helper for navigation
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// Custom Link that scrolls to top
+const ScrollLink = ({ to, children, className }) => {
+  const navigate = useNavigate();
+  const handleClick = (e) => {
+    e.preventDefault();
+    navigate(to);
+    scrollToTop();
+  };
+  return (
+    <a href={to} onClick={handleClick} className={className}>
+      {children}
+    </a>
+  );
+};
+
 // Full width gradient underline heading
 const headingClass =
   'text-xs font-semibold uppercase tracking-wider text-slate-300 mb-4 relative pb-3 after:content-[""] after:absolute after:bottom-0 after:left-0 after:w-12 sm:after:w-16 md:after:w-20 lg:after:w-24 after:h-px after:bg-gradient-to-r after:from-cyan-400 after:to-green-500/40';
@@ -94,9 +114,9 @@ export default function HomeFooter() {
               <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className={`${linkClass} text-left`}>
                 {t('Home')}
               </button>
-              <Link to="/join-form" className={linkClass}>
+              <ScrollLink to="/join-form" className={linkClass}>
                 {t('Join Us')}
-              </Link>
+              </ScrollLink>
             </nav>
           </div>
 
@@ -104,12 +124,12 @@ export default function HomeFooter() {
           <div className="md:col-span-1 lg:col-span-2">
             <h3 className={headingClass}>{t('Company')}</h3>
             <nav className="flex flex-col">
-              <Link to="/about" className={linkClass}>
+              <ScrollLink to="/about" className={linkClass}>
                 {t('About Us')}
-              </Link>
-              <Link to="/contact" className={linkClass}>
+              </ScrollLink>
+              <ScrollLink to="/contact" className={linkClass}>
                 {t('Contact Us')}
-              </Link>
+              </ScrollLink>
             </nav>
           </div>
 
@@ -117,12 +137,12 @@ export default function HomeFooter() {
           <div className="md:col-span-1 lg:col-span-2">
             <h3 className={headingClass}>{t('legal')}</h3>
             <nav className="flex flex-col">
-              <Link to="/privacy-policy" className={linkClass}>
+              <ScrollLink to="/privacy-policy" className={linkClass}>
                 {t('Privacy Policy')}
-              </Link>
-              <Link to="/terms-and-conditions" className={linkClass}>
+              </ScrollLink>
+              <ScrollLink to="/terms-and-conditions" className={linkClass}>
                 {t('Terms & Conditions')}
-              </Link>
+              </ScrollLink>
             </nav>
           </div>
 

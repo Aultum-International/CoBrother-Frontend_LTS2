@@ -176,7 +176,7 @@ export default function LoginPage() {
 
 
 
-  // ── Google OAuth ──────────────────────────────────────────────────────────
+  // ── Google OAuth ─────────────────────────────────────────────────────────────
 
   const handleGoogleLogin = () => {
 

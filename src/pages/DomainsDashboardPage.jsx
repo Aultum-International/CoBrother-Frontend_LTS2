@@ -59,7 +59,7 @@ export default function DomainsDashboardPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 mb-6">
           <div className="bg-white rounded-lg shadow-sm p-4">
             <div className="text-gray-600 mb-2">Total Listings</div>
             <div className="text-2xl font-bold text-black/70">{listings.length}</div>
@@ -175,8 +175,8 @@ function DomainRow({ domain, type, onVerify }) {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
-
-  const domainUrl = typeof window !== 'undefined' ? window.location.origin : 'https://cobrother.com';
+// Public site base for share links (production).
+  const domainUrl = 'https://cobrother.com';
   const shareUrl = `${domainUrl}/domains`;
   const shareText = `Check out this domain: ${domain.domainName}${domain.domainExtension} - Listed on CoBrother!`;
 

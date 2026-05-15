@@ -55,10 +55,17 @@ const JoinForm = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    // Phone number validation - only digits, max 10 chars
+    if (name === 'whatsapp') {
+      const digitsOnly = value.replace(/\D/g, '');
+      const limited = digitsOnly.slice(0, 10);
+      setFormData(prev => ({ ...prev, [name]: limited }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -72,8 +79,8 @@ const JoinForm = () => {
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Enter a valid email address';
     }
-    if (!formData.whatsapp || formData.whatsapp.length < 10) {
-      newErrors.whatsapp = 'Enter a valid WhatsApp number';
+    if (!formData.whatsapp || formData.whatsapp.length !== 10 || !/^\d{10}$/.test(formData.whatsapp)) {
+      newErrors.whatsapp = 'Enter a valid 10-digit WhatsApp number';
     }
     if (!formData.cityPincode || formData.cityPincode.length < 2) {
       newErrors.cityPincode = 'City / Pincode is required';
