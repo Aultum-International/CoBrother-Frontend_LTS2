@@ -176,7 +176,7 @@ function DomainRow({ domain, type, onVerify }) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 // Public site base for share links (production).
-  const domainUrl = 'https://cobrother.com';
+  const domainUrl = 'http://localhost:5173';
   const shareUrl = `${domainUrl}/domains`;
   const shareText = `Check out this domain: ${domain.domainName}${domain.domainExtension} - Listed on CoBrother!`;
 

@@ -65,11 +65,12 @@ export default function DomainsPage() {
 
   useEffect(() => {
     setLoading(true);
-    domainAPI.getAll()
+    const req = filterTab === 'mine' ? domainAPI.getMyListings() : domainAPI.getAll();
+    req
       .then(({ data }) => setAllDomains(Array.isArray(data) ? data : (data?.data ?? [])))
       .catch(() => setAllDomains([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [filterTab]);
 
   const handleDelete = async () => {
     try {
@@ -114,9 +115,9 @@ export default function DomainsPage() {
 
         <div className="flex gap-2 mb-6">
           <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('all')}>{t('allDomains')}</button>
+            onClick={() => { setFilterTab('all'); setShowForm(false); }}>{t('allDomains')}</button>
           <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => setFilterTab('mine')}>{t('myListings')}</button>
+            onClick={() => { setFilterTab('mine'); setShowForm(false); }}>{t('myListings')}</button>
         </div>
 
         {showForm && (
@@ -293,7 +294,7 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 // Share URL when `window` is undefined (SSR); browser uses `window.location.origin`.
-  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/domains` : 'https://cobrother.com/domains';
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/domains` : 'http://localhost:5173/domains';
   const shareText = `Check out this domain: ${domain.domainName}${domain.domainExtension} - Listed on CoBrother!`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
@@ -815,7 +816,7 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[520px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8">
+      <div className="relative w-full max-w-[520px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.2)] p-8 overflow-x-hidden">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
 
@@ -921,7 +922,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(17,24,39,0.16)] p-8">
+      <div className="relative w-full max-w-[560px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(17,24,39,0.16)] p-8">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-indigo-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors hover:text-gray-700" onClick={onClose}>✕</button>
 

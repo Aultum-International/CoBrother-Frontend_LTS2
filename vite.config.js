@@ -23,13 +23,15 @@ export default defineConfig({
     proxy: {
 
       '/api': {
-        target: 'https://backend.cobrother.com',
+        target: 'http://localhost:8080',
         changeOrigin: true,
         secure: true,
       },
 
       '/oauth2': {
+
         target: 'https://backend.cobrother.com',
+
         changeOrigin: true,
         secure: true,
       },

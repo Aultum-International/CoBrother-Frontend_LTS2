@@ -272,7 +272,7 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 // Share URL when `window` is undefined (SSR); browser uses `window.location.origin`.
-  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/ventures` : 'https://cobrother.com/ventures';
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/ventures` : 'http://localhost:5173/ventures';
   const shareText = `Check out this venture: ${b.brandName} - Listed on CoBrother!`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
@@ -478,7 +478,7 @@ function VentureDetailModal({ venture, isOwner, onClose, onApply, onEdit, onDele
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[620px] max-h-[90vh] overflow-y-auto bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] animate-slideUp">
+      <div className="relative w-full max-w-[620px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] animate-slideUp">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
         <button className="absolute top-4 right-4 z-20 bg-transparent border-none text-gray-400 text-xl cursor-pointer transition-colors duration-200 hover:text-gray-700" onClick={onClose}>✕</button>
 
