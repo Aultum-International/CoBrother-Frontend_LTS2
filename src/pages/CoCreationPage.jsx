@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Plus } from 'lucide-react';
+import { LayoutDashboard, Plus, Eye } from 'lucide-react';
 import { cocreationAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import AppLayout from '../components/layout/AppLayout';
@@ -202,27 +202,33 @@ export default function CoCreationPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {paginated.map(s => (
-                <SoftwareCard
-                  key={s.id}
-                  item={s}
-                  isOwner={s.listedBy?.id === user?.id}
-                  likeState={getLike(s.id)}
-                  onLike={() => toggleLike(s.id)}
-                  onView={() => setDetailTarget(s)}
-                  onBuy={() => setBuyTarget(s)}
-                  onDelete={() => setDeleteTarget(s.id)}
-                  onAuction={() => setAuctionTarget(s)}
-                  auctionStatus={auctionStatuses[s.id]}
-                />
-              ))}
-            </div>
-            <Pagination
-              page={page} totalPages={totalPages}
-              onPage={setPage} totalCount={totalCount} pageSize={20}
-            />
-          </>
+  <div className="h-[calc(100vh-260px)] overflow-y-auto pr-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      {paginated.map(s => (
+        <SoftwareCard
+          key={s.id}
+          item={s}
+          isOwner={s.listedBy?.id === user?.id}
+          likeState={getLike(s.id)}
+          onLike={() => toggleLike(s.id)}
+          onView={() => setDetailTarget(s)}
+          onBuy={() => setBuyTarget(s)}
+          onDelete={() => setDeleteTarget(s.id)}
+          onAuction={() => setAuctionTarget(s)}
+          auctionStatus={auctionStatuses[s.id]}
+        />
+      ))}
+    </div>
+  </div>
+
+  <Pagination
+    page={page}
+    totalPages={totalPages}
+    onPage={setPage}
+    totalCount={totalCount}
+    pageSize={20}
+  />
+</>
         )}
       </div>
 
@@ -331,10 +337,22 @@ function SoftwareCard({ item, isOwner, onView, onBuy, onDelete, likeState, onLik
       <div className="font-display text-[1.1rem] font-bold text-indigo-600 mt-1">₹{Number(item.price).toLocaleString('en-IN')}</div>
 
       <div className="flex items-center justify-between gap-2 flex-wrap mt-1">
-        <div className="flex gap-3 text-xs text-gray-400">
-          <span title="Views">👁 {item.views || 0}</span>
-          <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
-        </div>
+        <div className="flex items-center gap-4 text-gray-500 text-sm">
+
+  <div className="flex items-center gap-1">
+    <Eye size={14} className="mt-[1px]" />
+    <span>{item.views || 0}</span>
+  </div>
+
+  <div onClick={(e) => e.stopPropagation()}>
+    <LikeButton
+      liked={likeState?.liked}
+      count={likeState?.count}
+      onToggle={onLike}
+    />
+  </div>
+
+</div>
         <div className="flex gap-2" onClick={e => e.stopPropagation()}>
           {user?.role === 'ADMIN' ? (
             <>

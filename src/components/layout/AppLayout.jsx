@@ -7,6 +7,7 @@ import { notificationAPI } from '../../api/services';
 import coBrotherLogo from '../../assets/Cobrother_Green.png';
 import TechnologyIcon from '../../assets/CoCreation.png';
 import CommunityIcon from '../../assets/CoBrother_profileW.png';
+import BackButton from '../common/BackButton';
 
 const sidebarItems = [
   { icon: Home, label: 'Dashboard', to: '/dashboard', isImage: false },
@@ -443,8 +444,15 @@ export default function AppLayout({ children }) {
         {/* Scrollable Content - with proper padding for sidebar */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 min-w-0">
           <div className="app-main-content p-4 sm:p-5 lg:p-6 xl:p-8 min-w-0 max-w-[100%]">
-            {children}
-          </div>
+
+  {location.pathname !== '/' &&
+   location.pathname !== '/login' &&
+   location.pathname !== '/register' && (
+    <BackButton />
+  )}
+
+  {children}
+</div>
         </div>
       </main>
 

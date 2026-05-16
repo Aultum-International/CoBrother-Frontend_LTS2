@@ -477,7 +477,6 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
                   {domain.domainStatus === 'SOLD' ? 'Sold' : 'Pending'}
                 </span>
               )}
-          )}
         </div>
       </div>
     </div>

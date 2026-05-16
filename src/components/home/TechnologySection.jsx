@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { publicAPI } from '../../api/services';
+import { useNavigate } from 'react-router-dom';
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
@@ -10,6 +11,8 @@ const STATUS_COLORS = {
 
 export default function TechnologySection() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
   const [softwares, setSoftwares] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -140,9 +143,15 @@ export default function TechnologySection() {
                   <div className="flex items-center gap-3 text-sm text-gray-600">
                     <span title="Views">👁 {item.views || 0}</span>
                   </div>
-                    <button className="btn-glow btn-glow-sm w-full sm:w-auto">
-                    View Details
-                  </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/cocreation/${item.id}`);
+                      }}
+                      className="btn-glow btn-glow-sm w-full sm:w-auto"
+                    >
+                      View Details
+                    </button>
                 </div>
               </div>
             );
