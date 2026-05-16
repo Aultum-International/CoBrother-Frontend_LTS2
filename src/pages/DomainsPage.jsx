@@ -34,6 +34,7 @@ export default function DomainsPage() {
 
   const [allDomains, setAllDomains]         = useState([]);
   const [loading, setLoading]               = useState(true);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showForm, setShowForm]             = useState(false);
   const [buyTarget, setBuyTarget]           = useState(null);
   const [successDomain, setSuccessDomain]   = useState(null);
@@ -62,15 +63,30 @@ export default function DomainsPage() {
     categoryField: 'pricingDemand',
     dateField:     'createdAt',
   }, 20);
-
   useEffect(() => {
-    setLoading(true);
-    const req = filterTab === 'mine' ? domainAPI.getMyListings() : domainAPI.getAll();
-    req
-      .then(({ data }) => setAllDomains(Array.isArray(data) ? data : (data?.data ?? [])))
-      .catch(() => setAllDomains([]))
-      .finally(() => setLoading(false));
-  }, [filterTab]);
+  const timer = setTimeout(() => {
+    setDebouncedSearch(search);
+  }, 500);
+
+  return () => clearTimeout(timer);
+}, [search]);
+
+useEffect(() => {
+  setLoading(true);
+
+  const req =
+    filterTab === 'mine'
+      ? domainAPI.getMyListings(debouncedSearch)
+      : domainAPI.getAll(debouncedSearch);
+
+  req
+    .then(({ data }) =>
+      setAllDomains(Array.isArray(data) ? data : (data?.data ?? []))
+    )
+    .catch(() => setAllDomains([]))
+    .finally(() => setLoading(false));
+
+}, [filterTab, debouncedSearch]);
 
   const handleDelete = async () => {
     try {
@@ -81,10 +97,15 @@ export default function DomainsPage() {
     } finally { setDeleteTarget(null); }
   };
 
-  const refreshDomains = () =>
-    domainAPI.getAll()
-      .then(({ data }) => setAllDomains(Array.isArray(data) ? data : (data?.data ?? [])));
+ const refreshDomains = () =>
+  domainAPI.getAll()
+    .then(({ data }) => {
+      console.log('DOMAINS API RESPONSE:', data);
 
+      setAllDomains(
+        Array.isArray(data) ? data : (data?.data ?? [])
+      );
+    });
   return (
     <AppLayout>
       <Confetti show={showConfetti} />
@@ -494,6 +515,7 @@ function DomainForm({ onSaved, onCancel }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   const [savedDomain, setSavedDomain]       = useState(null);
   const [imageFile, setImageFile]           = useState(null);

@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import cobrotherProfile from '../../assets/CoBrother_profileW.png';
+import AnimatedLogoutButton from './AnimatedLogoutButton';
 
 const currencies = [
   'AED','ALL','AMD','AUD','AWG','AZN','BAM','BBD','BDT','BGN',
@@ -22,7 +24,8 @@ const currencies = [
 
 export default function TopNavbar({ homeMobileMenu = false }) {
   const { t, i18n } = useTranslation();
-  const { user, refreshUser } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
+  const navigate = useNavigate();
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState('INR');
   const [currencySearch, setCurrencySearch] = useState('');
@@ -92,6 +95,12 @@ export default function TopNavbar({ homeMobileMenu = false }) {
   const getUserInitial = () => {
     if (!user) return '';
     return user.fullName?.charAt(0)?.toUpperCase() || user.name?.charAt(0)?.toUpperCase() || user.email?.charAt(0)?.toUpperCase() || 'U';
+  };
+
+  const handleLogout = async () => {
+    setProfileDropdownOpen(false);
+    await logout();
+    navigate('/');
   };
 
   return (
@@ -232,7 +241,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
             {/* Profile Dropdown - Mobile/Tablet Only */}
             {/* Profile Dropdown - All screens */}
             {profileDropdownOpen && (
-              <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[160px] overflow-hidden z-[1001]">
+              <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[11rem] overflow-visible z-[1001]">
                 {user ? (
                   <>
                     {/* User info header */}
@@ -307,16 +316,8 @@ export default function TopNavbar({ homeMobileMenu = false }) {
                       {t('contactUs')}
                     </a>
 
-                    <div className="border-t border-gray-100">
-                      <button
-                        className="menu-item-logout w-full px-4 py-2.5 text-left text-sm text-red-600 hover:bg-red-50 transition-colors bg-transparent border-none cursor-pointer font-medium"
-                        onClick={() => {
-                          localStorage.clear();
-                          window.location.href = '/';
-                        }}
-                      >
-                        Logout
-                      </button>
+                    <div className="border-t border-gray-100 px-4 py-3 flex justify-center overflow-visible">
+                      <AnimatedLogoutButton onClick={handleLogout} label="Logout" />
                     </div>
                   </>
                 ) : (
@@ -380,13 +381,6 @@ export default function TopNavbar({ homeMobileMenu = false }) {
         }
         .menu-item-gradient:hover {
           background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 50%, #2563eb 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
-          font-weight: 600;
-        }
-        .menu-item-logout:hover {
-          background: linear-gradient(90deg, #dc2626 0%, #b91c1c 100%);
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;

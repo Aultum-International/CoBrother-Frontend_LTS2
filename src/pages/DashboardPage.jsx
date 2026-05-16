@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -8,9 +9,30 @@ import CommunityIcon from '../assets/Cobrother_Profile.png';
 import DomainsIcon from '../assets/CoBranding.png';
 import TechnologyIcon from '../assets/CoCreation.png';
 
+const DASHBOARD_GREETING_KEY = 'cobrother_dashboard_greeting_idx';
+
+const DASHBOARD_GREETINGS = [
+  'What are you building today?',
+  'Ready to launch your next big idea',
+  'What will you grow in your portfolio today?',
+  'Time to connect, create, and ship.',
+  'What\'s your focus for this session?',
+  'Let\'s turn ideas into momentum today.',
+  'What venture or domain is calling you today?',
+  'Your dashboard is ready — what\'s first?',
+];
+
+function getNextDashboardGreeting() {
+  const prev = Number.parseInt(localStorage.getItem(DASHBOARD_GREETING_KEY) ?? '-1', 10);
+  const next = Number.isNaN(prev) ? 0 : (prev + 1) % DASHBOARD_GREETINGS.length;
+  localStorage.setItem(DASHBOARD_GREETING_KEY, String(next));
+  return DASHBOARD_GREETINGS[next];
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const { t } = useTranslation();
+  const [welcomeMessage] = useState(getNextDashboardGreeting);
 
   const cards = [
     {
@@ -89,7 +111,7 @@ export default function DashboardPage() {
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white break-words">
                   Hello, {firstName}
                 </h1>
-                <p className="text-white/80 mt-2 text-sm sm:text-base">What are you building today?</p>
+                <p className="text-white/80 mt-2 text-sm sm:text-base">{welcomeMessage}</p>
               </div>
               <div className="flex flex-wrap gap-2 sm:gap-3 shrink-0">
                 <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-white/10 backdrop-blur rounded-full">

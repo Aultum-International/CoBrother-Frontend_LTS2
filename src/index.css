@@ -3022,6 +3022,10 @@ select:focus {
   max-width: 100%;
 }
 
+:root {
+  --brand-nav-logo-height: 2.5rem; /* 40px — matches dashboard sidebar logo (h-10) */
+}
+
 body.home-page-body {
   background: #ffffff !important;
   color: #111827 !important;
@@ -3068,12 +3072,16 @@ body.home-page-body {
   line-height: 0;
 }
 
+.brand-nav-logo,
 .home-nav-logo-img {
-  height: 2.3125rem; /* +5px vs 2rem */
+  height: var(--brand-nav-logo-height);
   width: auto;
-  max-width: 10rem;
+  max-width: 11rem;
   object-fit: contain;
   object-position: left center;
+}
+
+.home-nav-logo-img {
   transition: opacity 0.25s ease;
 }
 
@@ -3101,10 +3109,101 @@ body.home-page-body {
   opacity: 1;
 }
 
-@media (min-width: 768px) {
-  .home-nav-logo-img {
-    height: 2.5625rem; /* +5px vs 2.25rem */
-    max-width: 11rem;
+/* Uiverse thin-duck-22 — animated logout (vinodjangid07) */
+.uiverse-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition-duration: 0.3s;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+  background-color: rgb(255, 65, 65);
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.uiverse-logout-sign {
+  width: 100%;
+  transition-duration: 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uiverse-logout-sign svg {
+  width: 17px;
+  height: 17px;
+}
+
+.uiverse-logout-sign svg path {
+  fill: white;
+}
+
+.uiverse-logout-text {
+  position: absolute;
+  right: 0;
+  width: 0;
+  opacity: 0;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transition-duration: 0.3s;
+  pointer-events: none;
+}
+
+.uiverse-logout-btn:hover,
+.uiverse-logout-btn:focus-visible {
+  width: 7.75rem;
+  border-radius: 2.5rem;
+  transition-duration: 0.3s;
+  outline: none;
+}
+
+.uiverse-logout-btn:hover .uiverse-logout-sign,
+.uiverse-logout-btn:focus-visible .uiverse-logout-sign {
+  width: 30%;
+  transition-duration: 0.3s;
+  padding-left: 1rem;
+}
+
+.uiverse-logout-btn:hover .uiverse-logout-text,
+.uiverse-logout-btn:focus-visible .uiverse-logout-text {
+  opacity: 1;
+  width: 70%;
+  transition-duration: 0.3s;
+  padding-right: 0.625rem;
+}
+
+.uiverse-logout-btn:active {
+  transform: translate(2px, 2px);
+}
+
+/* Touch / narrow dropdown: show expanded label without hover */
+@media (hover: none) {
+  .uiverse-logout-btn {
+    width: 7.75rem;
+    border-radius: 2.5rem;
+  }
+
+  .uiverse-logout-sign {
+    width: 30%;
+    padding-left: 1rem;
+  }
+
+  .uiverse-logout-text {
+    opacity: 1;
+    width: 70%;
+    padding-right: 0.625rem;
   }
 }
 

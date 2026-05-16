@@ -37,6 +37,7 @@ export default function AppLayout({ children }) {
   const { user, logout } = useAuth();
   const navItems = getNavItems(user);
   const location = useLocation();
+  console.log(location.pathname);
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -146,7 +147,7 @@ export default function AppLayout({ children }) {
         <div className={`p-4 border-b border-white/10 flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!sidebarCollapsed && (
             <Link to="/" className="flex items-center">
-              <img src={coBrotherLogo} alt="CoBrother" className="h-10 w-auto" />
+              <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo" />
             </Link>
           )}
           <button
@@ -346,7 +347,7 @@ export default function AppLayout({ children }) {
             
             {/* Logo for mobile */}
             <Link to="/" className="lg:hidden flex items-center">
-              <img src={coBrotherLogo} alt="CoBrother" className="h-7 w-auto" />
+              <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo" />
             </Link>
           </div>
 
@@ -445,11 +446,16 @@ export default function AppLayout({ children }) {
         <div className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 min-w-0">
           <div className="app-main-content p-4 sm:p-5 lg:p-6 xl:p-8 min-w-0 max-w-[100%]">
 
-  {location.pathname !== '/' &&
-   location.pathname !== '/login' &&
-   location.pathname !== '/register' && (
-    <BackButton />
-  )}
+  {!(
+  location.pathname === '/' ||
+  location.pathname === '/login' ||
+  location.pathname === '/register' ||
+  location.pathname.startsWith('/dashboard') ||
+  location.pathname.startsWith('/venture-analytics') ||
+  location.pathname.startsWith('/ventures-dashboard') ||
+  location.pathname.startsWith('/domains-dashboard') ||
+  location.pathname.startsWith('/cocreation-dashboard')
+) && <BackButton />}
 
   {children}
 </div>

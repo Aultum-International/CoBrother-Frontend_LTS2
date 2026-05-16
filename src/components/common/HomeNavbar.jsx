@@ -183,9 +183,6 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
             <div className="home-nav-desktop-cta home-nav-cta-group">
-              <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/join-form')}>
-                {t('joinUs')}
-              </button>
               {authButton}
             </div>
 
@@ -272,9 +269,6 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
             </div>
 
             <div className="home-nav-drawer-footer">
-              <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/join-form')}>
-                {t('joinUs')}
-              </button>
               {!user ? (
                 <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login')}>
                   {t('signIn')}

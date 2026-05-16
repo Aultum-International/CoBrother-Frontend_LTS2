@@ -113,9 +113,6 @@ export default function HomeFooter() {
               <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className={`${linkClass} text-left`}>
                 {t('Home')}
               </button>
-              <ScrollLink to="/join-form" className={linkClass}>
-                {t('Join Us')}
-              </ScrollLink>
             </nav>
           </div>
 
