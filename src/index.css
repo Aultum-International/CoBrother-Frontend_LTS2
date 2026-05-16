@@ -986,6 +986,68 @@ select:focus {
   color: #4f46e5;
 }
 
+.admin-page {
+  width: 100%;
+  min-width: 0;
+}
+
+.admin-homepage-features-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .admin-homepage-features-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-page .admin-dashboard-tab {
+    min-width: 96px;
+    padding: 0.6rem 0.65rem;
+  }
+
+  .admin-page .admin-dashboard-tab-label {
+    font-size: 0.75rem;
+    max-width: 88px;
+  }
+
+  .admin-feature-card {
+    padding: 1rem;
+    min-height: 360px;
+  }
+
+  .admin-feature-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .admin-feature-switch {
+    align-self: flex-end;
+  }
+
+  .admin-feature-card-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-feature-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-feature-toolbar select,
+  .admin-feature-toolbar input {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 /* Homepage feature panels — premium admin UI (light surface overrides) */
 .admin-feature-card {
   background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
@@ -1225,6 +1287,11 @@ select:focus {
 .admin-feature-row.is-busy {
   opacity: 0.65;
   pointer-events: none;
+}
+
+.admin-feature-row.is-inactive {
+  opacity: 0.72;
+  background: #fafafa;
 }
 
 .admin-feature-row-body {
@@ -3109,7 +3176,7 @@ body.home-page-body {
   opacity: 1;
 }
 
-/* Uiverse thin-duck-22 — animated logout (vinodjangid07) */
+/* Uiverse thin-duck-22 — animated logout (vinodjangid07), themed for CoBrother */
 .uiverse-logout-btn {
   display: flex;
   align-items: center;
@@ -3118,14 +3185,14 @@ body.home-page-body {
   height: 2.5rem;
   min-width: 2.5rem;
   min-height: 2.5rem;
-  border: none;
+  border: 1px solid #1f2937;
   border-radius: 50%;
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  transition-duration: 0.3s;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-  background-color: rgb(255, 65, 65);
+  transition: width 0.3s ease, border-radius 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
+  box-shadow: none;
+  background-color: #ffffff;
   font-family: inherit;
   flex-shrink: 0;
 }
@@ -3144,7 +3211,7 @@ body.home-page-body {
 }
 
 .uiverse-logout-sign svg path {
-  fill: white;
+  fill: #1f2937;
 }
 
 .uiverse-logout-text {
@@ -3152,7 +3219,7 @@ body.home-page-body {
   right: 0;
   width: 0;
   opacity: 0;
-  color: white;
+  color: #1f2937;
   font-size: 0.95rem;
   font-weight: 600;
   line-height: 1;
@@ -3165,8 +3232,12 @@ body.home-page-body {
 .uiverse-logout-btn:focus-visible {
   width: 7.75rem;
   border-radius: 2.5rem;
-  transition-duration: 0.3s;
   outline: none;
+  color: #000000;
+  box-shadow:
+    -18px 0 28px -8px rgba(0, 195, 255, 0.5),
+    18px 0 28px -8px rgba(147, 51, 234, 0.45),
+    0 0 18px -4px rgba(120, 80, 220, 0.3);
 }
 
 .uiverse-logout-btn:hover .uiverse-logout-sign,

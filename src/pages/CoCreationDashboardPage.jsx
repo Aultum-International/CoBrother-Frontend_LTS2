@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Boxes, IndianRupee, ShoppingCart, CreditCard, Clock3 } from 'lucide-react';
 import { cocreationAPI } from '../api/services';
+import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 
 export default function CoCreationDashboardPage() {
+  const { formatPrice } = useCurrency();
   const navigate                        = useNavigate();
   const [tab, setTab]                   = useState('listings');
   const [listings, setListings]         = useState([]);   // Software[]  (with purchaseCount)
@@ -62,10 +64,10 @@ export default function CoCreationDashboardPage() {
           <StatCard label="Total Listings" value={listings.length} icon={<Boxes size={18} />} />
           <StatCard label="Total Sales" value={listings.reduce((s, x) => s + (x.purchaseCount || 0), 0)}
                     icon={<IndianRupee size={18} />} color="#047857" />
-          <StatCard label="Revenue" value={`₹${Number(totalRevenue).toLocaleString('en-IN')}`}
+          <StatCard label="Revenue" value={formatPrice(totalRevenue)}
                     icon={<IndianRupee size={18} />} color="#047857" />
           <StatCard label="My Purchases" value={completedPurchases.length} icon={<ShoppingCart size={18} />} color="#6d28d9" />
-          <StatCard label="Total Spent" value={`₹${Number(totalSpent).toLocaleString('en-IN')}`}
+          <StatCard label="Total Spent" value={formatPrice(totalSpent)}
                     icon={<CreditCard size={18} />} color="#1d4ed8" />
           {pendingConfirm > 0 && (
             <StatCard label="Awaiting Confirm" value={pendingConfirm}
@@ -171,6 +173,7 @@ export default function CoCreationDashboardPage() {
 
 // ─── Listing Row (seller view) ────────────────────────────────────────────────
 function ListingRow({ item, onAnalytics }) {
+  const { formatPrice } = useCurrency();
   const [expanded, setExpanded] = useState(false);
   const sales = item.purchaseCount || 0;
 
@@ -195,7 +198,7 @@ function ListingRow({ item, onAnalytics }) {
         <div className="flex items-center gap-5 flex-shrink-0">
           <div className="text-right">
             <div className="font-display text-[1.1rem] font-bold text-indigo-600">
-              ₹{Number(item.price).toLocaleString('en-IN')}
+              {formatPrice(item.price)}
             </div>
             <div className="text-[0.72rem] text-gray-400">per sale</div>
           </div>
@@ -209,7 +212,7 @@ function ListingRow({ item, onAnalytics }) {
           </div>
           <div className="text-right">
             <div className="font-display text-[1.1rem] font-bold text-green-600">
-              ₹{Number(item.price * sales).toLocaleString('en-IN')}
+              {formatPrice(item.price * sales)}
             </div>
             <div className="text-[0.72rem] text-gray-400">revenue</div>
           </div>
@@ -224,7 +227,7 @@ function ListingRow({ item, onAnalytics }) {
           </button>
           <span className="text-[0.78rem] text-gray-400">
             👁 {item.views || 0} views · ✦ {sales} paid
-            {sales > 0 && ` · Revenue: ₹${Number(item.price * sales).toLocaleString('en-IN')}`}
+            {sales > 0 && ` · Revenue: ${formatPrice(item.price * sales)}`}
           </span>
         </div>
       )}
@@ -234,6 +237,7 @@ function ListingRow({ item, onAnalytics }) {
 
 // ─── Purchase Row (buyer view) ────────────────────────────────────────────────
 function PurchaseRow({ purchase, onConfirm, confirming }) {
+  const { formatPrice } = useCurrency();
   const [expanded, setExpanded] = useState(false);
   const sw           = purchase.software || {};
   const isConfirmed  = purchase.completionStatus === 'CONFIRMED';
@@ -276,13 +280,13 @@ function PurchaseRow({ purchase, onConfirm, confirming }) {
         <div className="flex items-center gap-4 flex-shrink-0">
           <div className="text-right">
             <div className="font-display text-[1.1rem] font-bold text-purple-600">
-              ₹{Number(sw.price || 0).toLocaleString('en-IN')}
+              {formatPrice(sw.price || 0)}
             </div>
             {purchase.coBrotherOptIn && !helpPaid && (
-              <div className="text-[0.68rem] text-gray-400">+ ₹1,000 pending</div>
+              <div className="text-[0.68rem] text-gray-400">+ {formatPrice(1000)} pending</div>
             )}
             {helpPaid && (
-              <div className="text-[0.68rem] text-gray-400">+ ₹1,000 CoBrother</div>
+              <div className="text-[0.68rem] text-gray-400">+ {formatPrice(1000)} CoBrother</div>
             )}
           </div>
           <span className="text-gray-400 text-sm">{expanded ? '▲' : '▼'}</span>

@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus, Eye } from 'lucide-react';
 import { cocreationAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
+import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import AppLayout from '../components/layout/AppLayout';
 import TechnologyIcon from '../assets/CoCreation.png';
 import { useLikes } from '../hooks/useLikes';
@@ -16,6 +18,8 @@ import ConfirmDialog from '../components/common/ConfirmDialog';
 import SoftwareAuctionRequestModal from './SoftwareAuctionRequestModal';
 import { softwareAuctionAPI } from '../api/services';
 import AddonSelector, { addonTotal, ADDON_SERVICES } from '../components/addon/AddonSelector';
+import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
+import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
 
 const COCREATION_CATEGORIES = [
   'SAAS','MOBILE_APP','DESKTOP','API_TOOL',
@@ -34,6 +38,7 @@ const STATUS_COLORS = {
 export default function CoCreationPage() {
   const { t } = useTranslation();
   const { user }  = useAuth();
+  const { currency, getSymbol, formatPrice } = useCurrency();
   const navigate  = useNavigate();
 
   const [allSoftware, setAllSoftware]       = useState([]);
@@ -168,10 +173,11 @@ export default function CoCreationPage() {
           sortBy={sortBy}           onSort={handleSort}
           onClear={clearAll}        activeFilterCount={activeFilterCount}
           placeholder="Search software by name, description or tech stack…"
+          priceSymbol={getSymbol(currency)}
           theme="light"
         />
 
-        {!loading && allSoftware.length > 0 && (
+        {!loading && totalCount > 0 && (
           <div className="text-sm text-gray-600 mb-4">
             {totalCount} software listing{totalCount !== 1 ? 's' : ''} found
           </div>
@@ -282,6 +288,7 @@ export default function CoCreationPage() {
   );
 }
 function SoftwareCard({ item, isOwner, onView, onBuy, onDelete, likeState, onLike, onAuction, auctionStatus }) {
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const { user } = useAuth();
   const s = STATUS_COLORS[item.softwareStatus] || STATUS_COLORS.AVAILABLE;
@@ -334,7 +341,7 @@ function SoftwareCard({ item, isOwner, onView, onBuy, onDelete, likeState, onLik
         </span>
       </div>
 
-      <div className="font-display text-[1.1rem] font-bold text-indigo-600 mt-1">₹{Number(item.price).toLocaleString('en-IN')}</div>
+      <div className="font-display text-[1.1rem] font-bold text-indigo-600 mt-1">{formatPrice(item.price)}</div>
 
       <div className="flex items-center justify-between gap-2 flex-wrap mt-1">
         <div className="flex items-center gap-4 text-gray-500 text-sm">
@@ -426,10 +433,12 @@ function SoftwareCard({ item, isOwner, onView, onBuy, onDelete, likeState, onLik
 
 // ─── Software Form (admin only) ───────────────────────────────────────────────
 function SoftwareForm({ onSaved, onCancel }) {
+  const { currency: navCurrency } = useCurrency();
   const [form, setForm] = useState({
     name: '', description: '', videoLink: '', whatItDoes: '', howItHelps: '',
     githubLink: '', liveDemoLink: '', techStack: '',
     category: '', pricingDemand: '', price: '',
+    currency: navCurrency || DEFAULT_LISTING_CURRENCY,
     agreement: { terms: false },
   });
   const [loading, setLoading] = useState(false);
@@ -462,7 +471,10 @@ function SoftwareForm({ onSaved, onCancel }) {
     }
 
     try {
-      const { data } = await cocreationAPI.create(form);
+      const { data } = await cocreationAPI.create({
+        ...form,
+        currency: form.currency || DEFAULT_LISTING_CURRENCY,
+      });
       setSavedSoftware(data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to list Technology.');
@@ -592,12 +604,18 @@ function SoftwareForm({ onSaved, onCancel }) {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Price (₹) <span className="text-red-500">*</span></label>
-            <input className={inputCls} type="number" min="0" value={form.price}
-              onChange={e => set('price', e.target.value)}
-              placeholder="e.g. 25000" required />
-          </div>
+          <CurrencyPriceInput
+            id="software-price"
+            label="Price"
+            value={form.price}
+            onChange={(v) => set('price', v)}
+            currency={form.currency}
+            onCurrencyChange={(code) => set('currency', code)}
+            required
+            placeholder="e.g. 25000"
+            inputClassName={inputCls}
+            labelClassName={labelCls}
+          />
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>Pricing Type <span className="text-red-500">*</span></label>
             <select className={inputCls} value={form.pricingDemand}
@@ -662,6 +680,7 @@ function SoftwareForm({ onSaved, onCancel }) {
 
 // ─── Buy Technology Modal ── UPGRADED with CoBrother opt-in + billing breakdown ─
 function BuySoftwareModal({ item, user, onClose, onSuccess }) {
+  const { currency, formatPrice } = useCurrency();
   const [form, setForm] = useState({
     buyerFullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
     buyerEmail:    user?.email || '',
@@ -685,16 +704,15 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
         ...form,
         coBrotherOptIn,
         services: addons,
+        currency,
       });
 
-      const options = {
-        key:         orderData.keyId,
-        amount:      orderData.amount * 100,
-        currency:    orderData.currency,
-        name:        'CoBrother',
+      openRazorpayCheckout({
+        orderData,
+        user,
         description: `${item.name}${coBrotherOptIn ? ' + CoBrother Help' : ''}`,
-        order_id:    orderData.orderId,
-        handler: async response => {
+        themeColor: '#a06ec8',
+        onSuccess: async (response) => {
           try {
             const { data: verifyData } = await cocreationAPI.verifyPayment(item.id, {
               razorpayPaymentId: response.razorpay_payment_id,
@@ -716,23 +734,16 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
             setLoading(false);
           }
         },
-        modal: {
-          ondismiss: async () => {
-            await cocreationAPI.handleFailure(item.id);
-            setLoading(false);
-          },
+        onFailure: async () => {
+          await cocreationAPI.handleFailure(item.id);
+          setError('Payment failed. Please try again.');
+          setLoading(false);
         },
-        prefill: { name: form.buyerFullName, email: form.buyerEmail, contact: form.buyerPhone },
-        theme: { color: '#a06ec8' },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', async () => {
-        await cocreationAPI.handleFailure(item.id);
-        setError('Payment failed. Please try again.');
-        setLoading(false);
+        onDismiss: async () => {
+          await cocreationAPI.handleFailure(item.id);
+          setLoading(false);
+        },
       });
-      rzp.open();
     } catch (err) {
       setError(err.response?.data?.error || err.response?.data || 'Failed to initiate payment.');
       setLoading(false);
@@ -790,7 +801,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
               <div className={`font-semibold text-[0.9rem] mb-1 ${coBrotherOptIn ? 'text-purple-700' : 'text-gray-700'}`}>
                 ◆ Add CoBrother Helper{' '}
                 <span className={`font-display text-[1rem] font-bold ${coBrotherOptIn ? 'text-purple-600' : 'text-indigo-600'}`}>
-                  +₹1,000
+                  +{formatPrice(1000)}
                 </span>
               </div>
               <div className="text-gray-500 text-[0.78rem] leading-relaxed">
@@ -809,15 +820,15 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
             Billing Breakdown
           </div>
           <BillingLine label={item.name}
-                       value={`₹${Number(basePrice).toLocaleString('en-IN')}`} />
+                       value={formatPrice(basePrice)} />
           {coBrotherOptIn && (
-            <BillingLine label="◆ CoBrother Helper" value="₹1,000" accent />
+            <BillingLine label="◆ CoBrother Helper" value={formatPrice(1000)} accent />
           )}
           {addons.filter(k => !ADDON_SERVICES.find(s => s.key === k)?.contactOnly).map(k => {
             const svc = ADDON_SERVICES.find(s => s.key === k);
             return svc ? (
               <BillingLine key={k} label={svc.label}
-                value={`₹${svc.price.toLocaleString('en-IN')}`} accent />
+                value={formatPrice(svc.price)} accent />
             ) : null;
           })}
           {addons.some(k => ADDON_SERVICES.find(s => s.key === k)?.contactOnly) && (
@@ -827,7 +838,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
           <div className="flex justify-between items-center">
             <span className="font-semibold text-gray-700 text-[0.9rem]">Total</span>
             <span className="font-display text-[1.5rem] font-bold text-green-600">
-              ₹{Number(totalPrice).toLocaleString('en-IN')}
+              {formatPrice(totalPrice)}
             </span>
           </div>
         </div>
@@ -842,7 +853,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
         <div className="flex gap-3">
           <button className="btn-glow flex-1" onClick={handlePay} disabled={loading}>
             {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
-              `Pay ₹${Number(totalPrice).toLocaleString('en-IN')} →`}
+              `Pay ${formatPrice(totalPrice)} →`}
           </button>
           <button className="btn-glow" onClick={onClose}>Cancel</button>
         </div>
@@ -910,6 +921,7 @@ function PurchaseSuccessModal({ item, onClose }) {
 
 // ─── Software Detail Modal ────────────────────────────────────────────────────
 function SoftwareDetailModal({ item, isOwner, onClose, onBuy, likeState, onLike }) {
+  const { formatPrice } = useCurrency();
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
   const hasFetched            = useRef(false);
@@ -952,7 +964,7 @@ function SoftwareDetailModal({ item, isOwner, onClose, onBuy, likeState, onLike 
 
             <div className="flex gap-3 mb-6 flex-wrap">
               <div className="px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
-                💰 ₹{Number(d.price).toLocaleString('en-IN')}
+                💰 {formatPrice(d.price)}
               </div>
               <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500">
                 👁 {d.views || 0} views

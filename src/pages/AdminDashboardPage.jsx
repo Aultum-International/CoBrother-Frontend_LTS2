@@ -142,20 +142,20 @@ export default function AdminDashboardPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-7xl mx-auto">
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 md:p-6 mb-6 relative overflow-hidden">
+      <div className="admin-page w-full min-w-0 max-w-7xl mx-auto">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 sm:p-5 md:p-6 mb-4 sm:mb-6 relative overflow-hidden">
           <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600" />
           <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="min-w-0">
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-gray-900 m-0">
+              <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 m-0 break-words">
                 Admin Dashboard
               </h1>
-              <p className="text-gray-600 mt-2">Manage all platform activity.</p>
+              <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage all platform activity.</p>
             </div>
           </div>
         </div>
 
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6 -mx-1 sm:mx-0 min-w-0">
           <div className="admin-dashboard-tabs">
             {tabs.map(t => (
               <button
@@ -180,7 +180,7 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 md:p-6 text-gray-900">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-3 sm:p-4 md:p-6 text-gray-900 min-w-0 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-16 md:py-20">
               <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
@@ -201,7 +201,7 @@ export default function AdminDashboardPage() {
           ) : tab === 'meetings' ? (
             <MeetingsAdminTab meetings={data} />
           ) : tab === 'homepage-features' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="admin-homepage-features-grid">
               <HomepageFeatureSelector type="domain" />
               <HomepageFeatureSelector type="venture" />
               <HomepageFeatureSelector type="software" />

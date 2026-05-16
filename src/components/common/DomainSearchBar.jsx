@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { domainAPI } from '../../api/services';
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 
@@ -38,10 +39,7 @@ export default function DomainSearchBar() {
     await Promise.all(pairs.map(async ({ name, ext }) => {
       const fullDomain = `${name}.${ext}`;
       try {
-        const res  = await fetch(
-          `http://localhost:8080/api/v1/domain/check?name=${encodeURIComponent(fullDomain)}`
-        );
-        const data = await res.json();
+        const { data } = await domainAPI.check(encodeURIComponent(fullDomain));
         // Backend returns: { status: 'marketplace'|'available'|'taken', price, listing }
         setResults(prev => prev.map(r =>
           r.domain === fullDomain

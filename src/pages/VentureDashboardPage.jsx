@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { coVentureAPI, likeAPI, ventureAPI, ventureAuctionAPI } from '../api/services';
+import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
 
@@ -144,6 +145,7 @@ function MyListings() {
 }
 
 function VentureListingRow({ venture, onVerify, onViewAuction, onListingChanged }) {
+  const { formatPrice } = useCurrency();
   const navigate   = useNavigate();
   const b          = venture.brandDetails || {};
   const isAuction  = venture.saleType === 'AUCTION';
@@ -211,12 +213,12 @@ function VentureListingRow({ venture, onVerify, onViewAuction, onListingChanged 
 
         {isAuction && auction?.currentHighestBid > 0 && (
           <span className="text-sm font-bold text-green-600">
-            Top: ₹{Number(auction.currentHighestBid).toLocaleString('en-IN')}
+            Top: {formatPrice(auction.currentHighestBid)}
           </span>
         )}
         {isAuction && auction?.minBidPrice > 0 && !auction?.currentHighestBid && (
           <span className="text-sm font-bold text-yellow-600">
-            Min: ₹{Number(auction.minBidPrice).toLocaleString('en-IN')}
+            Min: {formatPrice(auction.minBidPrice)}
           </span>
         )}
 

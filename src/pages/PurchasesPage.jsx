@@ -7,6 +7,9 @@ import DomainsIcon from '../assets/CoBranding.png';
 import SoftwareIcon from '../assets/CoCreation.png';
 import CoBrotherIcon from '../assets/Community-profileicon.png';
 import { generateInvoice } from '../utils/generateInvoice';
+import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
+import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 
 export default function PurchasesPage() {
   const navigate                      = useNavigate();
@@ -276,6 +279,9 @@ function InvoiceDownloadButton({ onClick }) {
    CoBrother Help Modal (unchanged)
 ───────────────────────────────────────────────────────── */
 function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
+  const { user } = useAuth();
+  const { currency, formatPrice } = useCurrency();
+  const HELP_FEE_INR = 1000;
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
   const sw = purchase.software || {};
@@ -284,10 +290,12 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
     setLoading(true); setError('');
     try {
       const { data: orderData } = await cocreationAPI.payCoBrotherHelp(purchase.id);
-      const options = {
-        key: orderData.keyId, amount: orderData.amount * 100, currency: orderData.currency,
-        name: 'CoBrother', description: `CoBrother Help — ${sw.name}`, order_id: orderData.orderId,
-        handler: async (response) => {
+      openRazorpayCheckout({
+        orderData: { ...orderData, currency: orderData.currency || currency },
+        user,
+        description: `CoBrother Help — ${sw.name}`,
+        themeColor: '#7c3aed',
+        onSuccess: async (response) => {
           try {
             await cocreationAPI.verifyCoBrotherHelp(purchase.id, {
               razorpayPaymentId: response.razorpay_payment_id,
@@ -295,14 +303,14 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
               razorpaySignature: response.razorpay_signature,
             });
             onSuccess({ ...purchase, coBrotherOptIn: true, coBrotherHelpPaid: true });
-          } catch { setError('Payment verification failed.'); setLoading(false); }
+          } catch {
+            setError('Payment verification failed.');
+            setLoading(false);
+          }
         },
-        modal: { ondismiss: () => setLoading(false) },
-        theme: { color: '#7c3aed' },
-      };
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', () => { setError('Payment failed.'); setLoading(false); });
-      rzp.open();
+        onFailure: () => { setError('Payment failed.'); setLoading(false); },
+        onDismiss: () => setLoading(false),
+      });
     } catch (err) { setError(err.response?.data?.error || 'Failed.'); setLoading(false); }
   };
 

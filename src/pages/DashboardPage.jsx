@@ -69,7 +69,7 @@ export default function DashboardPage() {
     { to: '/ventures/new', label: 'List Ventures', icon: <span className="text-lg font-semibold leading-none">+</span> },
     { to: '/community', label: 'View Disruptors', icon: <img src={CommunityIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
     { to: '/domains', label: 'Manage Domains', icon: <img src={DomainsIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
-    { to: '/cocreation', label: 'Explore Tech', icon: <img src={TechnologyIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
+    { to: '/cocreation', label: 'Explore Technology', icon: <img src={TechnologyIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
   ];
 
   const roleUpper = (user?.role ?? '').toString().toUpperCase();

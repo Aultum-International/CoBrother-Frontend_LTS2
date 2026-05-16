@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import useCurrency from '../../context/CurrencyContext';
 import { publicAPI } from '../../api/services';
+import { filterFeaturedGuestListings } from '../../utils/homepageListings';
 
 const TYPE_LABELS = {
   STARTUP: 'Startup',
@@ -11,6 +13,7 @@ const TYPE_LABELS = {
 
 export default function VenturesSection() {
   const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [ventures, setVentures] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,11 +32,16 @@ export default function VenturesSection() {
     fetchVentures();
   }, []);
 
+  const featuredVentures = useMemo(
+    () => filterFeaturedGuestListings(ventures, 'venture'),
+    [ventures],
+  );
+
   const handleCardClick = (ventureId) => {
     const token = localStorage.getItem('token');
     if (!token) {
       localStorage.setItem('redirectAfterLogin', `/ventures/${ventureId}`);
-      window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
+      window.location.href = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://backend.cobrother.com'}/oauth2/authorization/google`;
     } else {
       window.location.href = `/ventures/${ventureId}`;
     }
@@ -54,7 +62,7 @@ export default function VenturesSection() {
     );
   }
 
-  if (ventures.length === 0) {
+  if (featuredVentures.length === 0) {
     return (
       <section className="bg-white py-4 md:py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1200px] mx-auto">
@@ -75,7 +83,7 @@ export default function VenturesSection() {
         </h3>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-          {ventures.slice(0, 8).map((venture) => {
+          {featuredVentures.slice(0, 8).map((venture) => {
             const b = venture.brandDetails || {};
             const shortDesc = `${b.description?.slice(0, 130) || ''}${b.description?.length > 130 ? '…' : ''}`;
 
@@ -119,7 +127,7 @@ export default function VenturesSection() {
 
                   {b.dealValue && (
                     <div className="text-lg font-bold text-green-600 mb-3">
-                      ₹{Number(b.dealValue).toLocaleString('en-IN')}
+                      {formatPrice(b.dealValue)}
                     </div>
                   )}
                 </div>

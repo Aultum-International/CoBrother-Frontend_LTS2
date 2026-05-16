@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCommunityAuction } from '../hooks/useCommunityAuction';
 import { communityAuctionAPI, meetingAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import MeetingDateTimePicker from '../components/common/MeetingDateTimePicker';
 
 // ─── Countdown Hook ───────────────────────────────────────────────────────────
 function useCountdown(endTime) {
@@ -685,20 +686,25 @@ function MeetingRequestForm({ auctionId, auctionEndTime, onSuccess, onCancel }) 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.scheduledAt || !form.topic) {
-      setError('Date/time and topic are required.');
+      setError('Please confirm date & time and enter a topic.');
+      return;
+    }
+    const scheduled = new Date(form.scheduledAt);
+    if (Number.isNaN(scheduled.getTime())) {
+      setError('Invalid date or time. Please confirm your selection again.');
       return;
     }
     setLoading(true); setError('');
     try {
       await meetingAPI.request(auctionId, {
-        scheduledAt:     form.scheduledAt,
-        topic:           form.topic,
-        message:         form.message,
+        scheduledAt:     scheduled.toISOString(),
+        topic:           form.topic.trim(),
+        message:         form.message.trim(),
         durationMinutes: parseInt(form.durationMinutes, 10),
       });
       onSuccess();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to request meeting.');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to request meeting.');
     } finally { setLoading(false); }
   };
 
@@ -706,17 +712,16 @@ function MeetingRequestForm({ auctionId, auctionEndTime, onSuccess, onCancel }) 
     <form onSubmit={handleSubmit} className="p-5 bg-indigo-50 border-b border-indigo-200">
       <div className="text-sm font-semibold text-indigo-800 mb-4">Schedule a Meeting</div>
       <div className="flex flex-col gap-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex flex-col gap-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1 sm:col-span-2">
             <label className="text-xs font-semibold text-gray-600 uppercase tracking-wider">Date & Time *</label>
-            <input
-              type="datetime-local"
+            <MeetingDateTimePicker
               value={form.scheduledAt}
-              min={minDateTime}
-              max={maxDateTime}
-              onChange={e => setForm(f => ({ ...f, scheduledAt: e.target.value }))}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 bg-white outline-none focus:border-indigo-400"
-              required
+              minDateTime={minDateTime}
+              maxDateTime={maxDateTime}
+              disabled={loading}
+              onChange={(val) => setForm((f) => ({ ...f, scheduledAt: val }))}
+              onValidationError={(msg) => { if (msg) setError(msg); }}
             />
           </div>
           <div className="flex flex-col gap-1">

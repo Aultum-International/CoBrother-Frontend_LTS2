@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Gem, CheckCircle2, IndianRupee, ShoppingCart, CreditCard, Gavel, ShieldCheck, Share2, X } from 'lucide-react';
 import { domainAPI } from '../api/services';
+import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import DomainVerificationModal from './DomainVerificationModal';
 
@@ -19,7 +20,7 @@ const PAYMENT_COLORS = {
 };
 
 export default function DomainsDashboardPage() {
-  
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [tab, setTab]               = useState('listings');
   const [listings, setListings]     = useState([]);
@@ -77,7 +78,7 @@ export default function DomainsDashboardPage() {
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
             <div className="text-gray-600 mb-2">Revenue</div>
-            <div className="text-2xl font-bold text-black/70">₹{Number(totalRevenue).toLocaleString('en-IN')}</div>
+            <div className="text-2xl font-bold text-black/70">{formatPrice(totalRevenue)}</div>
             <div className="text-xs text-gray-600 font-semibold mt-1">Total Revenue</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
@@ -87,7 +88,7 @@ export default function DomainsDashboardPage() {
           </div>
           <div className="bg-white rounded-lg shadow-sm p-4">
             <div className="text-gray-600 mb-2">Total Spent</div>
-            <div className="text-2xl font-bold text-black/70">₹{Number(totalSpent).toLocaleString('en-IN')}</div>
+            <div className="text-2xl font-bold text-black/70">{formatPrice(totalSpent)}</div>
             <div className="text-xs text-gray-600 font-semibold mt-1">Total Spent</div>
           </div>
         </div>
@@ -176,7 +177,7 @@ function DomainRow({ domain, type, onVerify }) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 // Public site base for share links (production).
-  const domainUrl = 'http://localhost:5173';
+  const domainUrl = 'https://cobrother.com';
   const shareUrl = `${domainUrl}/domains`;
   const shareText = `Check out this domain: ${domain.domainName}${domain.domainExtension} - Listed on CoBrother!`;
 
@@ -225,7 +226,7 @@ function DomainRow({ domain, type, onVerify }) {
       <div className="flex items-center gap-3 flex-wrap">
         {!isAuction && (
           <span className="text-[0.95rem] font-bold text-gray-900">
-            ₹{Number(domain.askingPrice).toLocaleString('en-IN')}
+            {formatPrice(domain.askingPrice)}
           </span>
         )}
         {isAuction && auction?.currentHighestBid > 0 && (
@@ -235,7 +236,7 @@ function DomainRow({ domain, type, onVerify }) {
         )}
         {isAuction && auction?.minBidPrice > 0 && auction?.currentHighestBid === 0 && (
           <span className="text-[0.875rem] font-bold text-amber-600">
-            Min: ₹{Number(auction.minBidPrice).toLocaleString('en-IN')}
+            Min: {formatPrice(auction.minBidPrice)}
           </span>
         )}
 

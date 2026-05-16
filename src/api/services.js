@@ -70,6 +70,12 @@ export const communityAPI = {
 
 
 
+export const currencyAPI = {
+  getSupported: () => api.get('/api/v1/currency/supported'),
+  convert: (amount, to) =>
+    api.get('/api/v1/currency/convert', { params: { amount, to } }),
+};
+
 export const domainAPI = {
   getAll:          ()        => api.get('/api/v1/domain/all'),
   getMyListings:   ()        => api.get('/api/v1/domain/my-listings'),
@@ -199,7 +205,8 @@ export const feedbackAPI = {
 // ─── Community Auction ────────────────────────────────────────────────────────
 export const communityAuctionAPI = {
   create:              (communityId, data) => api.post(`/api/v1/community-auction/?communityId=${communityId}`, data),
-  createListingOrder:  (auctionId)         => api.post(`/api/v1/community-auction/${auctionId}/listing-fee/create-order`),
+  createListingOrder:  (auctionId, data = {}) =>
+    api.post(`/api/v1/community-auction/${auctionId}/listing-fee/create-order`, data),
   verifyListingFee:    (auctionId, data)   => api.post(`/api/v1/community-auction/${auctionId}/listing-fee/verify`, data),
   get:                 (auctionId)         => api.get(`/api/v1/community-auction/${auctionId}`),
   getByCommunity:      (communityId)       => api.get(`/api/v1/community-auction/community/${communityId}`),

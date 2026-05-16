@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus, Gavel, ShoppingCart, MessageSquare, Trash2, CheckCircle, Share2, ArrowUpRight } from 'lucide-react';
 import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
+import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import AppLayout from '../components/layout/AppLayout';
 import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
@@ -15,6 +17,9 @@ import ConfirmDialog from '../components/common/ConfirmDialog';
 import Confetti from '../components/common/Confetti';
 import DomainsIcon from '../assets/CoBranding.png';
 import AddonSelector, {addonTotal, ADDON_SERVICES} from '../components/addon/AddonSelector';
+import { isPremiumDomain } from '../utils/domainPricing';
+import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
+import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
 
 const DOMAIN_PRICING_OPTIONS = [
   { value: 'FIXED',      label: 'Fixed Price' },
@@ -30,6 +35,7 @@ const STATUS_COLORS = {
 export default function DomainsPage() {
   const { t } = useTranslation();
   const { user }  = useAuth();
+  const { currency, getSymbol } = useCurrency();
   const navigate  = useNavigate();
 
   const [allDomains, setAllDomains]         = useState([]);
@@ -49,7 +55,7 @@ export default function DomainsPage() {
 
   const visibleDomains = filterTab === 'mine'
     ? allDomains.filter(d => d.listedBy?.id === user?.id)
-    : allDomains.filter(d => !d.takenDown);
+    : allDomains.filter(d => !d.takenDown && !isPremiumDomain(d));
 
   const {
     paginated, totalCount,
@@ -164,10 +170,11 @@ useEffect(() => {
           sortBy={sortBy}           onSort={handleSort}
           onClear={clearAll}        activeFilterCount={activeFilterCount}
           placeholder="Search domains by name or extension…"
+          priceSymbol={getSymbol(currency)}
           theme="light"
         />
 
-        {!loading && allDomains.length > 0 && (
+        {!loading && totalCount > 0 && (
           <div className="text-sm text-gray-600 mb-4">
             {totalCount} domain{totalCount !== 1 ? 's' : ''} found
           </div>
@@ -292,11 +299,12 @@ useEffect(() => {
 // ─── Domain Card ──────────────────────────────────────────────────────────────
 function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
                        onDelete, likeState, onLike }) {
+  const { formatPrice } = useCurrency();
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
   const s           = STATUS_COLORS[domain.domainStatus] || STATUS_COLORS.AVAILABLE;
   const isAuction   = domain.saleType === 'AUCTION';
-  const isHighValue = !isAuction && domain.askingPrice >= 500000;
+  const isHighValue = isPremiumDomain(domain);
   const auction     = domain.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
   const domainInitials = (domain.domainName || '')
@@ -315,7 +323,7 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 // Share URL when `window` is undefined (SSR); browser uses `window.location.origin`.
-  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/domains` : 'http://localhost:5173/domains';
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/domains` : 'https://cobrother.com/domains';
   const shareText = `Check out this domain: ${domain.domainName}${domain.domainExtension} - Listed on CoBrother!`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
@@ -420,7 +428,7 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
           <div className="rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 px-3 py-2 mb-3">
             <div className="flex items-baseline gap-1.5">
               <span className="text-xl font-extrabold text-purple-700 tracking-tight">
-                ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice).toLocaleString('en-IN')}
+                {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice)}
               </span>
               <span className="text-[10px] text-purple-400 font-semibold">
                 {auction.currentHighestBid > 0 ? 'highest' : 'min bid'}
@@ -432,7 +440,7 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
           <div className="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 px-3 py-2 mb-3">
             <div className="flex items-baseline gap-1.5">
               <span className="text-xl font-extrabold text-emerald-700 tracking-tight">
-                ₹{Number(domain.askingPrice).toLocaleString('en-IN')}
+                {formatPrice(domain.askingPrice)}
               </span>
               <span className="text-[10px] text-emerald-400 font-semibold">asking price</span>
             </div>
@@ -506,9 +514,11 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
 
 // ─── Domain Form ──────────────────────────────────────────────────────────────
 function DomainForm({ onSaved, onCancel }) {
+  const { currency: navCurrency } = useCurrency();
   const [form, setForm] = useState({
     domainName: '', domainExtension: '',
     askingPrice: '', pricingDemand: '',
+    currency: navCurrency || DEFAULT_LISTING_CURRENCY,
     saleType: 'ONE_TIME', minBidPrice: '', auctionDuration: 'SEVEN_DAYS',
     contactInfo: { email: '', phoneNumber: '' },
     agreement: { terms: false },
@@ -539,6 +549,7 @@ function DomainForm({ onSaved, onCancel }) {
         domainName:      form.domainName,
         domainExtension: form.domainExtension,
         askingPrice:     form.saleType === 'AUCTION' ? 0 : parseFloat(form.askingPrice),
+        currency:        form.currency || DEFAULT_LISTING_CURRENCY,
         pricingDemand:   form.pricingDemand,
         saleType:        form.saleType,
         contactInfo:     form.contactInfo,
@@ -684,12 +695,17 @@ function DomainForm({ onSaved, onCancel }) {
 
         <div className="grid grid-cols-2 gap-4">
           {!isAuction && (
-            <div className="flex flex-col gap-1.5">
-              <label className={labelCls}>Asking Price (₹) <span className="text-red-500">*</span></label>
-              <input className={inputCls} type="number" min="0" value={form.askingPrice}
-                onChange={e => setForm(f => ({ ...f, askingPrice: e.target.value }))}
-                placeholder="e.g. 50000" required={!isAuction} />
-            </div>
+            <CurrencyPriceInput
+              id="domain-asking-price"
+              label="Asking Price"
+              value={form.askingPrice}
+              onChange={(v) => setForm((f) => ({ ...f, askingPrice: v }))}
+              currency={form.currency}
+              onCurrencyChange={(code) => setForm((f) => ({ ...f, currency: code }))}
+              required={!isAuction}
+              inputClassName={inputCls}
+              labelClassName={labelCls}
+            />
           )}
           <div className="flex flex-col gap-1.5">
             <label className={labelCls}>Pricing Type <span className="text-red-500">*</span></label>
@@ -705,11 +721,19 @@ function DomainForm({ onSaved, onCancel }) {
         {isAuction && (
           <>
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className={labelCls}>Minimum Bid (₹) <span className="text-red-500">*</span></label>
-                <input className={inputCls} type="number" min="1" value={form.minBidPrice}
-                  onChange={e => setForm(f => ({ ...f, minBidPrice: e.target.value }))}
-                  placeholder="e.g. 5000" required />
+              <div>
+                <CurrencyPriceInput
+                  id="domain-min-bid"
+                  label="Minimum Bid"
+                  value={form.minBidPrice}
+                  onChange={(v) => setForm((f) => ({ ...f, minBidPrice: v }))}
+                  currency={form.currency}
+                  onCurrencyChange={(code) => setForm((f) => ({ ...f, currency: code }))}
+                  required
+                  placeholder="e.g. 5000"
+                  inputClassName={inputCls}
+                  labelClassName={labelCls}
+                />
                 <span className="text-[0.72rem] text-gray-500 mt-1 block">
                   Each subsequent bid must be at least 5% higher.
                 </span>
@@ -786,6 +810,8 @@ function DomainForm({ onSaved, onCancel }) {
 
 // ─── Buy Domain Modal ─────────────────────────────────────────────────────────
 function BuyDomainModal({ domain, onClose, onSuccess }) {
+  const { user } = useAuth();
+  const { currency, formatPrice } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
   const [addons, setAddons]   = useState([]);
@@ -798,16 +824,14 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
     setLoading(true); setError('');
     try {
       const { data: orderData } = await domainAPI.createOrder(domain.id, {
-        services: addons
+        services: addons,
+        currency,
       });
-      const options = {
-        key:      orderData.keyId,
-        amount:   orderData.amount * 100,
-        currency: orderData.currency,
-        name:     'CoBrother',
+      openRazorpayCheckout({
+        orderData,
+        user,
         description: `Purchase ${domain.domainName}${domain.domainExtension}`,
-        order_id: orderData.orderId,
-        handler: async response => {
+        onSuccess: async (response) => {
           try {
             await domainAPI.verifyPayment(domain.id, {
               razorpayPaymentId: response.razorpay_payment_id,
@@ -820,18 +844,21 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
               paymentStatus: 'COMPLETED',
               _addons:       addons,
             });
-          } catch { setError('Payment verification failed. Contact support.'); setLoading(false); }
+          } catch {
+            setError('Payment verification failed. Contact support.');
+            setLoading(false);
+          }
         },
-        modal: { ondismiss: async () => { await domainAPI.handleFailure(domain.id); setLoading(false); } },
-        prefill: {}, theme: { color: '#c8a96e' },
-      };
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', async () => {
-        await domainAPI.handleFailure(domain.id);
-        setError('Payment failed. Please try again.');
-        setLoading(false);
+        onFailure: async () => {
+          await domainAPI.handleFailure(domain.id);
+          setError('Payment failed. Please try again.');
+          setLoading(false);
+        },
+        onDismiss: async () => {
+          await domainAPI.handleFailure(domain.id);
+          setLoading(false);
+        },
       });
-      rzp.open();
     } catch (err) { setError(err.response?.data || 'Failed to initiate payment.'); setLoading(false); }
   };
 
@@ -859,14 +886,14 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
           <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">Billing Breakdown</div>
           <div className="flex justify-between text-gray-600 mb-1">
             <span>{domain.domainName}{domain.domainExtension}</span>
-            <span>₹{domainPrice.toLocaleString('en-IN')}</span>
+            <span>{formatPrice(domainPrice)}</span>
           </div>
           {addons.filter(k => !ADDON_SERVICES.find(s => s.key === k)?.contactOnly).map(k => {
             const svc = ADDON_SERVICES.find(s => s.key === k);
             return svc ? (
               <div key={k} className="flex justify-between text-indigo-600 mb-1">
                 <span className="truncate mr-2">{svc.label}</span>
-                <span>₹{svc.price.toLocaleString('en-IN')}</span>
+                <span>{formatPrice(svc.price)}</span>
               </div>
             ) : null;
           })}
@@ -875,7 +902,7 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
           )}
           <div className="flex justify-between font-bold text-gray-900 border-t border-gray-200 pt-2 mt-1">
             <span>Total</span>
-            <span>₹{totalPrice.toLocaleString('en-IN')}</span>
+            <span>{formatPrice(totalPrice)}</span>
           </div>
         </div>
 
@@ -885,7 +912,7 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
           <button type="button" className="btn-glow flex-1" onClick={handleBuy} disabled={loading}>
             {loading
               ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
-              : `Pay ₹${totalPrice.toLocaleString('en-IN')} →`}
+              : `Pay ${formatPrice(totalPrice)} →`}
           </button>
           <button type="button" className="btn-glow" onClick={onClose}>Cancel</button>
         </div>
@@ -920,6 +947,7 @@ function PurchaseSuccessModal({ domain, onClose }) {
 // ─── Domain Detail Modal ──────────────────────────────────────────────────────
 function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                               onViewAuction, likeState, onLike }) {
+  const { formatPrice } = useCurrency();
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
   const hasFetched            = useRef(false);
@@ -937,7 +965,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
   const c           = d.contactInfo || {};
   const s           = STATUS_COLORS[d.domainStatus] || STATUS_COLORS.AVAILABLE;
   const isAuction   = d.saleType === 'AUCTION';
-  const isHighValue = !isAuction && d.askingPrice >= 500000;
+  const isHighValue = isPremiumDomain(d);
   const auction     = d.auction;
   const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
 
@@ -976,8 +1004,8 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                 <>
                   <div className="px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-[0.82rem] text-green-800">
                     {auction.currentHighestBid > 0
-                      ? `🏆 ₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`
-                      : `🔨 Min ₹${Number(auction.minBidPrice).toLocaleString('en-IN')}`}
+                      ? `🏆 ${formatPrice(auction.currentHighestBid)}`
+                      : `🔨 Min ${formatPrice(auction.minBidPrice)}`}
                   </div>
                   <div className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-[0.82rem] text-gray-600">
                     📋 {auction.totalBids} bid{auction.totalBids !== 1 ? 's' : ''}
@@ -985,7 +1013,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                 </>
               ) : (
                 <div className="px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-[0.82rem] text-green-800">
-                  💰 ₹{Number(d.askingPrice).toLocaleString('en-IN')}
+                  💰 {formatPrice(d.askingPrice)}
                 </div>
               )}
               <div className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-[0.82rem] text-gray-600">
@@ -1016,8 +1044,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                   )}
                   {auction.currentHighestBid > 0 && (
                     <DetailItem label="Next Min Bid"
-                      value={`₹${Number(auction.currentHighestBid * 1.05)
-                        .toLocaleString('en-IN', { maximumFractionDigits: 0 })}`} />
+                      value={formatPrice(auction.currentHighestBid * 1.05)} />
                   )}
                 </div>
               </Section>
@@ -1087,6 +1114,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
 
 // ─── Domain Enquiry Modal ─────────────────────────────────────────────────────
 function DomainEnquiryModal({ domain, user, onClose, onSuccess }) {
+  const { formatPrice } = useCurrency();
   const [form, setForm] = useState({
     fullName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
     email:    user?.email || '',
@@ -1121,7 +1149,7 @@ function DomainEnquiryModal({ domain, user, onClose, onSuccess }) {
         <div className="mb-6">
           <div className="inline-flex items-center px-2.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded-full text-[0.72rem] font-semibold text-indigo-600 uppercase tracking-wide mb-2">Domain Enquiry</div>
           <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">{domain.domainName}{domain.domainExtension}</h2>
-          <p className="text-sm text-gray-500">₹{Number(domain.askingPrice).toLocaleString('en-IN')} · {domain.pricingDemand}</p>
+          <p className="text-sm text-gray-500">{formatPrice(domain.askingPrice)} · {domain.pricingDemand}</p>
         </div>
         <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-lg mb-5 text-[0.83rem] text-amber-800">
           ⚡ For high-value domains, our team will facilitate the transaction.

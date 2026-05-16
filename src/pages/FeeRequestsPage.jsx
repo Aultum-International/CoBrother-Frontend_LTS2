@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { feeAPI } from '../api/services';
+import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
+import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import AppLayout from '../components/layout/AppLayout';
 
 const STATUS_COLORS = {
@@ -101,22 +104,23 @@ export default function FeeRequestsPage() {
 }
 
 function FeePaymentModal({ request, onClose, onSuccess }) {
+  const { user } = useAuth();
+  const { currency, formatPrice } = useCurrency();
+  const FEE_INR = 1000;
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
 
   const handlePay = async () => {
     setLoading(true); setError('');
     try {
-      const { data: orderData } = await feeAPI.createOrder(request.id);
+      const { data: orderData } = await feeAPI.createOrder(request.id, { currency });
 
-      const options = {
-        key: orderData.keyId,
-        amount: orderData.amount * 100,
-        currency: 'INR',
-        name: 'CoBrother',
+      openRazorpayCheckout({
+        orderData,
+        user,
         description: 'CoBrother Service Fee — ' + request.entityTitle,
-        order_id: orderData.orderId,
-        handler: async (response) => {
+        themeColor: '#a06ec8',
+        onSuccess: async (response) => {
           try {
             await feeAPI.verify(request.id, {
               razorpayPaymentId: response.razorpay_payment_id,
@@ -129,16 +133,12 @@ function FeePaymentModal({ request, onClose, onSuccess }) {
             setLoading(false);
           }
         },
-        modal: { ondismiss: () => setLoading(false) },
-        theme: { color: '#a06ec8' },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', () => {
-        setError('Payment failed. Please try again.');
-        setLoading(false);
+        onDismiss: () => setLoading(false),
+        onFailure: () => {
+          setError('Payment failed. Please try again.');
+          setLoading(false);
+        },
       });
-      rzp.open();
     } catch (e) {
       setError(e.response?.data?.error || 'Failed to initiate payment.');
       setLoading(false);
@@ -161,7 +161,7 @@ function FeePaymentModal({ request, onClose, onSuccess }) {
             Service Fee
           </div>
           <div className="text-[1.75rem] font-bold text-green-400 font-display">
-            ₹1,000
+            {formatPrice(FEE_INR)}
           </div>
         </div>
 
@@ -174,7 +174,7 @@ function FeePaymentModal({ request, onClose, onSuccess }) {
         <div className="relative z-10 px-8 pb-8 flex gap-3">
           <button onClick={handlePay} disabled={loading}
             className="btn-glow flex-1 flex items-center justify-center gap-2">
-            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin" /> : 'Pay ₹1,000 →'}
+            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin" /> : `Pay ${formatPrice(FEE_INR)} →`}
           </button>
           <button onClick={onClose}
             className="btn-glow">Cancel</button>

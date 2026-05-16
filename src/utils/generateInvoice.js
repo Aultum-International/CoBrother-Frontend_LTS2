@@ -9,6 +9,13 @@
 function formatINR(amount) {
     return '₹' + Number(amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
   }
+
+  function formatMoney(amount, currencyCode = 'INR') {
+    const code = (currencyCode || 'INR').toUpperCase();
+    const symbols = { INR: '₹', USD: '$', EUR: '€', GBP: '£', AED: 'د.إ', SGD: 'S$', AUD: 'A$', CAD: 'C$' };
+    const sym = symbols[code] || `${code} `;
+    return sym + Number(amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
   
   function today() {
     return new Date().toLocaleDateString('en-IN', {
@@ -50,10 +57,18 @@ function formatINR(amount) {
       }
     }
   
+    const chargeCurrency = item.chargeCurrency || 'INR';
+    const formatLine = (amt) =>
+      item.amountCharged != null && chargeCurrency !== 'INR'
+        ? formatMoney(item.amountCharged, chargeCurrency)
+        : formatINR(amt);
+
     const subtotal = baseAmount + extraLines.reduce((s, l) => s + l.amount, 0);
     // GST placeholder — 18% shown as 0 until GSTIN is set
     const gst      = 0;
     const total    = subtotal + gst;
+    const displayTotal =
+      item.amountCharged != null ? formatMoney(item.amountCharged, chargeCurrency) : formatLine(total);
   
     const typeLabel = type === 'domain' ? '◇ Domain Purchase' : '⟁ Software License';
     const typeBadgeBg = type === 'domain' ? '#e0f2fe' : '#ede9fe';
@@ -392,7 +407,7 @@ function formatINR(amount) {
       </div>
       <div class="totals-row bold">
         <span>Total</span>
-        <span>${formatINR(total)}</span>
+        <span>${displayTotal}</span>
       </div>
     </div>
   

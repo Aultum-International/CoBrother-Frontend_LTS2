@@ -5,30 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import cobrotherProfile from '../../assets/CoBrother_profileW.png';
 import AnimatedLogoutButton from './AnimatedLogoutButton';
-
-const currencies = [
-  'AED','ALL','AMD','AUD','AWG','AZN','BAM','BBD','BDT','BGN',
-  'BHD','BIF','BMD','BND','BOB','BRL','BSD','BTN','BWP','BZD',
-  'CAD','CHF','CLP','CNY','COP','CRC','CUP','CVE','CZK','DJF',
-  'DKK','DOP','DZD','EGP','ETB','EUR','FJD','GBP','GHS','GIP',
-  'GMD','GNF','GTQ','GYD','HKD','HNL','HRK','HTG','HUF','IDR',
-  'ILS','INR','IQD','ISK','JMD','JOD','JPY','KES','KGS','KHR',
-  'KMF','KRW','KWD','KYD','KZT','LAK','LKR','LRD','LSL','MAD',
-  'MDL','MGA','MKD','MMK','MNT','MOP','MUR','MVR','MWK','MXN',
-  'MYR','MZN','NAD','NGN','NIO','NOK','NPR','NZD','OMR','PEN',
-  'PGK','PHP','PKR','PLN','PYG','QAR','RON','RSD','RUB','RWF',
-  'SAR','SCR','SEK','SGD','SLL','SOS','SVC','SZL','THB','TND',
-  'TRY','TTD','TWD','TZS','UAH','UGX','USD','UYU','UZS','VND',
-  'VUV','XAF','XCD','XOF','XPF','YER','ZAR','ZMW'
-];
+import CurrencyDropdown from './CurrencyDropdown';
 
 export default function TopNavbar({ homeMobileMenu = false }) {
   const { t, i18n } = useTranslation();
   const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
-  const [currencyOpen, setCurrencyOpen] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState('INR');
-  const [currencySearch, setCurrencySearch] = useState('');
   const [languageOpen, setLanguageOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showInitial, setShowInitial] = useState(false);
@@ -58,13 +40,13 @@ export default function TopNavbar({ homeMobileMenu = false }) {
   }, [profileDropdownOpen, refreshUser]);
 
   const languages = [
-    { code: 'en', name: 'English (IND)', currency: '₹' },
-    { code: 'hi', name: 'Hindi', currency: '₹' },
-    { code: 'en-US', name: 'English (US)', currency: '$' },
-    { code: 'ur', name: 'Urdu', currency: '₹' },
-    { code: 'zh', name: '中文', currency: '$' },
-    { code: 'fr', name: 'Français', currency: '$' },
-    { code: 'pt', name: 'Português', currency: '$' }
+    { code: 'en', name: 'English (IND)' },
+    { code: 'hi', name: 'Hindi' },
+    { code: 'en-US', name: 'English (US)' },
+    { code: 'ur', name: 'Urdu' },
+    { code: 'zh', name: '中文' },
+    { code: 'fr', name: 'Français' },
+    { code: 'pt', name: 'Português' },
   ];
 
   const currentLanguageName = languages.find((l) => l.code === i18n.language)?.name || 'English (IND)';
@@ -111,54 +93,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
       <div className="home-top-nav-inner w-full h-10 md:h-11 flex items-center justify-end">
   <div className="flex items-center gap-1.5 sm:gap-3 md:gap-5 min-w-0 ml-auto">
 
-<div className="relative">
-  <button
-    onClick={() => setCurrencyOpen(!currencyOpen)}
-    className="text-white text-xs md:text-sm font-normal no-underline flex items-center gap-1 px-2 sm:px-2.5 md:px-3 py-1.5 transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
-  >
-    {selectedCurrency}
-    <ChevronDown size={14} className="shrink-0" />
-  </button>
-
-{currencyOpen && (
-  <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg min-w-[180px] max-h-[300px] overflow-hidden z-[1001]">
-
-    <div className="p-2 border-b border-gray-100">
-      <input
-        type="text"
-        placeholder="Search currency..."
-        value={currencySearch}
-        onChange={(e) => setCurrencySearch(e.target.value)}
-        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md outline-none"
-      />
-    </div>
-
-    <div className="max-h-[240px] overflow-y-auto">
-  {currencies
-    .filter((currency) =>
-      currency.toLowerCase().includes(currencySearch.toLowerCase())
-    )
-    .map((currency) => (
-      <button
-        type="button"
-        key={currency}
-        onClick={() => {
-          console.log('Selected:', currency);
-
-          setSelectedCurrency(currency);
-          setCurrencyOpen(false);
-          setCurrencySearch('');
-        }}
-        className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-      >
-        {currency}
-      </button>
-    ))}
-</div>
-
-  </div>
-)}
-</div>
+<CurrencyDropdown variant="dark" />
     <div className="relative" ref={languageRef}>
             <button
               type="button"

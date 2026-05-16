@@ -66,10 +66,19 @@ export default function AddonSelector({ selected = [], onChange }) {
       {/* ── Dropdown panel ────────────────────────────────────── */}
       {open && (
         <div className="mt-2 border border-indigo-100 rounded-xl overflow-hidden shadow-sm">
-          <div className="px-4 py-2 bg-indigo-50 border-b border-indigo-100">
-            <p className="text-xs text-indigo-700 leading-relaxed">
+          <div className="px-4 py-2 bg-indigo-50 border-b border-indigo-100 flex items-start justify-between gap-3">
+            <p className="text-xs text-indigo-700 leading-relaxed flex-1">
               Select any services you'd like. Paid services are charged now; contact-based services are free — our team will reach out within 24 hours.
             </p>
+            {selected.length > 0 && (
+              <button
+                type="button"
+                onClick={() => onChange([])}
+                className="shrink-0 text-xs font-semibold text-indigo-700 hover:text-indigo-900 underline underline-offset-2 whitespace-nowrap"
+              >
+                Unselect All
+              </button>
+            )}
           </div>
 
           <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto">

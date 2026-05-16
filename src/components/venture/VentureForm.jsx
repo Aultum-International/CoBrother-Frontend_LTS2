@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useCurrency } from '../../context/CurrencyContext';
+import CurrencyPriceInput from '../common/CurrencyPriceInput';
+import { DEFAULT_LISTING_CURRENCY } from '../../constants/currencies';
 
 const INDUSTRIES = ['SAAS', 'ECOMMERCE', 'SERVICES', 'AI_AUTOMATION', 'FINTECH', 'OTHER'];
 const VENTURE_TYPES = [
@@ -40,17 +43,26 @@ const EMPTY = {
   saleType: 'REGULAR',
   auctionMinBidPrice: '',
   auctionDuration: '',
+  currency: DEFAULT_LISTING_CURRENCY,
 };
 
 
+const ventureInputCls =
+  'w-full min-w-0 flex-1 px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]';
+const ventureSelectCls =
+  'shrink-0 w-[7.25rem] px-2.5 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none transition-all duration-200 cursor-pointer focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]';
+const ventureLabelCls = 'text-sm font-medium text-gray-700';
+
 export default function VentureForm({ initialData, onSubmit, loading, error, submitLabel = 'Submit' }) {
+  const { currency: navCurrency } = useCurrency();
   const [form, setForm] = useState(() => initialData ? {
     ...EMPTY,
     ...initialData,
     saleType: initialData.saleType || 'REGULAR',
     auctionMinBidPrice: initialData.auctionMinBidPrice || '',
     auctionDuration: initialData.auctionDuration || '',
-  } : EMPTY);
+    currency: initialData.currency || navCurrency || DEFAULT_LISTING_CURRENCY,
+  } : { ...EMPTY, currency: navCurrency || DEFAULT_LISTING_CURRENCY });
   const [imageFile, setImageFile]       = useState(null);
   const [imagePreview, setImagePreview] = useState(form.brandDetails?.ventureImageUrl || null);
   const [imageUploading, setImageUploading] = useState(false);
@@ -92,6 +104,7 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
     const payload = {
       ...form,
       saleType: form.saleType,
+      currency: form.currency || DEFAULT_LISTING_CURRENCY,
       auctionMinBidPrice: isAuction && form.auctionMinBidPrice !== ''
         ? Number(form.auctionMinBidPrice) : null,
       auctionDuration: isAuction ? form.auctionDuration : null,
@@ -152,17 +165,19 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-gray-700">Minimum Bid Price (₹) <span className="text-red-400">*</span></label>
-                <input
-                  type="number" min="1"
-                  value={form.auctionMinBidPrice}
-                  onChange={e => setField('auctionMinBidPrice', e.target.value)}
-                  placeholder="e.g. 500000"
-                  required={isAuction}
-                  className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]"
-                />
-              </div>
+              <CurrencyPriceInput
+                id="venture-auction-min-bid"
+                label="Minimum Bid Price"
+                value={form.auctionMinBidPrice}
+                onChange={(v) => setField('auctionMinBidPrice', v)}
+                currency={form.currency}
+                onCurrencyChange={(code) => setField('currency', code)}
+                required={isAuction}
+                placeholder="e.g. 500000"
+                inputClassName={ventureInputCls}
+                labelClassName={ventureLabelCls}
+                selectClassName={ventureSelectCls}
+              />
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-gray-700">Auction Duration <span className="text-red-400">*</span></label>
                 <select
@@ -227,10 +242,18 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
             <input value={form.brandDetails.website} onChange={(e) => setBrand('website', e.target.value)} placeholder="https://..." type="url" required className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:shadow-[0-0_0_3px_rgba(99,102,241,0.12)]" />
           </div>
           {!isAuction && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">Deal Value (₹)</label>
-              <input value={form.brandDetails.dealValue} onChange={(e) => setBrand('dealValue', e.target.value)} placeholder="e.g. 500000" type="number" min="0" className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]" />
-            </div>
+            <CurrencyPriceInput
+              id="venture-deal-value"
+              label="Deal Value"
+              value={form.brandDetails.dealValue}
+              onChange={(v) => setBrand('dealValue', v)}
+              currency={form.currency}
+              onCurrencyChange={(code) => setField('currency', code)}
+              placeholder="e.g. 500000"
+              inputClassName={ventureInputCls}
+              labelClassName={ventureLabelCls}
+              selectClassName={ventureSelectCls}
+            />
           )}
         </div>
 

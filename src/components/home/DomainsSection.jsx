@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import useCurrency from '../../context/CurrencyContext';
 import { publicAPI } from '../../api/services';
+import { isPremiumDomain } from '../../utils/domainPricing';
+import { isGuestCreatedListing } from '../../utils/homepageListings';
 
 export default function DomainsSection() {
   const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,11 +26,16 @@ export default function DomainsSection() {
     fetchDomains();
   }, []);
 
+  const premiumDomains = useMemo(
+    () => domains.filter((d) => isGuestCreatedListing(d, 'domain') && isPremiumDomain(d)),
+    [domains],
+  );
+
   const handleCardClick = (domainId) => {
     const token = localStorage.getItem('token');
     if (!token) {
       localStorage.setItem('redirectAfterLogin', `/domains/${domainId}`);
-      window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
+      window.location.href = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://backend.cobrother.com'}/oauth2/authorization/google`;
     } else {
       window.location.href = `/domains/${domainId}`;
     }
@@ -47,7 +56,7 @@ export default function DomainsSection() {
     );
   }
 
-  if (domains.length === 0) {
+  if (premiumDomains.length === 0) {
     return (
       <section className="bg-white py-4 md:py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1200px] mx-auto">
@@ -67,7 +76,7 @@ export default function DomainsSection() {
           {t('premiumDomains')}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-          {domains.slice(0, 8).map((domain) => {
+          {premiumDomains.slice(0, 8).map((domain) => {
             const isAuction = domain.saleType === 'AUCTION';
             const domainInitials = (domain.domainName || '')
               .replace(/[^a-zA-Z0-9]/g, '')
@@ -116,7 +125,7 @@ export default function DomainsSection() {
                         ✓ Verified
                       </span>
                     )}
-                    {domain.askingPrice >= 500000 && (
+                    {isPremiumDomain(domain) && (
                       <span className="px-2 py-0.5 rounded text-[0.68rem] font-bold text-purple-600 bg-purple-50 border border-purple-200">
                         Premium
                       </span>
@@ -126,7 +135,7 @@ export default function DomainsSection() {
                   <div className="mb-2">
                     <div className="text-[0.65rem] text-gray-500">Asking Price</div>
                     <div className="font-display text-[1.85rem] font-bold text-indigo-600 leading-tight tracking-[-0.01em]">
-                      ₹{Number(domain.askingPrice).toLocaleString('en-IN')}
+                      {formatPrice(domain.askingPrice)}
                     </div>
                   </div>
                 </div>

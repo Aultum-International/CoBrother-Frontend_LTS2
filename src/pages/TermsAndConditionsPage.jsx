@@ -36,7 +36,7 @@ export default function TermsAndConditionsPage() {
   return (
     <div className="min-h-screen bg-white text-slate-900">
       <TopNavbar homeMobileMenu />
-      <HomeNavbar openDropdown={openDropdown} setOpenDropdown={setOpenDropdown} navigate={navigate} />
+      <HomeNavbar openDropdown={openDropdown} setOpenDropdown={setOpenDropdown} navigate={navigate} showBack />
 
       <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900">
         <div className="pointer-events-none absolute inset-0">

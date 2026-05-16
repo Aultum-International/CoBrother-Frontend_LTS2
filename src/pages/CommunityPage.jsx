@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { communityAPI, communityAuctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
+import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import AppLayout from '../components/layout/AppLayout';
 import DisruptorIcon from '../assets/Cobrother_Profile.png';
 import { useLikes } from '../hooks/useLikes';
@@ -305,6 +307,9 @@ export default function CommunityPage() {
 
 // ─── Create Auction Modal (form + Razorpay ₹118) ─────────────────────────────
 function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
+  const { user } = useAuth();
+  const { currency, formatPrice } = useCurrency();
+  const LISTING_FEE_INR = 118;
   const [step, setStep]       = useState('form'); // form | payment | done
   const [form, setForm]       = useState({
     auctionTitle: '',
@@ -346,16 +351,14 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
   const handlePayListingFee = async () => {
     setLoading(true); setError('');
     try {
-      const { data } = await communityAuctionAPI.createListingOrder(auctionId);
+      const { data } = await communityAuctionAPI.createListingOrder(auctionId, { currency });
 
-      const options = {
-        key:         data.keyId,
-        amount:      data.amount * 100,
-        currency:    'INR',
-        name:        'CoBrother',
+      openRazorpayCheckout({
+        orderData: data,
+        user,
         description: 'Profile Auction Listing Fee',
-        order_id:    data.orderId,
-        handler: async (response) => {
+        themeColor: '#1a1a2e',
+        onSuccess: async (response) => {
           try {
             const { data: verifyData } = await communityAuctionAPI.verifyListingFee(auctionId, {
               razorpay_payment_id: response.razorpay_payment_id,
@@ -367,24 +370,15 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
             onSuccess(liveAuction);
           } catch {
             setError('Payment verification failed. Please contact support.');
+            setLoading(false);
           }
         },
-        prefill: { name: profileName },
-        theme: { color: '#1a1a2e' },
-        modal: { ondismiss: () => setLoading(false) },
-      };
-
-      if (!window.Razorpay) {
-        setError('Razorpay SDK not loaded. Please refresh the page.');
-        setLoading(false);
-        return;
-      }
-      const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', () => {
-        setError('Payment failed. Please try again.');
-        setLoading(false);
+        onFailure: () => {
+          setError('Payment failed. Please try again.');
+          setLoading(false);
+        },
+        onDismiss: () => setLoading(false),
       });
-      rzp.open();
     } catch (err) {
       setError(err.response?.data?.error || 'Could not initiate payment. Please try again.');
       setLoading(false);
@@ -521,7 +515,7 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
               <button className="btn-glow flex-1 text-base py-3" onClick={handlePayListingFee} disabled={loading}>
                 {loading
                   ? <span className="w-5 h-5 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" />
-                  : 'Pay ₹118 & Go Live →'}
+                  : `Pay ${formatPrice(LISTING_FEE_INR)} & Go Live →`}
               </button>
               <button className="btn-glow" onClick={() => setStep('form')}>← Back</button>
             </div>

@@ -111,6 +111,7 @@ export default function AboutUsPage() {
         openDropdown={openDropdown}
         setOpenDropdown={setOpenDropdown}
         navigate={navigate}
+        showBack
       />
 
       {/* ══════════════════════════════════════════════════════

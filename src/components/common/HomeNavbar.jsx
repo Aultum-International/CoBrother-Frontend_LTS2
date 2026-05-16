@@ -5,6 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import logoBlack from '../../assets/Cobrother_logo.png';
 import logoGreen from '../../assets/Cobrother_Green.png';
+import AnimatedLogoutButton from './AnimatedLogoutButton';
+import CurrencyDropdown from './CurrencyDropdown';
+import BackButton from './BackButton';
 
 function HomeNavLogo({ className = '' }) {
   return (
@@ -56,9 +59,9 @@ function MobileAccordion({ title, open, onToggle, children }) {
   );
 }
 
-export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate }) {
+export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navigate, showBack = false }) {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileAccordion, setMobileAccordion] = useState(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -100,14 +103,19 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  const handleLogout = async () => {
+    setShowLogoutConfirm(false);
+    closeMobileMenu();
+    await logout();
+    navigate('/');
+  };
+
   const authButton = !user ? (
     <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => navigate('/login')}>
       {t('signIn')}
     </button>
   ) : (
-    <button type="button" className="btn-glow btn-glow-nav whitespace-nowrap" onClick={() => setShowLogoutConfirm(true)}>
-      Logout
-    </button>
+    <AnimatedLogoutButton onClick={() => setShowLogoutConfirm(true)} label="Logout" />
   );
 
   return (
@@ -182,6 +190,14 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
+            {showBack && (
+              <div className="home-nav-desktop-cta hidden sm:block">
+                <BackButton to="/" label="Home" variant="pill" />
+              </div>
+            )}
+            <div className="home-nav-desktop-cta hidden sm:block">
+              <CurrencyDropdown variant="light" />
+            </div>
             <div className="home-nav-desktop-cta home-nav-cta-group">
               {authButton}
             </div>
@@ -269,21 +285,25 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
             </div>
 
             <div className="home-nav-drawer-footer">
+              {showBack && (
+                <BackButton to="/" label="Home" variant="pill" className="w-full justify-center mb-3" />
+              )}
+              <div className="mb-3 flex justify-center sm:hidden">
+                <CurrencyDropdown variant="light" />
+              </div>
               {!user ? (
                 <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login')}>
                   {t('signIn')}
                 </button>
               ) : (
-                <button
-                  type="button"
-                  className="btn-glow btn-glow-md w-full"
+                <AnimatedLogoutButton
+                  className="w-full max-w-[8rem] mx-auto"
                   onClick={() => {
                     closeMobileMenu();
                     setShowLogoutConfirm(true);
                   }}
-                >
-                  Logout
-                </button>
+                  label="Logout"
+                />
               )}
             </div>
           </aside>
@@ -296,24 +316,15 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
           <div className="bg-white border border-gray-200 rounded-xl shadow-2xl p-6 max-w-sm w-full">
             <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
             <p className="text-gray-600 text-sm mb-6">Are you sure you want to logout?</p>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row items-center gap-3">
               <button
                 type="button"
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-200"
+                className="w-full sm:flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-200"
                 onClick={() => setShowLogoutConfirm(false)}
               >
                 Cancel
               </button>
-              <button
-                type="button"
-                className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700"
-                onClick={() => {
-                  localStorage.clear();
-                  window.location.href = '/';
-                }}
-              >
-                Logout
-              </button>
+              <AnimatedLogoutButton onClick={handleLogout} label="Logout" />
             </div>
           </div>
         </div>

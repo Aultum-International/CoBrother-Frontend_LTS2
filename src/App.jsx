@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 
 import { AuthProvider } from './context/AuthContext';
+import { CurrencyProvider } from './context/CurrencyContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ProtectedRoute, ProfileGuard } from './components/auth/ProtectedRoute';
 import { AdminGuard, CoBrotherGuard } from './components/auth/ProtectedRoute';
@@ -47,8 +48,9 @@ export default function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <LanguageProvider>
-        <AuthProvider>
-          <Routes>
+        <CurrencyProvider>
+          <AuthProvider>
+            <Routes>
 
             {/* Public */}
             <Route path="/" element={<Home />} />
@@ -280,6 +282,7 @@ export default function App() {
             />
 
             {/* Admin */}
+            <Route path="/dashboard/admin" element={<Navigate to="/admin" replace />} />
             <Route
               path="/admin"
               element={
@@ -310,8 +313,9 @@ export default function App() {
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/login" replace />} />
 
-          </Routes>
-        </AuthProvider>
+            </Routes>
+          </AuthProvider>
+        </CurrencyProvider>
       </LanguageProvider>
     </BrowserRouter>
   );

@@ -4,6 +4,7 @@ import { ArrowUpRight, Share2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ventureAPI, ventureAuctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import CoVentureModal from '../components/venture/CoVentureModal';
 import { useLikes } from '../hooks/useLikes';
@@ -30,6 +31,7 @@ const VENTURE_INDUSTRIES = [
 export default function VenturesPage() {
   const { t } = useTranslation();
   const { user }  = useAuth();
+  const { currency, getSymbol } = useCurrency();
   const navigate  = useNavigate();
 
   const [allVentures, setAllVentures]       = useState([]);
@@ -157,11 +159,12 @@ export default function VenturesPage() {
           sortBy={sortBy}           onSort={handleSort}
           onClear={clearAll}        activeFilterCount={activeFilterCount}
           placeholder="Search ventures by name or description…"
+          priceSymbol={getSymbol(currency)}
           theme="light"
         />
 
         {/* ── Result count ── */}
-        {!loading && allVentures.length > 0 && (
+        {!loading && totalCount > 0 && (
           <div className="text-sm text-gray-600 mb-4">
             {totalCount} venture{totalCount !== 1 ? 's' : ''} found
           </div>
@@ -248,6 +251,7 @@ export default function VenturesPage() {
 // ─── Venture Card ─────────────────────────────────────────────────────────────
 function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
                         likeState, onLike }) {
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [shareOpen, setShareOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
@@ -272,7 +276,7 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 // Share URL when `window` is undefined (SSR); browser uses `window.location.origin`.
-  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/ventures` : 'http://localhost:5173/ventures';
+  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/ventures` : 'https://cobrother.com/ventures';
   const shareText = `Check out this venture: ${b.brandName} - Listed on CoBrother!`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
@@ -352,7 +356,7 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
           <div className={`rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3`}>
             <div className="flex items-baseline gap-1">
               <span className="text-lg md:text-xl font-extrabold text-purple-700 tracking-tight">
-                ₹{Number(auction.currentHighestBid > 0 ? auction.currentHighestBid : (auction.minBidPrice || 0)).toLocaleString('en-IN')}
+                {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : (auction.minBidPrice || 0))}
               </span>
               <span className="text-[9px] md:text-[10px] text-purple-400 font-semibold">
                 {auction.currentHighestBid > 0 ? 'highest' : 'min bid'}
@@ -364,7 +368,7 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
           <div className="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 px-2 md:px-3 py-1.5 md:py-2 mb-2 md:mb-3">
             <div className="flex items-baseline gap-1">
               <span className="text-lg md:text-xl font-extrabold text-emerald-700 tracking-tight">
-                ₹{Number(b.dealValue).toLocaleString('en-IN')}
+                {formatPrice(b.dealValue)}
               </span>
               <span className="text-[9px] md:text-[10px] text-emerald-400 font-semibold">deal value</span>
             </div>
@@ -460,6 +464,7 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
 
 // ─── Venture Detail Modal ─────────────────────────────────────────────────────
 function VentureDetailModal({ venture, isOwner, onClose, onApply, onEdit, onDelete }) {
+  const { formatPrice } = useCurrency();
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
   const hasFetched            = useRef(false);
@@ -517,7 +522,7 @@ function VentureDetailModal({ venture, isOwner, onClose, onApply, onEdit, onDele
               <div className="flex gap-4 mb-6 flex-wrap">
                 {b.dealValue && (
                   <div className="px-4 py-2 bg-green-50 border border-green-300 rounded-lg text-sm text-green-700">
-                    💰 ₹{Number(b.dealValue).toLocaleString('en-IN')}
+                    💰 {formatPrice(b.dealValue)}
                   </div>
                 )}
                 <div className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">

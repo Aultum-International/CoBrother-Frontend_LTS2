@@ -7,7 +7,10 @@ import { notificationAPI } from '../../api/services';
 import coBrotherLogo from '../../assets/Cobrother_Green.png';
 import TechnologyIcon from '../../assets/CoCreation.png';
 import CommunityIcon from '../../assets/CoBrother_profileW.png';
+import AnimatedLogoutButton from '../common/AnimatedLogoutButton';
+import CurrencyDropdown from '../common/CurrencyDropdown';
 import BackButton from '../common/BackButton';
+import { getAppBackTarget } from '../../utils/appNavigation';
 
 const sidebarItems = [
   { icon: Home, label: 'Dashboard', to: '/dashboard', isImage: false },
@@ -37,7 +40,6 @@ export default function AppLayout({ children }) {
   const { user, logout } = useAuth();
   const navItems = getNavItems(user);
   const location = useLocation();
-  console.log(location.pathname);
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -55,6 +57,7 @@ export default function AppLayout({ children }) {
   const bellRef = useRef(null);
   
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
+  const backTarget = getAppBackTarget(location.pathname);
   
   const firstName = user?.firstname || user?.firstName || user?.name || user?.email?.split('@')[0] || 'User';
 
@@ -144,7 +147,7 @@ export default function AppLayout({ children }) {
         }`}
       >
         {/* Logo & Collapse Toggle */}
-        <div className={`p-4 border-b border-white/10 flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+        <div className={`p-4 border-b border-white/10 flex items-center ${sidebarCollapsed ? 'justify-start' : 'justify-between'}`}>
           {!sidebarCollapsed && (
             <Link to="/" className="flex items-center">
               <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo" />
@@ -226,14 +229,8 @@ export default function AppLayout({ children }) {
             <User size={20} />
             {!sidebarCollapsed && <span className="font-medium text-sm">Update Profile</span>}
           </Link>
-          <button
-            onClick={() => setShowLogoutConfirm(true)}
-            className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-lg text-red-400 hover:bg-red-500/10 transition-all w-full`}
-            title={sidebarCollapsed ? 'Logout' : ''}
-          >
-            <LogOut size={20} />
-            {!sidebarCollapsed && <span className="font-medium text-sm">Logout</span>}
-          </button>
+<div className={`flex ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start px-3'} py-2`}>            <AnimatedLogoutButton onClick={() => setShowLogoutConfirm(true)} label="Logout" />
+          </div>
         </div>
       </aside>
 
@@ -318,17 +315,15 @@ export default function AppLayout({ children }) {
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all"
               >
                 <User size={20} />
-                <span className="font-medium text-sm">Update Profile</span>
-              </Link>
-              <button
-                onClick={() => setShowLogoutConfirm(true)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/10 transition-all w-full"
-              >
-                <LogOut size={20} />
-                <span className="font-medium text-sm">Logout</span>
-              </button>
-            </div>
-          </aside>
+{!sidebarCollapsed && <span className="font-medium text-sm">Update Profile</span>}
+</Link>
+
+<div className={`flex ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start px-3'} py-2`}>
+  <AnimatedLogoutButton onClick={() => setShowLogoutConfirm(true)} label="Logout" />
+</div>
+
+</div>
+</aside>
         </>
       )}
 
@@ -336,22 +331,25 @@ export default function AppLayout({ children }) {
       <main className="flex-1 flex flex-col min-h-screen min-w-0 overflow-hidden lg:ml-0">
         {/* Top Header */}
         <header className="bg-white border-b border-gray-200 px-4 lg:px-8 py-4 flex items-center justify-between shrink-0 relative">
-          <div className="flex items-center gap-4">
-            {/* Mobile menu button */}
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <button
               onClick={() => setMobileOpen(true)}
-              className="lg:hidden p-2 text-gray-600 hover:text-gray-900"
+              className="lg:hidden p-2 text-gray-600 hover:text-gray-900 shrink-0"
             >
               <Menu size={24} />
             </button>
-            
-            {/* Logo for mobile */}
-            <Link to="/" className="lg:hidden flex items-center">
+
+            {backTarget && (
+              <BackButton to={backTarget.to} label={backTarget.label} className="shrink-0" />
+            )}
+
+            <Link to="/" className="lg:hidden flex items-center shrink-0">
               <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo" />
             </Link>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 shrink-0">
+            <CurrencyDropdown variant="light" />
             {/* Working Bell Icon with Notification Panel */}
             <div className="relative" ref={bellRef}>
               <button 
@@ -446,16 +444,6 @@ export default function AppLayout({ children }) {
         <div className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 min-w-0">
           <div className="app-main-content p-4 sm:p-5 lg:p-6 xl:p-8 min-w-0 max-w-[100%]">
 
-  {!(
-  location.pathname === '/' ||
-  location.pathname === '/login' ||
-  location.pathname === '/register' ||
-  location.pathname.startsWith('/dashboard') ||
-  location.pathname.startsWith('/venture-analytics') ||
-  location.pathname.startsWith('/ventures-dashboard') ||
-  location.pathname.startsWith('/domains-dashboard') ||
-  location.pathname.startsWith('/cocreation-dashboard')
-) && <BackButton />}
 
   {children}
 </div>
@@ -468,19 +456,15 @@ export default function AppLayout({ children }) {
           <div className="bg-white border border-gray-200 rounded-xl shadow-2xl p-6 max-w-sm w-full">
             <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
             <p className="text-gray-600 text-sm mb-6">Are you sure you want to logout?</p>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row items-center gap-3">
               <button
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-200 transition-colors"
+                type="button"
+                className="w-full sm:flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-200 transition-colors"
                 onClick={() => setShowLogoutConfirm(false)}
               >
                 Cancel
               </button>
-              <button
-                className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
+              <AnimatedLogoutButton onClick={handleLogout} label="Logout" />
             </div>
           </div>
         </div>

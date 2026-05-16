@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import useCurrency from '../../context/CurrencyContext';
 import { publicAPI } from '../../api/services';
 import { useNavigate } from 'react-router-dom';
+import { filterFeaturedGuestListings } from '../../utils/homepageListings';
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
@@ -31,11 +33,16 @@ export default function TechnologySection() {
     fetchSoftwares();
   }, []);
 
+  const featuredSoftwares = useMemo(
+    () => filterFeaturedGuestListings(softwares, 'software'),
+    [softwares],
+  );
+
   const handleCardClick = (softwareId) => {
     const token = localStorage.getItem('token');
     if (!token) {
       localStorage.setItem('redirectAfterLogin', `/cocreation/${softwareId}`);
-      window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
+      window.location.href = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://backend.cobrother.com'}/oauth2/authorization/google`;
     } else {
       window.location.href = `/cocreation/${softwareId}`;
     }
@@ -56,7 +63,7 @@ export default function TechnologySection() {
     );
   }
 
-  if (softwares.length === 0) {
+  if (featuredSoftwares.length === 0) {
     return (
       <section className="bg-white py-4 md:py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1200px] mx-auto">
@@ -77,7 +84,7 @@ export default function TechnologySection() {
         </h3>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-          {softwares.slice(0, 8).map((item) => {
+          {featuredSoftwares.slice(0, 8).map((item) => {
             const s = STATUS_COLORS[item.softwareStatus] || STATUS_COLORS.AVAILABLE;
 
             return (
@@ -135,7 +142,7 @@ export default function TechnologySection() {
 
                 <div className="mb-2">
                   <div className="font-display text-[1.6rem] font-bold text-green-600 leading-tight">
-                    ₹{Number(item.price).toLocaleString('en-IN')}
+                    {formatPrice(item.price)}
                   </div>
                 </div>
 

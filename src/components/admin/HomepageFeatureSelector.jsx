@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Search, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { adminAPI } from '../../api/services';
+import { isGuestCreatedListing, isHomepageFeaturedListing } from '../../utils/homepageListings';
 
 const SECTION_LABELS = {
   domain: 'Featured Domains',
@@ -81,15 +82,20 @@ export default function HomepageFeatureSelector({ type }) {
     setPage(1);
   }, [search, statusFilter, sortBy, pageSize, type]);
 
+  const guestItems = useMemo(
+    () => items.filter((item) => isGuestCreatedListing(item, type)),
+    [items, type],
+  );
+
   const featuredCount = useMemo(
-    () => items.filter((item) => item.featured).length,
-    [items],
+    () => guestItems.filter((item) => isHomepageFeaturedListing(item, type)).length,
+    [guestItems, type],
   );
 
   const filteredSorted = useMemo(() => {
     const q = search.trim().toLowerCase();
 
-    let list = items.filter((item) => {
+    let list = guestItems.filter((item) => {
       const featured = Boolean(item.featured);
       if (statusFilter === 'featured' && !featured) return false;
       if (statusFilter === 'unfeatured' && featured) return false;
@@ -120,7 +126,7 @@ export default function HomepageFeatureSelector({ type }) {
     });
 
     return list;
-  }, [items, search, statusFilter, sortBy, type]);
+  }, [guestItems, search, statusFilter, sortBy, type]);
 
   const totalPages = Math.max(1, Math.ceil(filteredSorted.length / pageSize));
   const safePage = Math.min(page, totalPages);
@@ -172,7 +178,7 @@ export default function HomepageFeatureSelector({ type }) {
         <div className="admin-feature-card-head-main">
           <h3 className="admin-feature-card-title">{SECTION_LABELS[type]}</h3>
           <p className="admin-feature-card-subtitle">
-            Pin items to the public homepage. Search and filter when you have many listings.
+            Only guest-created listings can be featured on the homepage. Admin-created listings are excluded.
           </p>
         </div>
         <div className="admin-feature-stats">
@@ -235,8 +241,8 @@ export default function HomepageFeatureSelector({ type }) {
         </select>
       </div>
 
-      {items.length === 0 ? (
-        <p className="admin-feature-empty">No {EMPTY_LABELS[type]} found</p>
+      {guestItems.length === 0 ? (
+        <p className="admin-feature-empty">No guest {EMPTY_LABELS[type]} available to feature</p>
       ) : filteredSorted.length === 0 ? (
         <p className="admin-feature-empty">No matches for your search or filters.</p>
       ) : (

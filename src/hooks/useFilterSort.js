@@ -8,9 +8,9 @@ import { useState, useMemo, useCallback } from 'react';
  */
 export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
   const {
-    searchFields = [],   // e.g. ['brandDetails.brandName', 'brandDetails.description']
-    priceField   = null, // e.g. 'brandDetails.dealValue' or 'askingPrice'
-    categoryField = null,// e.g. 'brandDetails.industry' or 'category'
+    searchFields = [],
+    priceField   = null,
+    categoryField = null,
     dateField    = 'createdAt',
   } = filterConfig;
 
@@ -21,7 +21,6 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
   const [sortBy,      setSortBy]      = useState('newest');
   const [page,        setPage]        = useState(1);
 
-  // Reset to page 1 whenever filters change
   const resetPage = useCallback(() => setPage(1), []);
 
   const handleSearch   = useCallback(v => { setSearch(v);   resetPage(); }, [resetPage]);
@@ -36,12 +35,10 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
     setSortBy('newest'); setPage(1);
   }, []);
 
-  // Count active filters (excluding sort)
   const activeFilterCount = [
     search.trim(), category, minPrice, maxPrice
   ].filter(Boolean).length;
 
-  // ── Deep-read a dotted path like 'brandDetails.dealValue' ─────────────────
   const get = (obj, path) => {
     if (!path) return undefined;
     return path.split('.').reduce((acc, key) => acc?.[key], obj);
@@ -50,7 +47,6 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
   const filtered = useMemo(() => {
     let result = [...items];
 
-    // Text search
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       result = result.filter(item =>
@@ -61,7 +57,6 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
       );
     }
 
-    // Category filter
     if (category) {
       result = result.filter(item => {
         const val = get(item, categoryField);
@@ -69,7 +64,6 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
       });
     }
 
-    // Price filter
     if (priceField) {
       if (minPrice !== '') {
         result = result.filter(item => {
@@ -85,7 +79,6 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
       }
     }
 
-    // Sort
     result.sort((a, b) => {
       switch (sortBy) {
         case 'newest':
@@ -109,26 +102,18 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
   }, [items, search, category, minPrice, maxPrice, sortBy,
       searchFields, priceField, categoryField, dateField]);
 
-  // Pagination
   const totalPages  = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage    = Math.min(page, totalPages);
   const paginated   = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   return {
-    // Filtered + paginated result
     paginated,
     filtered,
     totalCount: filtered.length,
-
-    // Filter state
     search, category, minPrice, maxPrice, sortBy,
     activeFilterCount,
-
-    // Setters
     handleSearch, handleCategory, handleMinPrice, handleMaxPrice, handleSort,
     clearAll,
-
-    // Pagination
     page: safePage, totalPages, setPage,
   };
 }

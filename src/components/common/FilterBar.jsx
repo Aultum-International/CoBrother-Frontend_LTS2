@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search } from 'lucide-react';
+import useCurrency from '../../context/CurrencyContext';
 
 /**
  * Reusable filter bar.
@@ -28,6 +29,7 @@ export default function FilterBar({
   sortBy, onSort, sortOptions,
   onClear, activeFilterCount = 0,
   placeholder = 'Search…',
+  priceSymbol = '₹',
   theme = 'dark',
 }) {
   const [searchInput, setSearchInput] = useState(search || '');
@@ -43,6 +45,7 @@ export default function FilterBar({
   // Sync if parent clears
   useEffect(() => { if (!search) setSearchInput(''); }, [search]);
 
+  const { formatPrice } = useCurrency();
   const sorts = sortOptions || DEFAULT_SORT_OPTIONS;
   const showPrice = onMinPrice !== undefined && onMinPrice !== null;
   const isLight = theme === 'light';
@@ -115,7 +118,7 @@ export default function FilterBar({
               type="number" min="0"
               value={minPrice}
               onChange={e => onMinPrice(e.target.value)}
-              placeholder="Min ₹"
+              placeholder={`Min ${priceSymbol}`}
               className={`w-[75px] md:w-[90px] px-2.5 md:px-3 py-1.5 md:py-2 text-sm md:text-base rounded-[8px] md:rounded-[10px] border outline-none transition-all ${
                 isLight
                   ? 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]'
@@ -127,7 +130,7 @@ export default function FilterBar({
               type="number" min="0"
               value={maxPrice}
               onChange={e => onMaxPrice(e.target.value)}
-              placeholder="Max ₹"
+              placeholder={`Max ${priceSymbol}`}
               className={`w-[75px] md:w-[90px] px-2.5 md:px-3 py-1.5 md:py-2 text-sm md:text-base rounded-[8px] md:rounded-[10px] border outline-none transition-all ${
                 isLight
                   ? 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]'
@@ -161,11 +164,11 @@ export default function FilterBar({
             <Chip label={category.replace(/_/g, ' ')} onRemove={() => onCategory('')} light={isLight} />
           )}
           {minPrice && (
-            <Chip label={`Min ₹${Number(minPrice).toLocaleString('en-IN')}`}
+            <Chip label={`Min ${formatPrice(minPrice)}`}
                   onRemove={() => onMinPrice('')} light={isLight} />
           )}
           {maxPrice && (
-            <Chip label={`Max ₹${Number(maxPrice).toLocaleString('en-IN')}`}
+            <Chip label={`Max ${formatPrice(maxPrice)}`}
                   onRemove={() => onMaxPrice('')} light={isLight} />
           )}
         </div>

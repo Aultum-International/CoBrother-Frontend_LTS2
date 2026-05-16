@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { publicAPI } from '../../api/services';
+import { filterFeaturedGuestListings } from '../../utils/homepageListings';
 
 export default function CommunitySection() {
   const { t } = useTranslation();
@@ -22,11 +23,16 @@ export default function CommunitySection() {
     fetchCommunities();
   }, []);
 
+  const featuredCommunities = useMemo(
+    () => filterFeaturedGuestListings(communities, 'community'),
+    [communities],
+  );
+
   const handleCardClick = (communityId) => {
     const token = localStorage.getItem('token');
     if (!token) {
       localStorage.setItem('redirectAfterLogin', `/community/${communityId}`);
-      window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
+      window.location.href = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://backend.cobrother.com'}/oauth2/authorization/google`;
     } else {
       window.location.href = `/community/${communityId}`;
     }
@@ -47,7 +53,7 @@ export default function CommunitySection() {
     );
   }
 
-  if (communities.length === 0) {
+  if (featuredCommunities.length === 0) {
     return (
       <section className="bg-white py-4 md:py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1200px] mx-auto">
@@ -68,7 +74,7 @@ export default function CommunitySection() {
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-          {communities.slice(0, 8).map((item) => {
+          {featuredCommunities.slice(0, 8).map((item) => {
             const skillList = item.skills
               ? item.skills.split(',').map((s) => s.trim()).filter(Boolean)
               : [];
