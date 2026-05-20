@@ -10,8 +10,11 @@ import { generateInvoice } from '../utils/generateInvoice';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
+import { asArray } from '../utils/asArray';
 
 export default function PurchasesPage() {
+  const { formatPrice } = useCurrency();
   const navigate                      = useNavigate();
   const [tab, setTab]                 = useState('all');
   const [domains, setDomains]         = useState([]);
@@ -30,13 +33,13 @@ export default function PurchasesPage() {
       domainAPI.getMyPurchases().catch(() => ({ data: [] })),
       cocreationAPI.getMyPurchases().catch(() => ({ data: [] })),
     ]).then(([d, s]) => {
-      setDomains(Array.isArray(d.data) ? d.data : []);
-      setSwPurchases(Array.isArray(s.data) ? s.data : []);
+      setDomains(asArray(d.data));
+      setSwPurchases(asArray(s.data));
     }).finally(() => setLoading(false));
   }, []);
 
-  const completedDomains  = domains.filter(d => d.paymentStatus === 'COMPLETED');
-  const completedSoftware = swPurchases.filter(p => p.paymentStatus === 'COMPLETED');
+  const completedDomains  = asArray(domains).filter(d => d.paymentStatus === 'COMPLETED');
+  const completedSoftware = asArray(swPurchases).filter(p => p.paymentStatus === 'COMPLETED');
   const totalItems        = completedDomains.length + completedSoftware.length;
 
   const displayItems =
@@ -140,7 +143,7 @@ export default function PurchasesPage() {
                 to help with <strong className="text-gray-900">{helpSuccess.software?.name}</strong>.
               </p>
               <div className="px-3.5 py-3 bg-green-500/8 border border-green-500/20 rounded-[10px] mb-6 text-xs text-green-400">
-                ✓ ₹1,000 paid · CoBrother assigned · Expect contact via email
+                ✓ {formatPrice(1000)} paid · CoBrother assigned · Expect contact via email
               </div>
               <button className="btn-glow w-full" onClick={() => setHelpSuccess(null)}>Done</button>
             </div>
@@ -155,6 +158,7 @@ export default function PurchasesPage() {
    Domain Purchase Row
 ───────────────────────────────────────────────────────── */
 function DomainPurchaseRow({ domain, onDownloadInvoice }) {
+  const { formatPrice } = useCurrency();
   return (
     <div className="p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
       <div className="flex justify-between flex-wrap gap-3">
@@ -170,7 +174,7 @@ function DomainPurchaseRow({ domain, onDownloadInvoice }) {
         </div>
         <div className="text-right flex flex-col items-end gap-2">
           <div className="font-display text-xl font-bold text-green-600">
-            ₹{Number(domain.askingPrice).toLocaleString('en-IN')}
+            {formatPrice(domain.askingPrice)}
           </div>
           <div className="text-xs text-gray-600">✓ Payment Confirmed</div>
           <InvoiceDownloadButton onClick={onDownloadInvoice} />
@@ -187,9 +191,11 @@ function DomainPurchaseRow({ domain, onDownloadInvoice }) {
    Software Purchase Row
 ───────────────────────────────────────────────────────── */
 function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
+  const { formatPrice } = useCurrency();
   const sw      = purchase.software || {};
   const helpPaid  = purchase.coBrotherHelpPaid;
   const confirmed = purchase.completionStatus === 'CONFIRMED';
+  const HELP_FEE_INR = 1000;
 
   return (
     <div className={`p-5 bg-white rounded-xl shadow-sm ${helpPaid ? 'border border-green-300' : 'border border-gray-200'}`}>
@@ -211,9 +217,9 @@ function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
         </div>
         <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
           <div className="font-display text-xl font-bold text-purple-700">
-            ₹{Number(sw.price || 0).toLocaleString('en-IN')}
+            {formatPrice(sw.price || 0)}
           </div>
-          {helpPaid && <div className="text-xs text-gray-600">+ ₹1,000 CoBrother</div>}
+          {helpPaid && <div className="text-xs text-gray-600">+ {formatPrice(HELP_FEE_INR)} CoBrother</div>}
           <div className="text-xs text-gray-600">✓ Payment Confirmed</div>
           <InvoiceDownloadButton onClick={onDownloadInvoice} />
         </div>
@@ -245,7 +251,7 @@ function SoftwarePurchaseRow({ purchase, onGetHelp, onDownloadInvoice }) {
               </div>
             </div>
             <button onClick={onGetHelp} className="btn-glow btn-glow-sm">
-              Get Help — ₹1,000
+              Get Help — {formatPrice(HELP_FEE_INR)}
             </button>
           </div>
         )}
@@ -289,9 +295,11 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
   const handlePay = async () => {
     setLoading(true); setError('');
     try {
-      const { data: orderData } = await cocreationAPI.payCoBrotherHelp(purchase.id);
+      const { data: orderData } = await cocreationAPI.payCoBrotherHelp(purchase.id, {
+        ...buildOrderCurrencyPayload(currency),
+      });
       openRazorpayCheckout({
-        orderData: { ...orderData, currency: orderData.currency || currency },
+        orderData,
         user,
         description: `CoBrother Help — ${sw.name}`,
         themeColor: '#7c3aed',
@@ -339,22 +347,22 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
             <div className="text-xs text-gray-600 font-bold uppercase mb-2">Billing Summary</div>
             <div className="flex justify-between mb-2">
               <span className="text-gray-600 text-sm">Software (already paid)</span>
-              <span className="text-gray-600 text-sm">₹{Number(sw.price || 0).toLocaleString('en-IN')}</span>
+              <span className="text-gray-600 text-sm">{formatPrice(sw.price || 0)}</span>
             </div>
             <div className="flex justify-between mb-2">
               <span className="text-gray-600 text-sm">CoBrother Helper Fee</span>
-              <span className="text-gray-600 text-sm font-bold">₹1,000</span>
+              <span className="text-gray-600 text-sm font-bold">{formatPrice(HELP_FEE_INR)}</span>
             </div>
             <div className="h-1 bg-gray-200 mb-2" />
             <div className="flex justify-between items-center">
               <span className="font-bold text-gray-900 text-sm">Paying Today</span>
-              <span className="font-display text-lg font-bold text-purple-700">₹1,000</span>
+              <span className="font-display text-lg font-bold text-purple-700">{formatPrice(HELP_FEE_INR)}</span>
             </div>
           </div>
           {error && <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-xs text-red-600 mb-6">{error}</div>}
           <div className="flex gap-3">
             <button className="btn-glow w-full" onClick={handlePay} disabled={loading}>
-              {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'Pay ₹1,000 — Get Help →'}
+              {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : `Pay ${formatPrice(HELP_FEE_INR)} — Get Help →`}
             </button>
             <button className="btn-glow w-full" onClick={onClose}>Cancel</button>
           </div>

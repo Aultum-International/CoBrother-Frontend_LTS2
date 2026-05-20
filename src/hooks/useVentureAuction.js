@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { ventureAuctionAPI } from '../api/services';
+import { API_ORIGIN } from '../config/urls';
 
 export function useVentureAuction(auctionId) {
   const [auction, setAuction]       = useState(null);
@@ -65,7 +66,7 @@ export function useVentureAuction(auctionId) {
     if (!auctionId) return;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS(`${import.meta.env.VITE_API_URL || 'https://backend.cobrother.com'}/ws`),
+      webSocketFactory: () => new SockJS(`${API_ORIGIN.replace(/\/$/, '')}/ws`),
       reconnectDelay: 3000,
       onConnect: () => {
         setConnected(true);

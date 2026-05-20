@@ -1,7 +1,8 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { joinUsAPI } from '../api/services';
 import TopNavbar from '../components/common/TopNavbar';
+import HomeFooter from '../components/common/HomeFooter';
 import Confetti from '../components/common/Confetti';
 import {
   Network, Sparkles, Package, Store, ShieldCheck,
@@ -446,6 +447,7 @@ const JoinForm = () => {
           </div>
         </div>
       </section>
+      <HomeFooter />
     </div>
   );
 };

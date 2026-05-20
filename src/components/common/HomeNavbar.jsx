@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +6,6 @@ import { useAuth } from '../../context/AuthContext';
 import logoBlack from '../../assets/Cobrother_logo.png';
 import logoGreen from '../../assets/Cobrother_Green.png';
 import AnimatedLogoutButton from './AnimatedLogoutButton';
-import CurrencyDropdown from './CurrencyDropdown';
 import BackButton from './BackButton';
 
 function HomeNavLogo({ className = '' }) {
@@ -195,9 +194,6 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 <BackButton to="/" label="Home" variant="pill" />
               </div>
             )}
-            <div className="home-nav-desktop-cta hidden sm:block">
-              <CurrencyDropdown variant="light" />
-            </div>
             <div className="home-nav-desktop-cta home-nav-cta-group">
               {authButton}
             </div>
@@ -288,9 +284,6 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
               {showBack && (
                 <BackButton to="/" label="Home" variant="pill" className="w-full justify-center mb-3" />
               )}
-              <div className="mb-3 flex justify-center sm:hidden">
-                <CurrencyDropdown variant="light" />
-              </div>
               {!user ? (
                 <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login')}>
                   {t('signIn')}

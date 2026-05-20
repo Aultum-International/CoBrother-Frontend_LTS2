@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import useCurrency from '../../context/CurrencyContext';
 import { publicAPI } from '../../api/services';
 import { filterFeaturedGuestListings } from '../../utils/homepageListings';
+import { API_ORIGIN } from '../../config/urls';
 
 const TYPE_LABELS = {
   STARTUP: 'Startup',
@@ -41,7 +42,7 @@ export default function VenturesSection() {
     const token = localStorage.getItem('token');
     if (!token) {
       localStorage.setItem('redirectAfterLogin', `/ventures/${ventureId}`);
-      window.location.href = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://backend.cobrother.com'}/oauth2/authorization/google`;
+      window.location.href = `${API_ORIGIN}/oauth2/authorization/google`;
     } else {
       window.location.href = `/ventures/${ventureId}`;
     }

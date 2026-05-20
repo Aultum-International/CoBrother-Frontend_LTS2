@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { likeAPI } from '../api/services';
+import { asArray } from '../utils/asArray';
 
 /**
  * Manages like state for a list of items.
@@ -7,13 +8,14 @@ import { likeAPI } from '../api/services';
  * items: array with .id fields
  */
 export function useLikes(type, items) {
+  const list = asArray(items);
   // Map of entityId -> { liked, count }
   const [likeMap, setLikeMap] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!items || items.length === 0) return;
-    const ids = items.map(i => i.id).filter(Boolean);
+    if (!list.length) return;
+    const ids = list.map(i => i.id).filter(Boolean);
     if (ids.length === 0) return;
 
     setLoading(true);
@@ -21,7 +23,7 @@ export function useLikes(type, items) {
       .then(({ data }) => setLikeMap(data))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [type, items?.length]);
+  }, [type, list.length]);
 
   const toggle = useCallback(async (entityId) => {
     try {

@@ -4,7 +4,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { CURRENCY_LABELS } from '../../constants/currencies';
 
 /**
- * Shared currency selector (TopNavbar dark bar + HomeNavbar / AppLayout light).
+ * Shared currency selector (TopNavbar dark bar + AppLayout light).
  */
 export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
   const { currency, setCurrency, supportedCurrencies } = useCurrency();
@@ -22,7 +22,7 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
   const isDark = variant === 'dark';
 
   const triggerCls = isDark
-    ? 'text-white text-xs md:text-sm font-normal flex items-center gap-1 px-2 sm:px-2.5 md:px-3 py-1.5 transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200'
+    ? 'text-white text-xs md:text-sm font-normal no-underline flex items-center gap-1 px-2 sm:px-2.5 md:px-3 py-1.5 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200'
     : 'text-gray-700 text-xs sm:text-sm font-medium flex items-center gap-1 px-2.5 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer';
 
   const panelCls = isDark
@@ -38,7 +38,7 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
         aria-expanded={open}
         aria-haspopup="listbox"
       >
-        {CURRENCY_LABELS[currency] || currency}
+        <span className="truncate">{CURRENCY_LABELS[currency] || currency}</span>
         <ChevronDown size={14} className="shrink-0" />
       </button>
       {open && (

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus, Eye } from 'lucide-react';
@@ -6,6 +7,7 @@ import { cocreationAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import AppLayout from '../components/layout/AppLayout';
 import TechnologyIcon from '../assets/CoCreation.png';
 import { useLikes } from '../hooks/useLikes';
@@ -20,6 +22,8 @@ import { softwareAuctionAPI } from '../api/services';
 import AddonSelector, { addonTotal, ADDON_SERVICES } from '../components/addon/AddonSelector';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
+import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
+import '../styles/technology-listing-cards.css';
 
 const COCREATION_CATEGORIES = [
   'SAAS','MOBILE_APP','DESKTOP','API_TOOL',
@@ -158,7 +162,14 @@ export default function CoCreationPage() {
         {showForm && user && (
           <div className="mb-6">
             <SoftwareForm
-              onSaved={s => { setAllSoftware(prev => [s, ...prev]); setShowForm(false); }}
+              onSaved={s => {
+                const snap = captureAppLayoutScroll();
+                flushSync(() => {
+                  setAllSoftware(prev => [s, ...prev]);
+                  setShowForm(false);
+                });
+                scheduleRestoreAppLayoutScroll(snap);
+              }}
               onCancel={() => setShowForm(false)}
             />
           </div>
@@ -184,7 +195,7 @@ export default function CoCreationPage() {
         )}
 
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : paginated.length === 0 ? (
@@ -208,11 +219,10 @@ export default function CoCreationPage() {
           </div>
         ) : (
           <>
-  <div className="h-[calc(100vh-260px)] overflow-y-auto pr-2">
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+  <div className="technology-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
       {paginated.map(s => (
+        <div key={s.id} className="technology-listing-card-shell">
         <SoftwareCard
-          key={s.id}
           item={s}
           isOwner={s.listedBy?.id === user?.id}
           likeState={getLike(s.id)}
@@ -223,8 +233,8 @@ export default function CoCreationPage() {
           onAuction={() => setAuctionTarget(s)}
           auctionStatus={auctionStatuses[s.id]}
         />
+        </div>
       ))}
-    </div>
   </div>
 
   <Pagination
@@ -294,7 +304,10 @@ function SoftwareCard({ item, isOwner, onView, onBuy, onDelete, likeState, onLik
   const s = STATUS_COLORS[item.softwareStatus] || STATUS_COLORS.AVAILABLE;
 
   return (
-    <div className="card-glow-hover p-5 bg-white border border-gray-200 rounded-[14px] flex flex-col gap-2 overflow-hidden cursor-pointer transition-all duration-300" onClick={onView}>
+    <div
+      className="technology-listing-card card-glow-hover group relative bg-white rounded-2xl cursor-pointer flex flex-col shadow-sm transition-all duration-300 p-5 gap-2"
+      onClick={onView}
+    >
       <div className="flex items-start justify-between gap-2 mb-1">
         <div className="w-[42px] h-[42px] bg-indigo-50 border border-indigo-200 rounded-[10px] flex items-center justify-center text-xl flex-shrink-0 overflow-hidden">
           {item.imageUrl ? (
@@ -345,21 +358,18 @@ function SoftwareCard({ item, isOwner, onView, onBuy, onDelete, likeState, onLik
 
       <div className="flex items-center justify-between gap-2 flex-wrap mt-1">
         <div className="flex items-center gap-4 text-gray-500 text-sm">
-
-  <div className="flex items-center gap-1">
-    <Eye size={14} className="mt-[1px]" />
-    <span>{item.views || 0}</span>
-  </div>
-
-  <div onClick={(e) => e.stopPropagation()}>
-    <LikeButton
-      liked={likeState?.liked}
-      count={likeState?.count}
-      onToggle={onLike}
-    />
-  </div>
-
-</div>
+          <div className="flex items-center gap-1">
+            <Eye size={14} className="mt-[1px]" />
+            <span>{item.views || 0}</span>
+          </div>
+          <div onClick={(e) => e.stopPropagation()}>
+            <LikeButton
+              liked={likeState?.liked}
+              count={likeState?.count}
+              onToggle={onLike}
+            />
+          </div>
+        </div>
         <div className="flex gap-2" onClick={e => e.stopPropagation()}>
           {user?.role === 'ADMIN' ? (
             <>
@@ -376,7 +386,6 @@ function SoftwareCard({ item, isOwner, onView, onBuy, onDelete, likeState, onLik
             </>
           ) : item.listedBy?.id === user?.id ? (
             <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }} onClick={e => e.stopPropagation()}>
-              {/* Auction CTA logic */}
               {!auctionStatus && item.softwareStatus === 'AVAILABLE' && (
                 <button
                   className="inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-lg cursor-pointer font-semibold"
@@ -704,7 +713,7 @@ function BuySoftwareModal({ item, user, onClose, onSuccess }) {
         ...form,
         coBrotherOptIn,
         services: addons,
-        currency,
+        ...buildOrderCurrencyPayload(currency),
       });
 
       openRazorpayCheckout({

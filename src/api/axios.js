@@ -1,12 +1,20 @@
 import axios from 'axios';
-import { API_BASE_URL } from '../config/urls';
-
-const BASE_URL = API_BASE_URL;
+import { API_BASE_URL, PRODUCTION_API_ORIGIN } from '../config/urls';
 
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
+
+function refreshBaseURL() {
+  if (api.defaults.baseURL && String(api.defaults.baseURL).length > 0) {
+    return api.defaults.baseURL;
+  }
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  return PRODUCTION_API_ORIGIN;
+}
 
 // Attach access token to every request
 api.interceptors.request.use((config) => {
@@ -25,7 +33,7 @@ api.interceptors.response.use(
       const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
         try {
-          const { data } = await axios.post(`${BASE_URL}/api/v1/auth/refresh`, { refreshToken });
+          const { data } = await axios.post('/api/v1/auth/refresh', { refreshToken }, { baseURL: refreshBaseURL() });
           const newToken = data.data.accessToken;
           localStorage.setItem('accessToken', newToken);
           original.headers.Authorization = `Bearer ${newToken}`;

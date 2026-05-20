@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { FaWhatsapp } from 'react-icons/fa';
 import coBrotherLogo from '../../assets/Cobrother_Green.png';
 
 const XIcon = () => (
@@ -43,12 +44,20 @@ const YoutubeIcon = () => (
   </svg>
 );
 
+const WhatsappIcon = () => (
+  <FaWhatsapp className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden />
+);
+
+/** CoBrother WhatsApp (country code + number, no + or spaces) — update as needed */
+const WHATSAPP_HREF = 'https://wa.me/919876543210';
+
 const socials = [
   { href: 'https://x.com/CoBrother141506', label: 'X', Icon: XIcon },
   { href: 'https://www.instagram.com/cobrother__?igsh=bXE3YnR4dDJ6NnVi', label: 'Instagram', Icon: InstagramIcon },
   { href: 'https://www.facebook.com/share/16vjEWTjHi/', label: 'Facebook', Icon: FacebookIcon },
   { href: 'https://www.linkedin.com/in/co-brother-9921b03aa', label: 'LinkedIn', Icon: LinkedinIcon },
   { href: 'https://www.youtube.com/channel/UCPq5njZ3e63myDvzfcoSDEQ', label: 'YouTube', Icon: YoutubeIcon },
+  { href: WHATSAPP_HREF, label: 'WhatsApp', Icon: WhatsappIcon },
 ];
 
 const socialHoverStyles = {
@@ -57,6 +66,7 @@ const socialHoverStyles = {
   Facebook: 'hover:text-sky-400',
   LinkedIn: 'hover:text-sky-300',
   YouTube: 'hover:text-red-400',
+  WhatsApp: 'hover:text-emerald-400',
 };
 
 const linkClass =

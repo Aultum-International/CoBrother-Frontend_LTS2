@@ -3,6 +3,7 @@ import { feeAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import AppLayout from '../components/layout/AppLayout';
 
 const STATUS_COLORS = {
@@ -14,6 +15,7 @@ const STATUS_COLORS = {
 };
 
 export default function FeeRequestsPage() {
+  const { formatPrice } = useCurrency();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [payTarget, setPayTarget] = useState(null);
@@ -78,7 +80,7 @@ export default function FeeRequestsPage() {
                     <>
                       <button className="btn-glow btn-glow-sm"
                         onClick={() => setPayTarget(r)}>
-                        Pay ₹1,000 →
+                        Pay {formatPrice(1000)} →
                       </button>
                       <button className="btn-glow btn-glow-sm"
                         onClick={() => handleCancel(r.id)}>
@@ -113,7 +115,9 @@ function FeePaymentModal({ request, onClose, onSuccess }) {
   const handlePay = async () => {
     setLoading(true); setError('');
     try {
-      const { data: orderData } = await feeAPI.createOrder(request.id, { currency });
+      const { data: orderData } = await feeAPI.createOrder(request.id, {
+        ...buildOrderCurrencyPayload(currency),
+      });
 
       openRazorpayCheckout({
         orderData,

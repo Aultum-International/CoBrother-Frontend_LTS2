@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { publicAPI } from '../../api/services';
 import { filterFeaturedGuestListings } from '../../utils/homepageListings';
+import { API_ORIGIN } from '../../config/urls';
 
 export default function CommunitySection() {
   const { t } = useTranslation();
@@ -32,7 +33,7 @@ export default function CommunitySection() {
     const token = localStorage.getItem('token');
     if (!token) {
       localStorage.setItem('redirectAfterLogin', `/community/${communityId}`);
-      window.location.href = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://backend.cobrother.com'}/oauth2/authorization/google`;
+      window.location.href = `${API_ORIGIN}/oauth2/authorization/google`;
     } else {
       window.location.href = `/community/${communityId}`;
     }

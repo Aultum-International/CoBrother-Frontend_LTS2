@@ -4,6 +4,8 @@ import useCurrency from '../../context/CurrencyContext';
 import { publicAPI } from '../../api/services';
 import { isPremiumDomain } from '../../utils/domainPricing';
 import { isGuestCreatedListing } from '../../utils/homepageListings';
+import { API_ORIGIN } from '../../config/urls';
+import { asArray } from '../../utils/asArray';
 
 export default function DomainsSection() {
   const { t } = useTranslation();
@@ -16,7 +18,7 @@ export default function DomainsSection() {
       try {
         setLoading(true);
         const response = await publicAPI.getDomains();
-        setDomains(response.data || []);
+        setDomains(asArray(response.data));
       } catch (error) {
         console.error('Failed to fetch domains:', error);
       } finally {
@@ -27,7 +29,7 @@ export default function DomainsSection() {
   }, []);
 
   const premiumDomains = useMemo(
-    () => domains.filter((d) => isGuestCreatedListing(d, 'domain') && isPremiumDomain(d)),
+    () => asArray(domains).filter((d) => isGuestCreatedListing(d, 'domain') && isPremiumDomain(d)),
     [domains],
   );
 
@@ -35,7 +37,7 @@ export default function DomainsSection() {
     const token = localStorage.getItem('token');
     if (!token) {
       localStorage.setItem('redirectAfterLogin', `/domains/${domainId}`);
-      window.location.href = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://backend.cobrother.com'}/oauth2/authorization/google`;
+      window.location.href = `${API_ORIGIN}/oauth2/authorization/google`;
     } else {
       window.location.href = `/domains/${domainId}`;
     }

@@ -8,6 +8,8 @@ import { authAPI } from '../api/services';
 
 import { useAuth } from '../context/AuthContext';
 
+import { API_ORIGIN } from '../config/urls';
+
 import coBrotherLogo from '../assets/Cobrother_logo.png';
 
 
@@ -180,9 +182,7 @@ export default function LoginPage() {
 
   const handleGoogleLogin = () => {
 
-    const apiUrl = import.meta.env.VITE_API_URL || 'https://backend.cobrother.com';
-
-    window.location.href = `${apiUrl}/oauth2/authorization/google`;
+    window.location.href = `${API_ORIGIN}/oauth2/authorization/google`;
 
   };
 

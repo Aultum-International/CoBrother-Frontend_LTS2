@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Search, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { adminAPI } from '../../api/services';
 import { isGuestCreatedListing, isHomepageFeaturedListing } from '../../utils/homepageListings';
+import { asArray } from '../../utils/asArray';
 
 const SECTION_LABELS = {
   domain: 'Featured Domains',
@@ -65,7 +66,7 @@ export default function HomepageFeatureSelector({ type }) {
       else if (type === 'software') response = await adminAPI.getCoCreations();
       else if (type === 'community') response = await adminAPI.getCommunities();
 
-      setItems(Array.isArray(response.data) ? response.data : []);
+      setItems(asArray(response.data));
     } catch (error) {
       console.error('Failed to fetch items:', error);
       setItems([]);

@@ -1,6 +1,7 @@
 import { Mail, Phone, MapPin, MessageCircle, Clock, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
+import HomeFooter from '../components/common/HomeFooter';
 
 export default function ContactPage() {
   const navigate = useNavigate();
@@ -157,10 +158,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-8 border-t border-gray-200 text-center">
-        <p className="text-gray-600 text-sm">© 2026 CoBrother Aultum International. All rights reserved.</p>
-      </footer>
+      <HomeFooter />
     </div>
   );
 }

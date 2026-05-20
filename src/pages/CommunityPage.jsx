@@ -5,6 +5,7 @@ import { communityAPI, communityAuctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import AppLayout from '../components/layout/AppLayout';
 import DisruptorIcon from '../assets/Cobrother_Profile.png';
 import { useLikes } from '../hooks/useLikes';
@@ -308,8 +309,10 @@ export default function CommunityPage() {
 // ─── Create Auction Modal (form + Razorpay ₹118) ─────────────────────────────
 function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
   const { user } = useAuth();
-  const { currency, formatPrice } = useCurrency();
+  const { currency, formatPrice, getSymbol } = useCurrency();
   const LISTING_FEE_INR = 118;
+  const listingFeeDisplay = formatPrice(LISTING_FEE_INR);
+  const paymentSteps = ['Details', `Pay ${listingFeeDisplay}`, 'Live!'];
   const [step, setStep]       = useState('form'); // form | payment | done
   const [form, setForm]       = useState({
     auctionTitle: '',
@@ -351,7 +354,9 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
   const handlePayListingFee = async () => {
     setLoading(true); setError('');
     try {
-      const { data } = await communityAuctionAPI.createListingOrder(auctionId, { currency });
+      const { data } = await communityAuctionAPI.createListingOrder(auctionId, {
+        ...buildOrderCurrencyPayload(currency),
+      });
 
       openRazorpayCheckout({
         orderData: data,
@@ -394,7 +399,7 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
 
         {/* ── Step indicator ── */}
         <div className="flex items-center gap-2 mb-6">
-          {['Details', 'Pay ₹118', 'Live!'].map((s, i) => (
+          {paymentSteps.map((s, i) => (
             <div key={s} className="flex items-center gap-2">
               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                 (step === 'form' && i === 0) || (step === 'payment' && i === 1) || (step === 'done' && i === 2)
@@ -416,7 +421,7 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
                 🔨 Profile Auction
               </div>
               <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">Put Your Profile to Auction</h2>
-              <p className="text-sm text-gray-500">Let companies bid to work with you. One-time listing fee: <strong>₹118</strong></p>
+              <p className="text-sm text-gray-500">Let companies bid to work with you. One-time listing fee: <strong>{listingFeeDisplay}</strong></p>
             </div>
 
             <form onSubmit={handleCreate} className="flex flex-col gap-4">
@@ -467,7 +472,7 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-medium text-gray-700">Minimum Bid (₹) <span className="text-red-500">*</span></label>
+                  <label className="text-sm font-medium text-gray-700">Minimum Bid ({getSymbol(currency).trim() || currency}) <span className="text-red-500">*</span></label>
                   <input name="minBidPrice" type="number" min="1" value={form.minBidPrice} onChange={handleChange}
                     placeholder="e.g. 50000"
                     className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" required />
@@ -498,7 +503,7 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
             <div className="text-5xl mb-4">💳</div>
             <h2 className="font-display text-2xl font-semibold text-gray-900 mb-2">One-Time Listing Fee</h2>
             <p className="text-gray-500 text-sm mb-6">
-              Pay a one-time listing fee of <strong className="text-gray-900">₹118</strong> to make your auction go live.
+              Pay a one-time listing fee of <strong className="text-gray-900">{listingFeeDisplay}</strong> to make your auction go live.
               Your profile will be immediately visible to bidders.
             </p>
             <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl mb-6 text-left">
@@ -537,6 +542,7 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
 
 // ─── Community Detail Modal (with auction link) ───────────────────────────────
 function CommunityDetailModal({ profile, isMe, onClose, onEdit, onViewAuction }) {
+  const { formatPrice } = useCurrency();
   const [detail, setDetail]     = useState(null);
   const [loading, setLoading]   = useState(true);
   const [auction, setAuction]   = useState(null);
@@ -592,8 +598,8 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onViewAuction })
                   <div className="text-sm text-amber-800 font-semibold">{auction.auctionTitle}</div>
                   <div className="text-xs text-amber-600 mt-1">
                     {auction.currentHighestBid > 0
-                      ? `Highest bid: ₹${Number(auction.currentHighestBid).toLocaleString('en-IN')}`
-                      : `Starting at ₹${Number(auction.minBidPrice).toLocaleString('en-IN')}`}
+                      ? `Highest bid: ${formatPrice(auction.currentHighestBid)}`
+                      : `Starting at ${formatPrice(auction.minBidPrice)}`}
                   </div>
                 </div>
                 <button className="btn-glow btn-glow-sm flex-shrink-0"

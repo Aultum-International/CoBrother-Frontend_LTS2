@@ -4,6 +4,7 @@ import useCurrency from '../../context/CurrencyContext';
 import { publicAPI } from '../../api/services';
 import { useNavigate } from 'react-router-dom';
 import { filterFeaturedGuestListings } from '../../utils/homepageListings';
+import { API_ORIGIN } from '../../config/urls';
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
@@ -14,6 +15,7 @@ const STATUS_COLORS = {
 export default function TechnologySection() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { formatPrice } = useCurrency();
 
   const [softwares, setSoftwares] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +44,7 @@ export default function TechnologySection() {
     const token = localStorage.getItem('token');
     if (!token) {
       localStorage.setItem('redirectAfterLogin', `/cocreation/${softwareId}`);
-      window.location.href = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://backend.cobrother.com'}/oauth2/authorization/google`;
+      window.location.href = `${API_ORIGIN}/oauth2/authorization/google`;
     } else {
       window.location.href = `/cocreation/${softwareId}`;
     }

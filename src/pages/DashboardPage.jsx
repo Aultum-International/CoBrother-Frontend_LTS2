@@ -10,29 +10,30 @@ import DomainsIcon from '../assets/CoBranding.png';
 import TechnologyIcon from '../assets/CoCreation.png';
 
 const DASHBOARD_GREETING_KEY = 'cobrother_dashboard_greeting_idx';
+const DASHBOARD_GREETING_COUNT = 8;
 
-const DASHBOARD_GREETINGS = [
-  'What are you building today?',
-  'Ready to launch your next big idea',
-  'What will you grow in your portfolio today?',
-  'Time to connect, create, and ship.',
-  'What\'s your focus for this session?',
-  'Let\'s turn ideas into momentum today.',
-  'What venture or domain is calling you today?',
-  'Your dashboard is ready — what\'s first?',
-];
-
-function getNextDashboardGreeting() {
+function readNextGreetingIndex() {
   const prev = Number.parseInt(localStorage.getItem(DASHBOARD_GREETING_KEY) ?? '-1', 10);
-  const next = Number.isNaN(prev) ? 0 : (prev + 1) % DASHBOARD_GREETINGS.length;
+  const next = Number.isNaN(prev) ? 0 : (prev + 1) % DASHBOARD_GREETING_COUNT;
   localStorage.setItem(DASHBOARD_GREETING_KEY, String(next));
-  return DASHBOARD_GREETINGS[next];
+  return next;
+}
+
+function displayRoleLabel(role, t) {
+  const raw = (role ?? 'GUEST').toString();
+  const upper = raw.toUpperCase();
+  if (upper === 'ADMIN' || upper === 'ROLE_ADMIN') return t('roleAdministrator');
+  if (upper === 'USER' || upper === 'ROLE_USER') return t('roleUser');
+  if (upper === 'GUEST') return t('roleGuest');
+  return raw;
 }
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const [welcomeMessage] = useState(getNextDashboardGreeting);
+  const [greetingIdx] = useState(readNextGreetingIndex);
+
+  const welcomeMessage = t(`dashboardGreeting_${greetingIdx}`);
 
   const cards = [
     {
@@ -44,10 +45,10 @@ export default function DashboardPage() {
     },
     {
       icon: CommunityIcon,
-      title: 'Disruptors',
-      desc: 'Connect with founders, investors, and operators',
+      title: t('disruptors'),
+      desc: t('communityDesc'),
       to: '/community',
-      cta: 'Explore Disruptors',
+      cta: t('exploreDisruptors'),
     },
     {
       icon: DomainsIcon,
@@ -66,21 +67,21 @@ export default function DashboardPage() {
   ];
 
   const quickActions = [
-    { to: '/ventures/new', label: 'List Ventures', icon: <span className="text-lg font-semibold leading-none">+</span> },
-    { to: '/community', label: 'View Disruptors', icon: <img src={CommunityIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
-    { to: '/domains', label: 'Manage Domains', icon: <img src={DomainsIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
-    { to: '/cocreation', label: 'Explore Technology', icon: <img src={TechnologyIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
+    { to: '/ventures/new', label: t('dashboardListVenturesQuick'), icon: <span className="text-lg font-semibold leading-none">+</span> },
+    { to: '/community', label: t('dashboardViewDisruptorsQuick'), icon: <img src={CommunityIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
+    { to: '/domains', label: t('dashboardManageDomainsQuick'), icon: <img src={DomainsIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
+    { to: '/cocreation', label: t('dashboardExploreTechnologyQuick'), icon: <img src={TechnologyIcon} alt="" className="w-5 h-5 object-contain shrink-0" /> },
   ];
 
   const roleUpper = (user?.role ?? '').toString().toUpperCase();
   const showAdmin = roleUpper === 'ADMIN' || roleUpper === 'ROLE_ADMIN';
 
   const firstName = user?.firstname || user?.firstName || user?.name || user?.email?.split('@')[0] || 'User';
+  const rolePillText = displayRoleLabel(user?.role, t);
 
   return (
     <AppLayout>
       <div className="app-dashboard w-full max-w-7xl mx-auto flex flex-col gap-5 sm:gap-6 lg:gap-8 min-w-0">
-        {/* Welcome + admin banner */}
         <section className="rounded-2xl overflow-hidden shadow-md border border-gray-100">
           {showAdmin && (
             <div className="border-b border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 px-4 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
@@ -89,9 +90,9 @@ export default function DashboardPage() {
                   <Shield size={20} strokeWidth={2} aria-hidden />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-bold uppercase tracking-wide text-amber-900/80">Administrator</p>
+                  <p className="text-xs font-bold uppercase tracking-wide text-amber-900/80">{t('dashboardAdminTitle')}</p>
                   <p className="text-sm text-amber-950/80 mt-0.5 leading-snug">
-                    You have access to platform administration tools.
+                    {t('dashboardAdminBody')}
                   </p>
                 </div>
               </div>
@@ -99,7 +100,7 @@ export default function DashboardPage() {
                 to="/admin"
                 className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center rounded-full bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold px-5 py-2.5 shadow-sm transition-colors"
               >
-                Admin panel →
+                {t('dashboardAdminCTA')}
               </Link>
             </div>
           )}
@@ -107,27 +108,26 @@ export default function DashboardPage() {
           <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 p-5 sm:p-6 lg:p-8 text-white">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="min-w-0">
-                <p className="text-white/80 text-sm mb-1">Welcome back</p>
+                <p className="text-white/80 text-sm mb-1">{t('dashboardWelcomeBack')}</p>
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white break-words">
-                  Hello, {firstName}
+                  {t('dashboardHello', { name: firstName })}
                 </h1>
                 <p className="text-white/80 mt-2 text-sm sm:text-base">{welcomeMessage}</p>
               </div>
               <div className="flex flex-wrap gap-2 sm:gap-3 shrink-0">
                 <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-white/10 backdrop-blur rounded-full">
-                  <span className="text-xs text-white/70">Role</span>
-                  <span className="text-sm font-semibold text-white">{user?.role || 'GUEST'}</span>
+                  <span className="text-xs text-white/70">{t('dashboardRoleLabel')}</span>
+                  <span className="text-sm font-semibold text-white">{rolePillText}</span>
                 </div>
                 <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-green-500/20 backdrop-blur rounded-full">
-                  <span className="text-xs text-green-200">Profile</span>
-                  <span className="text-sm font-semibold text-green-300">Complete ✓</span>
+                  <span className="text-xs text-green-200">{t('dashboardProfileLabel')}</span>
+                  <span className="text-sm font-semibold text-green-300">{t('dashboardProfileComplete')}</span>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Feature cards — 1 col mobile, 2 col tablet, 4 col wide desktop */}
         <section className="grid grid-cols-1 min-[480px]:grid-cols-2 xl:grid-cols-4 gap-4 min-w-0">
           {cards.map((c) => (
             <article
@@ -153,10 +153,9 @@ export default function DashboardPage() {
           ))}
         </section>
 
-        {/* Quick actions */}
         <section className="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm min-w-0">
           <h2 className="font-display text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-5">
-            Quick Actions
+            {t('dashboardQuickActions')}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
             {quickActions.map((action) => (
@@ -172,11 +171,7 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        <footer className="text-center py-3 sm:py-4 text-sm text-gray-400">
-          <p>CoBrother Dashboard — Built for focused execution.</p>
-        </footer>
       </div>
     </AppLayout>
   );
 }
-

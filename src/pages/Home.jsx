@@ -26,6 +26,8 @@ import HeroGlow from '../components/common/HeroGlow';
 
 import ExploreSection from '../components/common/ExploreSection';
 
+import HomeListingCarousel from '../components/home/HomeListingCarousel';
+
 import DomainSearchBar from '../components/common/DomainSearchBar';
 
 import HomeFooter from '../components/common/HomeFooter';
@@ -279,6 +281,8 @@ export default function Home() {
       <DomainSearchBar />
 
       <ExploreSection />
+
+      <HomeListingCarousel />
 
 
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus, Gavel, ShoppingCart, MessageSquare, Trash2, CheckCircle, Share2, ArrowUpRight } from 'lucide-react';
@@ -6,6 +7,7 @@ import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
+import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import AppLayout from '../components/layout/AppLayout';
 import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
@@ -20,6 +22,9 @@ import AddonSelector, {addonTotal, ADDON_SERVICES} from '../components/addon/Add
 import { isPremiumDomain } from '../utils/domainPricing';
 import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
+import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
+import { asArray } from '../utils/asArray';
+import { APP_BASE_URL } from '../config/urls';
 
 const DOMAIN_PRICING_OPTIONS = [
   { value: 'FIXED',      label: 'Fixed Price' },
@@ -40,7 +45,6 @@ export default function DomainsPage() {
 
   const [allDomains, setAllDomains]         = useState([]);
   const [loading, setLoading]               = useState(true);
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [showForm, setShowForm]             = useState(false);
   const [buyTarget, setBuyTarget]           = useState(null);
   const [successDomain, setSuccessDomain]   = useState(null);
@@ -53,9 +57,10 @@ export default function DomainsPage() {
 
   const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
 
+  const domainRows = asArray(allDomains);
   const visibleDomains = filterTab === 'mine'
-    ? allDomains.filter(d => d.listedBy?.id === user?.id)
-    : allDomains.filter(d => !d.takenDown && !isPremiumDomain(d));
+    ? domainRows.filter(d => d.listedBy?.id === user?.id)
+    : domainRows.filter(d => !d.takenDown && !isPremiumDomain(d));
 
   const {
     paginated, totalCount,
@@ -69,35 +74,24 @@ export default function DomainsPage() {
     categoryField: 'pricingDemand',
     dateField:     'createdAt',
   }, 20);
+
   useEffect(() => {
-  const timer = setTimeout(() => {
-    setDebouncedSearch(search);
-  }, 500);
-
-  return () => clearTimeout(timer);
-}, [search]);
-
-useEffect(() => {
   setLoading(true);
 
-  const req =
-    filterTab === 'mine'
-      ? domainAPI.getMyListings(debouncedSearch)
-      : domainAPI.getAll(debouncedSearch);
+  const req = filterTab === 'mine' ? domainAPI.getMyListings() : domainAPI.getAll();
 
   req
     .then(({ data }) =>
-      setAllDomains(Array.isArray(data) ? data : (data?.data ?? []))
+      setAllDomains(asArray(data))
     )
     .catch(() => setAllDomains([]))
     .finally(() => setLoading(false));
-
-}, [filterTab, debouncedSearch]);
+}, [filterTab]);
 
   const handleDelete = async () => {
     try {
       await domainAPI.delete(deleteTarget);
-      setAllDomains(d => d.filter(x => x.id !== deleteTarget));
+      setAllDomains(d => asArray(d).filter(x => x.id !== deleteTarget));
     } catch (e) {
       alert(e.response?.data?.error || 'Failed to remove listing.');
     } finally { setDeleteTarget(null); }
@@ -108,9 +102,7 @@ useEffect(() => {
     .then(({ data }) => {
       console.log('DOMAINS API RESPONSE:', data);
 
-      setAllDomains(
-        Array.isArray(data) ? data : (data?.data ?? [])
-      );
+      setAllDomains(asArray(data));
     });
   return (
     <AppLayout>
@@ -151,9 +143,13 @@ useEffect(() => {
           <div className="mb-6">
             <DomainForm
               onSaved={d => {
-                setAllDomains(prev => [d, ...prev]);
-                setShowForm(false);
-                setShowConfetti(true);
+                const snap = captureAppLayoutScroll();
+                flushSync(() => {
+                  setAllDomains(prev => [d, ...prev]);
+                  setShowForm(false);
+                  setShowConfetti(true);
+                });
+                scheduleRestoreAppLayoutScroll(snap);
                 setTimeout(() => setShowConfetti(false), 4000);
               }}
               onCancel={() => setShowForm(false)}
@@ -181,7 +177,7 @@ useEffect(() => {
         )}
 
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : paginated.length === 0 ? (
@@ -206,7 +202,7 @@ useEffect(() => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
               {paginated.map(d => (
                 <DomainCard
                   key={d.id}
@@ -323,7 +319,10 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 // Share URL when `window` is undefined (SSR); browser uses `window.location.origin`.
-  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/domains` : 'https://cobrother.com/domains';
+  const shareUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/domains`
+      : `${APP_BASE_URL.replace(/\/$/, '')}/domains`;
   const shareText = `Check out this domain: ${domain.domainName}${domain.domainExtension} - Listed on CoBrother!`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
@@ -341,7 +340,7 @@ function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
 
   return (
     <div
-      className="group relative bg-white rounded-2xl overflow-hidden cursor-pointer flex flex-col border border-gray-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] hover:-translate-y-0.5 transition-all duration-300"
+      className="card-glow-hover group relative bg-white rounded-2xl overflow-hidden cursor-pointer flex flex-col border border-gray-200 shadow-sm transition-all duration-300"
       onClick={onView}
     >
       {/* Gradient header with large image */}
@@ -545,16 +544,16 @@ function DomainForm({ onSaved, onCancel }) {
     }
     setLoading(true); setError('');
     try {
-      const { data: domain } = await domainAPI.create({
+      const payload = {
         domainName:      form.domainName,
         domainExtension: form.domainExtension,
         askingPrice:     form.saleType === 'AUCTION' ? 0 : parseFloat(form.askingPrice),
-        currency:        form.currency || DEFAULT_LISTING_CURRENCY,
         pricingDemand:   form.pricingDemand,
         saleType:        form.saleType,
         contactInfo:     form.contactInfo,
         agreement:       form.agreement,
-      });
+      };
+      const { data: domain } = await domainAPI.create(payload);
       if (form.saleType === 'AUCTION' && domain.id) {
         await auctionAPI.create(domain.id, {
           minBidPrice: parseFloat(form.minBidPrice),
@@ -825,7 +824,7 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
     try {
       const { data: orderData } = await domainAPI.createOrder(domain.id, {
         services: addons,
-        currency,
+        ...buildOrderCurrencyPayload(currency),
       });
       openRazorpayCheckout({
         orderData,

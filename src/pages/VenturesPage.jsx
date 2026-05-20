@@ -16,6 +16,7 @@ import SkeletonCard from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import DashboardIcon from '../assets/Dashboard.png';
 import VentureLogo from '../assets/Coventure_logo.png';
+import { APP_BASE_URL } from '../config/urls';
 
 const TYPE_LABELS = {
   FIFTY_FIFTY: '50:50', SIXTY_FORTY: '60:40', SEVENTY_THIRTY: '70:30',
@@ -172,7 +173,7 @@ export default function VenturesPage() {
 
         {/* ── Content ── */}
         {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
             {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
           </div>
         ) : paginated.length === 0 ? (
@@ -197,7 +198,7 @@ export default function VenturesPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
               {paginated.map(v => (
                 <VentureCard
                   key={v.id}
@@ -276,7 +277,10 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 // Share URL when `window` is undefined (SSR); browser uses `window.location.origin`.
-  const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/ventures` : 'https://cobrother.com/ventures';
+  const shareUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/ventures`
+      : `${APP_BASE_URL.replace(/\/$/, '')}/ventures`;
   const shareText = `Check out this venture: ${b.brandName} - Listed on CoBrother!`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
@@ -294,7 +298,7 @@ function VentureCard({ venture, isOwner, onView, onApply, onEdit, onDelete,
 
   return (
     <div
-      className="group relative bg-white rounded-2xl overflow-hidden cursor-pointer flex flex-col border border-gray-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.10)] hover:-translate-y-0.5 transition-all duration-300"
+      className="card-glow-hover group relative bg-white rounded-2xl overflow-hidden cursor-pointer flex flex-col border border-gray-200 shadow-sm transition-all duration-300"
       onClick={onView}
     >
       {/* Gradient header with large image */}

@@ -115,7 +115,8 @@ export const cocreationAPI = {
   handleFailure:   (id)       => api.post(`/api/v1/cocreation/${id}/purchase/failure`),
   confirmPurchase: (purchaseId) => api.post(`/api/v1/cocreation/purchase/${purchaseId}/confirm`),
   getAnalytics:    (id)       => api.get(`/api/v1/cocreation/${id}/analytics`),
-  payCoBrotherHelp:    (purchaseId) => api.post(`/api/v1/cocreation/purchase/${purchaseId}/cobrother-help/create-order`),
+  payCoBrotherHelp:    (purchaseId, data = {}) =>
+    api.post(`/api/v1/cocreation/purchase/${purchaseId}/cobrother-help/create-order`, data),
   verifyCoBrotherHelp: (purchaseId, data) => api.post(`/api/v1/cocreation/purchase/${purchaseId}/cobrother-help/verify`, data),
   uploadImage: (id, formData) =>
     api.post(`/api/v1/cocreation/${id}/image`, formData, {
@@ -178,7 +179,7 @@ export const coBrotherAPI = {
 
 export const feeAPI = {
   getMyRequests:  ()        => api.get('/api/v1/fee/my-requests'),
-  createOrder:    (id)      => api.post(`/api/v1/fee/requests/${id}/create-order`),
+  createOrder:    (id, data = {}) => api.post(`/api/v1/fee/requests/${id}/create-order`, data),
   verify:         (id, data)=> api.post(`/api/v1/fee/requests/${id}/verify`, data),
   cancel:         (id)      => api.post(`/api/v1/fee/requests/${id}/cancel`),
 };

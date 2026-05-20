@@ -1,12 +1,81 @@
 /**
- * Opens Razorpay checkout using server-computed amountSmallest (do NOT multiply again).
+ * Razorpay checkout — supports amountSmallest when present; legacy INR (amount in rupees) otherwise.
+ * Safe when backend is INR-only: never assumes multi-currency order fields beyond optional currency string.
  */
-export function getRazorpayAmount(orderData) {
-  if (orderData?.amountSmallest != null) {
-    return Number(orderData.amountSmallest);
+
+function looksLikeRazorpayOrder(obj) {
+  if (!obj || typeof obj !== 'object') return false;
+  return (
+    obj.orderId != null ||
+    obj.razorpayOrderId != null ||
+    obj.razorpay_order_id != null ||
+    obj.amountSmallest != null ||
+    obj.amount_in_paise != null ||
+    obj.amount != null ||
+    obj.keyId != null ||
+    obj.key_id != null
+  );
+}
+
+export function normalizeOrderData(payload) {
+  if (payload == null) return null;
+  let cur = payload?.data !== undefined ? payload.data : payload;
+  let guard = 0;
+  while (
+    cur &&
+    typeof cur === 'object' &&
+    cur.data &&
+    looksLikeRazorpayOrder(cur.data) &&
+    !looksLikeRazorpayOrder(cur) &&
+    guard < 5
+  ) {
+    cur = cur.data;
+    guard += 1;
   }
-  // Backward compatibility for older backends
-  return Math.round(Number(orderData?.amount || 0) * 100);
+  if (looksLikeRazorpayOrder(cur)) return cur;
+  if (cur?.data && looksLikeRazorpayOrder(cur.data)) return cur.data;
+  return cur;
+}
+
+/** Razorpay amount in smallest currency unit (paise for INR). */
+export function getRazorpayAmount(order) {
+  if (!order) return 0;
+
+  const smallestRaw =
+    order.amountSmallest ??
+    order.amount_in_paise ??
+    order.amountInPaise ??
+    order.amountPaise;
+
+  if (smallestRaw != null && smallestRaw !== '') {
+    const n = Math.round(Number(smallestRaw));
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+
+  const amount = Number(order.amount ?? order.amountMajor ?? order.totalAmount ?? 0);
+  if (!Number.isFinite(amount) || amount <= 0) return 0;
+
+  const currency = (order.currency || 'INR').toString().toUpperCase();
+
+  // Legacy INR-only backend returns major units (e.g. 1000 = ₹1000)
+  if (currency === 'INR') {
+    return Math.round(amount * 100);
+  }
+
+  return Math.round(amount);
+}
+
+export function getRazorpayCurrency(order) {
+  const c = (order?.currency || 'INR').toString().toUpperCase();
+  return c || 'INR';
+}
+
+export function getRazorpayKeyId(order) {
+  return order?.keyId ?? order?.key_id ?? '';
+}
+
+export function getRazorpayOrderId(order) {
+  return order?.orderId ?? order?.razorpayOrderId ?? order?.razorpay_order_id ?? '';
 }
 
 export function buildRazorpayPrefill(user, orderData = {}) {
@@ -32,27 +101,53 @@ export function openRazorpayCheckout({
   onDismiss,
   themeColor = '#c8a96e',
 }) {
-  if (!window.Razorpay) {
-    throw new Error('Razorpay SDK not loaded');
-  }
+  try {
+    if (!window.Razorpay) {
+      throw new Error('Razorpay SDK not loaded');
+    }
 
-  const options = {
-    key: orderData.keyId,
-    amount: getRazorpayAmount(orderData),
-    currency: orderData.currency || 'INR',
-    name: 'CoBrother',
-    description,
-    order_id: orderData.orderId,
-    handler: onSuccess,
-    prefill: buildRazorpayPrefill(user, orderData),
-    modal: { ondismiss: onDismiss },
-    theme: { color: themeColor },
-  };
+    const order = normalizeOrderData(orderData);
+    const amount = getRazorpayAmount(order);
+    const keyId = getRazorpayKeyId(order);
+    const orderId = getRazorpayOrderId(order);
 
-  const rzp = new window.Razorpay(options);
-  if (onFailure) {
-    rzp.on('payment.failed', onFailure);
+    if (!keyId || !orderId) {
+      throw new Error('Invalid payment order from server.');
+    }
+    if (!amount || amount <= 0) {
+      throw new Error('Invalid payment amount from server.');
+    }
+
+    const options = {
+      key: keyId,
+      amount,
+      currency: getRazorpayCurrency(order),
+      name: 'CoBrother',
+      description,
+      order_id: orderId,
+      handler: onSuccess,
+      prefill: buildRazorpayPrefill(user, order),
+      modal: { ondismiss: onDismiss },
+      theme: { color: themeColor },
+    };
+
+    const rzp = new window.Razorpay(options);
+    if (onFailure) {
+      rzp.on('payment.failed', onFailure);
+    }
+    rzp.open();
+    return rzp;
+  } catch (err) {
+    console.error('[Razorpay checkout]', err);
+    try {
+      if (typeof onFailure === 'function') {
+        onFailure({
+          error: { description: err?.message || 'Failed to open payment.' },
+        });
+      }
+    } catch {
+      /* ignore */
+    }
+    return null;
   }
-  rzp.open();
-  return rzp;
 }

@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { asArray } from '../utils/asArray';
 
 /**
  * Universal filter/sort/paginate hook.
@@ -7,6 +8,7 @@ import { useState, useMemo, useCallback } from 'react';
  * @param {number} pageSize     - items per page (default 20)
  */
 export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
+  const safeItems = asArray(items);
   const {
     searchFields = [],
     priceField   = null,
@@ -45,7 +47,7 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
   };
 
   const filtered = useMemo(() => {
-    let result = [...items];
+    let result = [...safeItems];
 
     if (search.trim()) {
       const q = search.trim().toLowerCase();
@@ -99,7 +101,7 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
     });
 
     return result;
-  }, [items, search, category, minPrice, maxPrice, sortBy,
+  }, [safeItems, search, category, minPrice, maxPrice, sortBy,
       searchFields, priceField, categoryField, dateField]);
 
   const totalPages  = Math.max(1, Math.ceil(filtered.length / pageSize));

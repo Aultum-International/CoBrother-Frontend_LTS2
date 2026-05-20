@@ -1,3 +1,5 @@
+import { asArray } from './asArray';
+
 /** Whether a listing should appear on the public homepage (active, not removed). */
 export function isActiveListing(item, type = 'domain') {
   if (!item) return false;
@@ -74,9 +76,9 @@ export function isHomepageFeaturedListing(item, type = 'domain') {
 }
 
 export function filterHomepageListings(items, type = 'domain') {
-  return (items ?? []).filter((item) => isActiveListing(item, type));
+  return asArray(items).filter((item) => isActiveListing(item, type));
 }
 
 export function filterFeaturedGuestListings(items, type = 'domain') {
-  return (items ?? []).filter((item) => isHomepageFeaturedListing(item, type));
+  return asArray(items).filter((item) => isHomepageFeaturedListing(item, type));
 }

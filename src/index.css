@@ -3074,6 +3074,22 @@ select:focus {
 
 /* Override global body styles for Home page */
 /* App shell — dashboard & inner pages */
+.app-layout-scroll-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+[data-app-layout-scroll] .app-main-content {
+  flex: 1 1 auto;
+  min-height: 100%;
+}
+
+[data-app-layout-scroll] footer {
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
 .app-main-content {
   width: 100%;
   min-width: 0;

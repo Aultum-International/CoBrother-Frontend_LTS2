@@ -1,7 +1,16 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authAPI, profileAPI } from '../api/services';
 
-const AuthContext = createContext(null);
+/** Stable fallback so `useAuth()` never returns null (avoids destructuring errors outside provider). */
+const authContextDefault = {
+  user: null,
+  loading: false,
+  login: () => {},
+  logout: async () => {},
+  refreshUser: async () => null,
+};
+
+const AuthContext = createContext(authContextDefault);
 
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null);
@@ -61,4 +70,7 @@ export function AuthProvider({ children }) {
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  return ctx ?? authContextDefault;
+}

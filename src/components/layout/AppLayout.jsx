@@ -9,6 +9,8 @@ import TechnologyIcon from '../../assets/CoCreation.png';
 import CommunityIcon from '../../assets/CoBrother_profileW.png';
 import AnimatedLogoutButton from '../common/AnimatedLogoutButton';
 import CurrencyDropdown from '../common/CurrencyDropdown';
+import LanguageDropdown from '../common/LanguageDropdown';
+import HomeFooter from '../common/HomeFooter';
 import BackButton from '../common/BackButton';
 import { getAppBackTarget } from '../../utils/appNavigation';
 
@@ -349,6 +351,7 @@ export default function AppLayout({ children }) {
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
+            <LanguageDropdown variant="light" />
             <CurrencyDropdown variant="light" />
             {/* Working Bell Icon with Notification Panel */}
             <div className="relative" ref={bellRef}>
@@ -441,12 +444,16 @@ export default function AppLayout({ children }) {
         </header>
 
         {/* Scrollable Content - with proper padding for sidebar */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 min-w-0">
-          <div className="app-main-content p-4 sm:p-5 lg:p-6 xl:p-8 min-w-0 max-w-[100%]">
-
-
-  {children}
-</div>
+        <div
+          className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 min-w-0 min-h-0"
+          data-app-layout-scroll
+        >
+          <div className="app-layout-scroll-body">
+            <div className="app-main-content p-4 sm:p-5 lg:p-6 xl:p-8 min-w-0 max-w-[100%]">
+              {children}
+            </div>
+            <HomeFooter />
+          </div>
         </div>
       </main>
 

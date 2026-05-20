@@ -1,29 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import cobrotherProfile from '../../assets/CoBrother_profileW.png';
 import AnimatedLogoutButton from './AnimatedLogoutButton';
 import CurrencyDropdown from './CurrencyDropdown';
+import LanguageDropdown from './LanguageDropdown';
 
 export default function TopNavbar({ homeMobileMenu = false }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
-  const [languageOpen, setLanguageOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showInitial, setShowInitial] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const languageRef = useRef(null);
   const profileRef = useRef(null);
 
-  // Close language and profile dropdowns on outside click
+  // Close profile dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (languageRef.current && !languageRef.current.contains(event.target)) {
-        setLanguageOpen(false);
-      }
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setProfileDropdownOpen(false);
       }
@@ -38,18 +33,6 @@ export default function TopNavbar({ homeMobileMenu = false }) {
       refreshUser();
     }
   }, [profileDropdownOpen, refreshUser]);
-
-  const languages = [
-    { code: 'en', name: 'English (IND)' },
-    { code: 'hi', name: 'Hindi' },
-    { code: 'en-US', name: 'English (US)' },
-    { code: 'ur', name: 'Urdu' },
-    { code: 'zh', name: '中文' },
-    { code: 'fr', name: 'Français' },
-    { code: 'pt', name: 'Português' },
-  ];
-
-  const currentLanguageName = languages.find((l) => l.code === i18n.language)?.name || 'English (IND)';
 
   // Slow flip animation every 3 seconds when user is logged in
   useEffect(() => {
@@ -94,39 +77,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
   <div className="flex items-center gap-1.5 sm:gap-3 md:gap-5 min-w-0 ml-auto">
 
 <CurrencyDropdown variant="dark" />
-    <div className="relative" ref={languageRef}>
-            <button
-              type="button"
-              className="text-white text-xs md:text-sm font-normal no-underline flex items-center gap-1 px-2 sm:px-2.5 md:px-3 py-1.5 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200 max-w-[min(100%,11rem)]"
-              onClick={() => setLanguageOpen((prev) => !prev)}
-              aria-expanded={languageOpen}
-              aria-haspopup="listbox"
-            >
-              <Globe size={14} className="shrink-0 md:w-4 md:h-4" />
-              <span className="hidden md:inline truncate">{currentLanguageName}</span>
-              <ChevronDown size={14} className="shrink-0" />
-            </button>
-            {languageOpen && (
-              <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[140px] overflow-hidden z-[1001]">
-                {languages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    className={`w-full px-4 py-2.5 bg-transparent border-none text-left text-sm cursor-pointer transition-colors duration-200 font-body ${
-                      i18n.language === lang.code
-                        ? 'bg-purple-50 text-purple font-semibold'
-                        : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                    onClick={() => {
-                      i18n.changeLanguage(lang.code);
-                      setLanguageOpen(false);
-                    }}
-                  >
-                    {lang.name}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+    <LanguageDropdown variant="dark" />
 
           <div className="relative hidden lg:block">
             <a

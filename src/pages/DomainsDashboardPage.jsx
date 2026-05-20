@@ -5,6 +5,7 @@ import { domainAPI } from '../api/services';
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import DomainVerificationModal from './DomainVerificationModal';
+import { APP_BASE_URL } from '../config/urls';
 
 
 const STATUS_COLORS = {
@@ -156,6 +157,7 @@ export default function DomainsDashboardPage() {
 }
 
 function DomainRow({ domain, type, onVerify }) {
+  const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const [shareOpen, setShareOpen] = useState(false);
   const shareRef = useRef(null);
@@ -176,9 +178,8 @@ function DomainRow({ domain, type, onVerify }) {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
-// Public site base for share links (production).
-  const domainUrl = 'https://cobrother.com';
-  const shareUrl = `${domainUrl}/domains`;
+  const shareBase = APP_BASE_URL.replace(/\/$/, '');
+  const shareUrl = `${shareBase}/domains`;
   const shareText = `Check out this domain: ${domain.domainName}${domain.domainExtension} - Listed on CoBrother!`;
 
   const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
@@ -231,7 +232,7 @@ function DomainRow({ domain, type, onVerify }) {
         )}
         {isAuction && auction?.currentHighestBid > 0 && (
           <span className="text-[0.875rem] font-bold text-green-600">
-            Top: ₹{Number(auction.currentHighestBid).toLocaleString('en-IN')}
+            Top: {formatPrice(auction.currentHighestBid)}
           </span>
         )}
         {isAuction && auction?.minBidPrice > 0 && auction?.currentHighestBid === 0 && (
