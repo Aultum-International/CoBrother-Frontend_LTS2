@@ -156,8 +156,35 @@ export default function DomainSearchBar() {
           Domains
         </h3>
 
-        {/* Search row */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+        {/* Desktop: search beside promo */}
+        <div className="hidden lg:flex lg:flex-row lg:items-center gap-4">
+          <form onSubmit={handleSearch}
+            className="search-glow-focus w-full max-w-[880px] flex flex-row items-center bg-white rounded-full shadow-[0_8px_40px_rgba(99,102,241,0.2)] border-2 border-indigo-300/50 hover:border-indigo-400 hover:shadow-[0_12px_60px_rgba(99,102,241,0.35)] overflow-hidden pl-6 pr-3 py-2.5 flex-1 transition-all duration-300 hover:scale-[1.02]">
+            <input
+              type="text"
+              className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-gray-800 text-lg placeholder:text-gray-400 py-3 focus:ring-0"
+              placeholder="Search your next big domain..."
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+            />
+            <button type="submit"
+              className="bg-[#232f3e] text-white py-3 px-7 rounded-full text-base font-semibold transition-all hover:bg-gray-700 hover:-translate-y-0.5 flex-shrink-0">
+              Search
+            </button>
+          </form>
+          <div className="flex flex-col items-center px-6 py-4 min-w-[220px] shrink-0 bg-gradient-to-br from-indigo-50 via-white to-pink-50 rounded-[28px] border border-indigo-100 shadow-[0_20px_60px_rgba(99,102,241,0.12)] relative swing-hover">
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 shadow-[0_0_20px_rgba(99,102,241,0.35)]" />
+            <span className="text-[11px] uppercase tracking-[0.2em] bg-gradient-to-r from-indigo-600 to-fuchsia-500 text-transparent bg-clip-text font-semibold mb-2">Promotional Offer</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-base font-bold text-slate-900">.com</span>
+              <span className="text-2xl font-extrabold text-slate-900">₹999</span>
+              <span className="text-[11px] text-slate-500">/year</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile / tablet */}
+        <div className="lg:hidden flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
           <form onSubmit={handleSearch}
             className="search-glow-focus w-full max-w-[880px] flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-2xl sm:rounded-full shadow-[0_8px_40px_rgba(99,102,241,0.2)] border-2 border-indigo-300/50 hover:border-indigo-400 hover:shadow-[0_12px_60px_rgba(99,102,241,0.35)] overflow-hidden px-4 sm:pl-6 sm:pr-3 py-3 sm:py-2.5 gap-3 sm:gap-0 flex-1 transition-all duration-300 hover:scale-[1.02]">
             <input
@@ -172,20 +199,7 @@ export default function DomainSearchBar() {
               Search
             </button>
           </form>
-
-          {/* Promo — desktop */}
-          <div className="hidden lg:flex flex-col items-center px-6 py-4 min-w-[220px] bg-gradient-to-br from-indigo-50 via-white to-pink-50 rounded-[28px] border border-indigo-100 shadow-[0_20px_60px_rgba(99,102,241,0.12)] relative swing-hover">
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 shadow-[0_0_20px_rgba(99,102,241,0.35)]" />
-            <span className="text-[11px] uppercase tracking-[0.2em] bg-gradient-to-r from-indigo-600 to-fuchsia-500 text-transparent bg-clip-text font-semibold mb-2">Promotional Offer</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-base font-bold text-slate-900">.com</span>
-              <span className="text-2xl font-extrabold text-slate-900">₹999</span>
-              <span className="text-[11px] text-slate-500">/year</span>
-            </div>
-          </div>
-
-          {/* Promo — mobile */}
-          <div className="lg:hidden flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-indigo-50 via-white to-pink-50 rounded-2xl border border-indigo-100 w-full sm:w-auto relative swing-hover">
+          <div className="flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-indigo-50 via-white to-pink-50 rounded-2xl border border-indigo-100 w-full sm:w-auto relative swing-hover">
             <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500" />
             <span className="text-[11px] uppercase tracking-[0.12em] bg-gradient-to-r from-indigo-600 to-fuchsia-500 text-transparent bg-clip-text font-semibold">Limited Offer</span>
             <span className="text-[12px] font-bold text-slate-900">.com ₹999/year</span>
