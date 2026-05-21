@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { Search } from 'lucide-react';
 import { domainAPI } from '../../api/services';
+import CompactDomainTicker from '../home/domainTicker/CompactDomainTicker';
 
 const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
 
@@ -7,8 +9,9 @@ function buildRegisterUrl(name, ext) {
   return `https://cp.openprovider.eu/domain/register?domain=${encodeURIComponent(name)}&tld=${encodeURIComponent(ext)}`;
 }
 
-export default function DomainSearchBar() {
-  const [query,   setQuery]   = useState('');
+export default function DomainSearchBar({ className = '', embedded = false }) {
+  const [query, setQuery] = useState('');
+  const [tld, setTld] = useState('com');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const debounceRef           = useRef(null);
@@ -18,7 +21,7 @@ export default function DomainSearchBar() {
     if (!q) return null;
     const dot = q.indexOf('.');
     if (dot !== -1) return [{ name: q.slice(0, dot), ext: q.slice(dot + 1) }];
-    return TLDS.map(tld => ({ name: q, ext: tld }));
+    return [{ name: q, ext: tld }];
   };
 
   const doSearch = async (raw) => {
@@ -62,7 +65,7 @@ export default function DomainSearchBar() {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => doSearch(query), 700);
     return () => clearTimeout(debounceRef.current);
-  }, [query]);
+  }, [query, tld]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -149,48 +152,55 @@ export default function DomainSearchBar() {
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 py-4 md:py-6">
-      <div className="max-w-[1200px] mx-auto">
+    <div
+      className={`relative z-20 w-full ${embedded ? 'py-0' : 'py-3 pl-4 pr-4 sm:py-4 sm:pl-6 sm:pr-5 md:pl-10 lg:pl-20 lg:pr-8'} ${className}`.trim()}
+    >
+      <div className={`w-full ${embedded ? '' : 'mx-auto max-w-[1200px]'}`}>
 
-        <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-6">
-          Domains
-        </h3>
-
-        {/* Desktop: search beside promo */}
-        <div className="hidden lg:flex lg:flex-row lg:items-center gap-4">
+        {/* Desktop: compact search beside live domain feed */}
+        <div className="hidden lg:flex lg:flex-row lg:items-center lg:justify-center gap-4 xl:gap-5">
           <form onSubmit={handleSearch}
-            className="search-glow-focus w-full max-w-[880px] flex flex-row items-center bg-white rounded-full shadow-[0_8px_40px_rgba(99,102,241,0.2)] border-2 border-indigo-300/50 hover:border-indigo-400 hover:shadow-[0_12px_60px_rgba(99,102,241,0.35)] overflow-hidden pl-6 pr-3 py-2.5 flex-1 transition-all duration-300 hover:scale-[1.02]">
+            className="search-glow-focus flex w-full max-w-[700px] flex-[1_1_640px] flex-row items-center gap-2 overflow-hidden rounded-2xl border border-indigo-200/60 bg-white py-2 pl-4 pr-2 shadow-[0_4px_24px_rgba(99,102,241,0.12)] transition-all duration-300 sm:pl-5 sm:rounded-full xl:max-w-[740px]">
+            <Search className="h-5 w-5 shrink-0 text-slate-400" strokeWidth={2} />
             <input
               type="text"
-              className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-gray-800 text-lg placeholder:text-gray-400 py-3 focus:ring-0"
-              placeholder="Search your next big domain..."
+              className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0 sm:text-base"
+              placeholder="Search worlds best Priced Domain Names"
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={(e) => setQuery(e.target.value)}
             />
-            <button type="submit"
-              className="bg-[#232f3e] text-white py-3 px-7 rounded-full text-base font-semibold transition-all hover:bg-gray-700 hover:-translate-y-0.5 flex-shrink-0">
+            <div className="relative flex shrink-0 items-center">
+              <select
+                value={tld}
+                onChange={(e) => setTld(e.target.value)}
+                className="cursor-pointer rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-3 pr-8 text-sm font-semibold text-slate-800 outline-none focus:border-indigo-300"
+                aria-label="Domain extension"
+              >
+                {TLDS.map((ext) => (
+                  <option key={ext} value={ext}>
+                    .{ext}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="shrink-0 rounded-xl bg-[#232f3e] px-6 py-2.5 text-[14px] font-semibold text-white transition-all hover:bg-gray-700 sm:rounded-full sm:px-7 sm:py-3"
+            >
               Search
             </button>
           </form>
-          <div className="flex flex-col items-center px-6 py-4 min-w-[220px] shrink-0 bg-gradient-to-br from-indigo-50 via-white to-pink-50 rounded-[28px] border border-indigo-100 shadow-[0_20px_60px_rgba(99,102,241,0.12)] relative swing-hover">
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 shadow-[0_0_20px_rgba(99,102,241,0.35)]" />
-            <span className="text-[11px] uppercase tracking-[0.2em] bg-gradient-to-r from-indigo-600 to-fuchsia-500 text-transparent bg-clip-text font-semibold mb-2">Promotional Offer</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-base font-bold text-slate-900">.com</span>
-              <span className="text-2xl font-extrabold text-slate-900">₹999</span>
-              <span className="text-[11px] text-slate-500">/year</span>
-            </div>
-          </div>
+          <CompactDomainTicker className="h-[94px] w-full max-w-[390px] flex-[0_1_390px] xl:max-w-[430px] xl:basis-[430px]" />
         </div>
 
         {/* Mobile / tablet */}
-        <div className="lg:hidden flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+        <div className="lg:hidden flex flex-col items-stretch gap-3 sm:gap-4">
           <form onSubmit={handleSearch}
-            className="search-glow-focus w-full max-w-[880px] flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-2xl sm:rounded-full shadow-[0_8px_40px_rgba(99,102,241,0.2)] border-2 border-indigo-300/50 hover:border-indigo-400 hover:shadow-[0_12px_60px_rgba(99,102,241,0.35)] overflow-hidden px-4 sm:pl-6 sm:pr-3 py-3 sm:py-2.5 gap-3 sm:gap-0 flex-1 transition-all duration-300 hover:scale-[1.02]">
+            className="search-glow-focus mx-auto w-full max-w-[760px] flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-2xl sm:rounded-full shadow-[0_8px_40px_rgba(99,102,241,0.2)] border-2 border-indigo-300/50 hover:border-indigo-400 hover:shadow-[0_12px_60px_rgba(99,102,241,0.35)] overflow-hidden px-4 sm:pl-6 sm:pr-3 py-3 sm:py-2.5 gap-3 sm:gap-0 flex-1 transition-all duration-300 hover:scale-[1.01]">
             <input
               type="text"
               className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-gray-800 text-base sm:text-lg placeholder:text-gray-400 py-2.5 sm:py-3 focus:ring-0"
-              placeholder="Search your next big domain..."
+              placeholder="Search worlds best Priced Domain Names"
               value={query}
               onChange={e => setQuery(e.target.value)}
             />
@@ -199,11 +209,7 @@ export default function DomainSearchBar() {
               Search
             </button>
           </form>
-          <div className="flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-indigo-50 via-white to-pink-50 rounded-2xl border border-indigo-100 w-full sm:w-auto relative swing-hover">
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500" />
-            <span className="text-[11px] uppercase tracking-[0.12em] bg-gradient-to-r from-indigo-600 to-fuchsia-500 text-transparent bg-clip-text font-semibold">Limited Offer</span>
-            <span className="text-[12px] font-bold text-slate-900">.com ₹999/year</span>
-          </div>
+          <CompactDomainTicker className="mx-auto h-[94px] w-full max-w-[760px] sm:max-w-[620px] md:max-w-[700px]" />
         </div>
 
         {/* Results */}
@@ -291,18 +297,7 @@ export default function DomainSearchBar() {
             12px 0 20px -6px rgba(255,48,108,0.35),
             0 0 14px -3px rgba(120,80,220,0.25);
           border-color: rgba(120,80,220,0.35);
-          animation: glow-spread 6s ease-in-out infinite;
         }
-        @keyframes glow-spread {
-          0%,100% {
-            box-shadow: -12px 0 20px -6px rgba(0,195,255,0.35),12px 0 20px -6px rgba(255,48,108,0.35),0 0 14px -3px rgba(120,80,220,0.25);
-          }
-          50% {
-            box-shadow: -16px 0 28px -8px rgba(0,195,255,0.5),16px 0 28px -8px rgba(255,48,108,0.5),0 0 20px -4px rgba(120,80,220,0.4);
-          }
-        }
-        .swing-hover { transform-origin: top center; animation: swing 3s ease-in-out infinite; }
-        @keyframes swing { 0%,100%{transform:rotate(-2deg)} 50%{transform:rotate(2deg)} }
       `}</style>
     </div>
   );
