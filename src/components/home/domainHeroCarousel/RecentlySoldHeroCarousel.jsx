@@ -6,23 +6,28 @@ import {
   useRef,
   useState,
 } from 'react';
-import { motion, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform } from 'framer-motion';
-import DomainHeroCard from './DomainHeroCard';
+import {
+  motion,
+  useMotionValue,
+  useMotionValueEvent,
+  useReducedMotion,
+  useTransform,
+} from 'framer-motion';
+import DomainHeroCard, { HERO_CARD_W } from './DomainHeroCard';
 import { DOMAIN_HERO_MOCK } from './mockDomainHeroData';
 
-const CARD_W = 268;
-const GAP = 12;
-const STEP = CARD_W + GAP;
-const PAD = 12;
-/** Full loop duration — higher = slower drift past the viewport */
-const LOOP_MS = 46000;
+const GAP = 20;
+const STEP = HERO_CARD_W + GAP;
+const PAD = 8;
+const LOOP_MS = 48000;
+const UNIQUE = DOMAIN_HERO_MOCK.length;
 
 function doubleList(list) {
   return [...list, ...list];
 }
 
 const doubled = doubleList(DOMAIN_HERO_MOCK);
-const SEGMENT = DOMAIN_HERO_MOCK.length * STEP;
+const SEGMENT = UNIQUE * STEP;
 
 function CarouselSlot({
   index,
@@ -33,9 +38,9 @@ function CarouselSlot({
   revealSlot,
   onRevealDone,
 }) {
-  const cw = containerW || 360;
+  const cw = containerW || 400;
   const dist = useTransform(trackX, (xv) =>
-    Math.abs(xv + PAD + index * STEP + CARD_W / 2 - cw / 2),
+    Math.abs(xv + PAD + index * STEP + HERO_CARD_W / 2 - cw / 2),
   );
   const sealed = sealedIds.has(item.id);
   return (
@@ -52,14 +57,16 @@ function CarouselSlot({
 export default function RecentlySoldHeroCarousel({ className = '' }) {
   const reduce = useReducedMotion();
   const wrapRef = useRef(null);
-  const [cw, setCw] = useState(360);
+  const [cw, setCw] = useState(400);
   const trackX = useMotionValue(0);
   const [sealedIds, setSealedIds] = useState(() => new Set());
   const [revealSlot, setRevealSlot] = useState(null);
+  const [activeDot, setActiveDot] = useState(0);
   const stableRef = useRef({ idx: -1, since: 0 });
   const sealedIdsRef = useRef(sealedIds);
   const revealSlotRef = useRef(revealSlot);
   const pausedRef = useRef(false);
+  const manualPauseUntil = useRef(0);
   const cwRef = useRef(cw);
   cwRef.current = cw;
   sealedIdsRef.current = sealedIds;
@@ -68,10 +75,17 @@ export default function RecentlySoldHeroCarousel({ className = '' }) {
   useLayoutEffect(() => {
     const el = wrapRef.current;
     if (!el) return undefined;
-    const ro = new ResizeObserver(() => setCw(Math.max(240, el.offsetWidth)));
+    const ro = new ResizeObserver(() => setCw(Math.max(280, el.offsetWidth)));
     ro.observe(el);
-    setCw(Math.max(240, el.offsetWidth));
+    setCw(Math.max(280, el.offsetWidth));
     return () => ro.disconnect();
+  }, []);
+
+  const normalizeTrackX = useCallback((v) => {
+    let x = v;
+    while (x <= -SEGMENT) x += SEGMENT;
+    while (x > 0) x -= SEGMENT;
+    return x;
   }, []);
 
   useEffect(() => {
@@ -83,7 +97,8 @@ export default function RecentlySoldHeroCarousel({ className = '' }) {
       const raw = now - last;
       last = now;
       const dt = Math.min(28, Math.max(5, raw));
-      if (!pausedRef.current) {
+      if (now >= manualPauseUntil.current) pausedRef.current = false;
+      if (!pausedRef.current && revealSlotRef.current === null) {
         let v = trackX.get() - pxPerMs * dt;
         while (v <= -SEGMENT) v += SEGMENT;
         trackX.set(v);
@@ -99,29 +114,34 @@ export default function RecentlySoldHeroCarousel({ className = '' }) {
   }, []);
 
   const resume = useCallback(() => {
-    pausedRef.current = false;
+    if (performance.now() >= manualPauseUntil.current) pausedRef.current = false;
   }, []);
 
-  const onRevealDone = useCallback((id) => {
-    setSealedIds((prev) => new Set(prev).add(id));
-    setRevealSlot(null);
-    resume();
-  }, [resume]);
+  const onRevealDone = useCallback(
+    (id) => {
+      setSealedIds((prev) => new Set(prev).add(id));
+      setRevealSlot(null);
+      resume();
+    },
+    [resume],
+  );
 
   useMotionValueEvent(trackX, 'change', (xv) => {
-    if (reduce || revealSlotRef.current !== null) return;
-    const cw2 = cwRef.current || 360;
+    const cw2 = cwRef.current || 400;
     let bestI = -1;
     let bestD = 1e9;
     for (let i = 0; i < doubled.length; i += 1) {
-      const cardCenter = xv + PAD + i * STEP + CARD_W / 2;
+      const cardCenter = xv + PAD + i * STEP + HERO_CARD_W / 2;
       const d = Math.abs(cardCenter - cw2 / 2);
       if (d < bestD) {
         bestD = d;
         bestI = i;
       }
     }
-    if (bestI < 0 || bestD > 62) {
+    if (bestI >= 0) setActiveDot(bestI % UNIQUE);
+
+    if (reduce || revealSlotRef.current !== null) return;
+    if (bestI < 0 || bestD > 58) {
       stableRef.current = { idx: -1, since: performance.now() };
       return;
     }
@@ -132,7 +152,10 @@ export default function RecentlySoldHeroCarousel({ className = '' }) {
     }
     if (now - stableRef.current.since < 420) return;
     const item = doubled[bestI];
-    if (item.status !== 'sold' || sealedIdsRef.current.has(item.id)) return;
+    const canReveal =
+      (item.status === 'sold' || item.status === 'available') &&
+      !sealedIdsRef.current.has(item.id);
+    if (!canReveal) return;
     pause();
     setRevealSlot(bestI);
   });
@@ -157,31 +180,48 @@ export default function RecentlySoldHeroCarousel({ className = '' }) {
   );
 
   return (
-    <div className={`min-h-0 min-w-0 overflow-visible ${className}`}>
-      {/*
-        One soft horizontal mask on the viewport (no stacked white gradient layers).
-        Tighter card gap + no 1px borders on faces reduces vertical seams between cards.
-      */}
-      <div
-        ref={wrapRef}
-        className="relative mx-auto w-full overflow-x-clip overflow-y-visible px-3 py-6 sm:px-4 sm:py-7 md:px-5 md:py-8"
-        style={{
-          WebkitMaskImage:
-            'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.92) 14%, #000 50%, rgba(0,0,0,0.92) 86%, transparent 100%)',
-          maskImage:
-            'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.92) 14%, #000 50%, rgba(0,0,0,0.92) 86%, transparent 100%)',
-        }}
-      >
-        <motion.div
-          className="relative z-0 flex w-max flex-row items-center gap-3 transform-gpu will-change-transform"
+    <div className={`relative w-full min-w-0 overflow-visible ${className}`}>
+      <div className="relative w-full px-2 sm:px-4 lg:pl-8 lg:pr-2">
+        <div
+          ref={wrapRef}
+          className="relative min-h-[260px] w-full overflow-x-clip overflow-y-visible py-3 sm:min-h-[300px] sm:py-5 lg:min-h-[320px] lg:py-6"
           style={{
-            x: trackX,
-            paddingLeft: PAD,
-            translateZ: 0,
+            WebkitMaskImage:
+              'linear-gradient(90deg, transparent 0%, black 14%, black 90%, transparent 100%)',
+            maskImage:
+              'linear-gradient(90deg, transparent 0%, black 14%, black 90%, transparent 100%)',
           }}
         >
-          {slots}
-        </motion.div>
+          <motion.div
+            className="relative z-0 flex w-max flex-row items-center gap-5 transform-gpu will-change-transform"
+            style={{ x: trackX, paddingLeft: PAD, translateZ: 0 }}
+          >
+            {slots}
+          </motion.div>
+        </div>
+      </div>
+
+      <div className="mt-2 flex justify-center gap-2 px-2 sm:px-4" aria-hidden={reduce}>
+        {DOMAIN_HERO_MOCK.map((d, i) => (
+          <button
+            key={d.id}
+            type="button"
+            onClick={() => {
+              const cw2 = cwRef.current || 400;
+              const targetCenter = PAD + i * STEP + HERO_CARD_W / 2;
+              const current = trackX.get();
+              const ideal = cw2 / 2 - targetCenter;
+              trackX.set(normalizeTrackX(ideal));
+              setActiveDot(i);
+              pausedRef.current = true;
+              manualPauseUntil.current = performance.now() + 5000;
+            }}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              activeDot === i ? 'w-6 bg-indigo-500' : 'w-2 bg-slate-300 hover:bg-slate-400'
+            }`}
+            aria-label={`Show ${d.name}.${d.tld}`}
+          />
+        ))}
       </div>
     </div>
   );

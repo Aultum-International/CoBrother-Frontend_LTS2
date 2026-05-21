@@ -1,17 +1,21 @@
 import { memo, useEffect, useState } from 'react';
+import { Gauge, Users } from 'lucide-react';
 import {
   motion,
   useMotionTemplate,
   useReducedMotion,
   useTransform,
 } from 'framer-motion';
+import RoundInkStamp from './RoundInkStamp';
 import SoldStampSlam from './SoldStampSlam';
+
+export const HERO_CARD_W = 240;
+export const HERO_CARD_H = 308;
 
 function formatInr(n) {
   return `₹${Number(n).toLocaleString('en-IN')}`;
 }
 
-/** Fixed slot + inner GPU scale — no layout jump; blur only on card face, stamp sibling stays sharp. */
 const DomainHeroCard = memo(function DomainHeroCard({
   item,
   dist,
@@ -24,29 +28,31 @@ const DomainHeroCard = memo(function DomainHeroCard({
   const [showSlam, setShowSlam] = useState(false);
   const [postReveal, setPostReveal] = useState(false);
 
-  /* Subtle center emphasis — many samples = smooth motion as dist changes frame-to-frame */
   const scale = useTransform(
     dist,
     [0, 28, 56, 90, 130, 170, 220, 280, 340],
     reduce
       ? [1, 1, 1, 1, 1, 1, 1, 1, 1]
-      : [1.03, 1.029, 1.024, 1.012, 0.995, 0.978, 0.962, 0.948, 0.938],
+      : [1.04, 1.035, 1.02, 1.008, 0.99, 0.975, 0.96, 0.95, 0.94],
   );
   const opacity = useTransform(
     dist,
     [0, 50, 100, 160, 220],
-    reduce ? [1, 1, 1, 1, 1] : [1, 0.985, 0.97, 0.955, 0.94],
+    reduce ? [1, 1, 1, 1, 1] : [1, 0.92, 0.78, 0.62, 0.5],
   );
-  const bgAlpha = useTransform(dist, [0, 50, 110, 200], [1, 0.94, 0.86, 0.78]);
-  const cardBg = useMotionTemplate`rgba(255, 255, 255, ${bgAlpha})`;
-  const shOpacity = useTransform(dist, [0, 75, 150, 230], [0.14, 0.07, 0.04, 0.028]);
-  const shBlur = useTransform(dist, [0, 75, 150], [48, 22, 13]);
-  const shY = useTransform(dist, [0, 75, 150], [28, 13, 9]);
-  const cardShadow = useMotionTemplate`0 ${shY}px ${shBlur}px -16px rgba(15, 23, 42, ${shOpacity})`;
+  const cardShadow = useTransform(
+    dist,
+    [0, 80, 160],
+    [
+      '0 24px 48px -14px rgba(15, 23, 42, 0.14)',
+      '0 14px 28px -12px rgba(15, 23, 42, 0.09)',
+      '0 8px 20px -10px rgba(15, 23, 42, 0.06)',
+    ],
+  );
   const blurPx = useTransform(
     dist,
-    [0, 88, 132, 210, 300],
-    reduce ? [0, 0, 0, 0, 0] : [0, 0, 0.3, 1.35, 2],
+    [0, 70, 120, 200, 280],
+    reduce ? [0, 0, 0, 0, 0] : [0, 0, 0.4, 2, 3.5],
   );
   const cardFilter = useMotionTemplate`blur(${blurPx}px)`;
 
@@ -55,11 +61,16 @@ const DomainHeroCard = memo(function DomainHeroCard({
   }, [sealed]);
 
   const isSold = item.status === 'sold';
+  const isLive = item.status === 'available';
+  const canAnimate = isSold || isLive;
+  const stampVariant = isSold ? 'sold' : 'unsold';
   const locked = sealed || postReveal;
-  const showListing = item.status === 'available' || (isSold && !locked);
+  const lockedSold = locked && isSold;
+  const lockedUnsold = locked && isLive;
+  const showListing = !locked && (isSold || isLive);
 
   useEffect(() => {
-    if (!revealActive || sealed || reduce || !isSold) return undefined;
+    if (!revealActive || sealed || reduce || !canAnimate) return undefined;
     let cancelled = false;
     const run = async () => {
       setRy(180);
@@ -79,88 +90,126 @@ const DomainHeroCard = memo(function DomainHeroCard({
     return () => {
       cancelled = true;
     };
-  }, [revealActive, sealed, reduce, isSold, item.id, onRevealDone]);
+  }, [revealActive, sealed, reduce, canAnimate, item.id, onRevealDone]);
 
-  const initial = (item.name || '?').slice(0, 1).toUpperCase();
-  const avatarClass = locked
-    ? 'bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-inner'
-    : isSold && !locked
-      ? 'bg-gradient-to-br from-amber-400 to-orange-600 text-white shadow-inner'
-      : 'bg-gradient-to-br from-emerald-400 to-teal-600 text-white shadow-inner';
+  const iconClass = lockedSold
+    ? 'bg-gradient-to-br from-emerald-500 to-emerald-700 text-white'
+    : lockedUnsold
+      ? 'bg-gradient-to-br from-red-500 to-red-700 text-white'
+      : isSold && !locked
+        ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white'
+        : 'bg-gradient-to-br from-emerald-400 to-teal-500 text-white';
 
-  const frontFaceContent = locked ? (
+  const footer = (
+    <div className="mt-auto grid w-full grid-cols-2 gap-3 border-t border-slate-100 pt-4">
+      <div className="flex flex-col items-center justify-center gap-1 text-center">
+        <Users className="h-4 w-4 text-slate-400" strokeWidth={1.75} />
+        <span className="text-[11px] font-medium leading-tight text-slate-700">
+          {item.bidders || '10,000+'}
+          <br />
+          <span className="text-slate-500">Bidders</span>
+        </span>
+      </div>
+      <div className="flex flex-col items-center justify-center gap-1 text-center">
+        <Gauge className="h-4 w-4 text-slate-400" strokeWidth={1.75} />
+        <span className="text-[11px] font-medium leading-tight text-slate-700">
+          {item.successRate || '98%'}
+          <br />
+          <span className="text-slate-500">Success Rate</span>
+        </span>
+      </div>
+    </div>
+  );
+
+  const body = lockedSold ? (
     <>
       <div
-        className={`mb-3 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-lg font-black ${avatarClass}`}
+        className={`mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-lg font-black shadow-sm ${iconClass}`}
         aria-hidden
       >
         ✓
       </div>
-      <p className="w-full truncate font-display text-lg font-bold leading-snug text-slate-900 md:text-xl">
+      <p className="w-full text-left font-sans text-[17px] font-bold leading-tight text-[#1e293b]">
         {item.name}
-        <span className="text-indigo-600">.{item.tld}</span>
+        <span className="text-[#1e293b]">.{item.tld}</span>
       </p>
-      <p className="mt-3 line-clamp-2 w-full flex-1 text-xs leading-relaxed text-slate-500 md:text-[13px]">
-        <span className="font-medium text-slate-700">{item.owner}</span>
-        <span className="mx-1.5 text-slate-300">·</span>
-        <span className="font-semibold text-slate-800">{formatInr(item.price)}</span>
-        <span className="mt-1.5 block text-[11px] font-normal text-slate-400">
-          Recorded sale on Cobrother
-        </span>
+      <p className="mt-2 w-full text-left text-[13px] text-slate-500">
+        <span className="text-slate-600">{item.owner}</span>
+        <span className="mx-1 text-slate-400">·</span>
+        <span className="font-medium text-slate-700">{formatInr(item.price)}</span>
       </p>
-      <div className="mt-auto flex w-full items-center justify-center gap-2 pt-2">
-        <span className="rounded-full border border-red-200 bg-red-600 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-sm">
-          Sold
-        </span>
+      <div className="mt-4 flex w-full flex-wrap items-center justify-start gap-3">
+        <RoundInkStamp variant="sold" size="sm" />
         <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
           Verified
         </span>
       </div>
+      {footer}
+    </>
+  ) : lockedUnsold ? (
+    <>
+      <div
+        className={`mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-base font-bold shadow-sm ${iconClass}`}
+        aria-hidden
+      >
+        {(item.name || '?').slice(0, 1).toUpperCase()}
+      </div>
+      <p className="w-full text-left font-sans text-[17px] font-bold leading-tight text-[#1e293b]">
+        {item.name}
+        <span className="text-[#1e293b]">.{item.tld}</span>
+      </p>
+      <p className="mt-2 w-full text-left text-[13px] text-slate-500">
+        <span className="font-medium text-slate-700">{formatInr(item.price)}</span>
+      </p>
+      <div className="mt-4 flex w-full flex-wrap items-center justify-start gap-3">
+        <RoundInkStamp variant="unsold" size="sm" />
+      </div>
+      {footer}
     </>
   ) : showListing ? (
     <>
       <div
-        className={`mb-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-lg font-bold ${avatarClass}`}
+        className={`mb-4 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-base font-bold shadow-sm ${iconClass}`}
         aria-hidden
       >
-        {initial}
+        {(item.name || '?').slice(0, 1).toUpperCase()}
       </div>
-      <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400 md:text-xs">
-        {isSold ? 'Marketplace' : 'Available'}
-      </p>
-      <p className="w-full truncate font-display text-lg font-bold leading-snug text-slate-900 md:text-xl">
+      <p className="w-full text-left font-sans text-[17px] font-bold leading-tight text-[#1e293b]">
         {item.name}
-        <span className="text-indigo-600">.{item.tld}</span>
+        <span className="text-[#1e293b]">.{item.tld}</span>
       </p>
-      <p className="mt-auto line-clamp-2 w-full pt-3 text-xs leading-relaxed text-slate-500 md:text-[13px]">
-        <span className="font-semibold text-slate-800">{formatInr(item.price)}</span>
-        {isSold ? (
-          <span className="mt-1.5 block text-[11px] font-normal text-slate-400">
-            Listed on marketplace · seals when centered
-          </span>
+      <p className="mt-2 w-full text-left text-[13px] text-slate-500">
+        {isSold && item.owner ? (
+          <>
+            <span className="text-slate-600">{item.owner}</span>
+            <span className="mx-1 text-slate-400">·</span>
+          </>
+        ) : null}
+        <span className="font-medium text-slate-700">{formatInr(item.price)}</span>
+      </p>
+      <div className="mt-4 flex w-full flex-wrap items-center justify-start gap-3">
+        {isLive ? (
+          <RoundInkStamp variant="unsold" size="sm" />
         ) : (
-          <span className="mt-1.5 block text-[11px] font-normal text-slate-400">
-            Premium name · secure checkout
+          <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-800 ring-1 ring-amber-100">
+            Marketplace
           </span>
         )}
-      </p>
+      </div>
+      {footer}
     </>
   ) : (
-    <p className="mt-auto text-xs font-medium text-slate-400 md:text-sm">Processing…</p>
+    <p className="mt-auto text-sm font-medium text-slate-400">Processing…</p>
   );
 
   return (
     <div
       className="relative shrink-0 overflow-visible"
-      style={{ width: 268, height: 228 }}
+      style={{ width: HERO_CARD_W, height: HERO_CARD_H }}
     >
       <motion.div
         className="h-full w-full origin-center transform-gpu will-change-transform"
-        style={{
-          scale,
-          opacity,
-          translateZ: 0,
-        }}
+        style={{ scale, opacity, translateZ: 0 }}
       >
         <div className="h-full w-full [perspective:1100px]" style={{ perspective: '1100px' }}>
           <motion.div
@@ -177,22 +226,21 @@ const DomainHeroCard = memo(function DomainHeroCard({
               }}
             >
               <motion.div
-                className="absolute inset-0 flex flex-col items-center overflow-hidden rounded-3xl px-6 py-6 text-center ring-1 ring-slate-900/[0.045] ring-inset md:px-7 md:py-7"
+                className="absolute inset-0 flex flex-col items-stretch overflow-hidden rounded-[22px] bg-white px-5 py-5"
                 style={{
-                  backgroundColor: cardBg,
                   boxShadow: cardShadow,
                   filter: cardFilter,
                   translateZ: 0,
-                  willChange: 'filter',
+                  willChange: 'filter, box-shadow',
                 }}
               >
-                {frontFaceContent}
+                {body}
               </motion.div>
-              <SoldStampSlam visible={showSlam} />
+              <SoldStampSlam visible={showSlam} variant={stampVariant} />
             </div>
 
             <div
-              className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-b from-slate-50 to-slate-100 px-6 py-6 text-center shadow-inner ring-1 ring-slate-900/[0.04] ring-inset md:px-7 md:py-7"
+              className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden rounded-[22px] border border-slate-100 bg-gradient-to-b from-slate-50 to-white px-5 py-5 text-center shadow-inner"
               style={{
                 backfaceVisibility: 'hidden',
                 WebkitBackfaceVisibility: 'hidden',
@@ -200,11 +248,11 @@ const DomainHeroCard = memo(function DomainHeroCard({
                 translateZ: 0,
               }}
             >
-              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-200/80 text-slate-500">
-                <span className="text-xl">⟳</span>
+              <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+                <span className="text-lg">⟳</span>
               </div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400 md:text-xs">Authenticating</p>
-              <p className="mt-1.5 text-xs text-slate-600 md:text-sm">Secure transfer</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Authenticating</p>
+              <p className="mt-1 text-xs text-slate-600">Secure transfer</p>
             </div>
           </motion.div>
         </div>

@@ -37,7 +37,7 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
   const isDark = variant === 'dark';
   const triggerCls = isDark
     ? 'text-white text-xs md:text-sm font-normal no-underline flex items-center gap-1 px-2 sm:px-2.5 md:px-3 py-1.5 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200 max-w-[min(100%,11rem)]'
-    : 'text-gray-700 text-xs sm:text-sm font-medium flex items-center gap-1 px-2.5 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer max-w-[min(100%,11rem)]';
+    : 'inline-flex max-w-[min(100%,11rem)] cursor-pointer items-center gap-1.5 rounded-md border border-slate-300/90 bg-white px-3 py-1.5 text-xs font-medium tracking-wide text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-400 hover:bg-slate-50 hover:shadow focus:outline-none focus:ring-2 focus:ring-slate-200/80';
 
   const panelCls =
     'absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[140px] overflow-hidden z-[1002]';
@@ -51,9 +51,9 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
         aria-expanded={open}
         aria-haspopup="listbox"
       >
-        <Globe size={14} className="shrink-0 md:w-4 md:h-4" />
-        <span className="hidden md:inline truncate">{languageLabel(i18n.language)}</span>
-        <ChevronDown size={14} className="shrink-0" />
+        <Globe size={13} className="shrink-0 text-slate-500 md:h-3.5 md:w-3.5" strokeWidth={2} />
+        <span className="hidden truncate md:inline">{languageLabel(i18n.language)}</span>
+        <ChevronDown size={13} className="shrink-0 text-slate-500" strokeWidth={2} />
       </button>
       {open && (
         <div className={panelCls} role="listbox">

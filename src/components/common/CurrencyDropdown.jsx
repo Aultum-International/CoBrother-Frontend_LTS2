@@ -23,7 +23,7 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
 
   const triggerCls = isDark
     ? 'text-white text-xs md:text-sm font-normal no-underline flex items-center gap-1 px-2 sm:px-2.5 md:px-3 py-1.5 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200'
-    : 'text-gray-700 text-xs sm:text-sm font-medium flex items-center gap-1 px-2.5 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-colors cursor-pointer';
+    : 'inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300/90 bg-white px-3 py-1.5 text-xs font-medium tracking-wide text-slate-700 shadow-sm transition-all duration-200 hover:border-slate-400 hover:bg-slate-50 hover:shadow focus:outline-none focus:ring-2 focus:ring-slate-200/80';
 
   const panelCls = isDark
     ? 'absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg min-w-[140px] overflow-hidden z-[1001]'
@@ -39,7 +39,7 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
         aria-haspopup="listbox"
       >
         <span className="truncate">{CURRENCY_LABELS[currency] || currency}</span>
-        <ChevronDown size={14} className="shrink-0" />
+        <ChevronDown size={13} className="shrink-0 text-slate-500" strokeWidth={2} />
       </button>
       {open && (
         <div className={panelCls} role="listbox">

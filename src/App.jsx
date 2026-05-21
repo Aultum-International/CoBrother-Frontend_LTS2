@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 
+import SiteGradientBorder from './components/common/SiteGradientBorder';
 import { AuthProvider } from './context/AuthContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -50,6 +51,7 @@ export default function App() {
       <LanguageProvider>
         <CurrencyProvider>
           <AuthProvider>
+            <SiteGradientBorder />
             <Routes>
 
             {/* Public */}

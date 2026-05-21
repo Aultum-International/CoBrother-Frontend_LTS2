@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
-import cobrotherProfile from '../../assets/CoBrother_profileW.png';
+import cobrotherProfile from '../../assets/cobrother_community_profil.png';
 import AnimatedLogoutButton from './AnimatedLogoutButton';
 import CurrencyDropdown from './CurrencyDropdown';
 import LanguageDropdown from './LanguageDropdown';
@@ -69,20 +69,17 @@ export default function TopNavbar({ homeMobileMenu = false }) {
   };
 
   return (
-    <div
-      className="home-top-nav sticky top-0 w-full z-[1001] border-b border-purple/[0.18] font-body"
-      style={{ background: 'linear-gradient(90deg, #0e0b1e 0%, #130d28 60%, #0f1225 100%)' }}
-    >
+    <div className="home-top-nav sticky top-0 z-[1001] w-full border-b border-blue-200/80 bg-gradient-to-r from-sky-50 via-blue-50 to-cyan-50 font-body shadow-[inset_0_-1px_0_rgba(59,130,246,0.08)]">
       <div className="home-top-nav-inner w-full h-10 md:h-11 flex items-center justify-end">
   <div className="flex items-center gap-1.5 sm:gap-3 md:gap-5 min-w-0 ml-auto">
 
-<CurrencyDropdown variant="dark" />
-    <LanguageDropdown variant="dark" />
+<CurrencyDropdown variant="light" />
+    <LanguageDropdown variant="light" />
 
           <div className="relative hidden lg:block">
             <a
               href="/contact"
-              className="text-white text-sm font-normal no-underline flex items-center gap-1 px-3 py-2 rounded transition-colors duration-200 cursor-pointer bg-transparent border-none font-body hover:bg-white/15 hover:text-gray-200"
+              className="flex cursor-pointer items-center gap-1 rounded border-none bg-transparent px-3 py-2 text-sm font-normal text-slate-700 no-underline transition-colors duration-200 font-body hover:bg-blue-100/70 hover:text-blue-900"
             >
               {t('contactUs')}
             </a>
@@ -92,7 +89,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
           <div className="relative ml-1 md:ml-2" ref={profileRef}>
             <button
               type="button"
-              className="block w-8 h-8 md:w-9 md:h-9 shrink-0 rounded-full cursor-pointer no-underline transition-all duration-500 hover:scale-105 shadow-[0_4px_16px_rgba(0,0,0,0.12)]"
+              className="relative block h-8 w-8 shrink-0 cursor-pointer rounded-full border-2 border-slate-300 bg-white shadow-sm no-underline transition-[transform,box-shadow] duration-300 hover:scale-105 hover:border-slate-400 hover:bg-white hover:shadow-md focus:outline-none md:h-9 md:w-9"
               style={{
                 perspective: '500px',
                 transformStyle: 'preserve-3d',
@@ -101,19 +98,23 @@ export default function TopNavbar({ homeMobileMenu = false }) {
             >
               {/* Front - Profile Icon */}
               <div
-                className="absolute inset-0 rounded-full flex items-center justify-center border border-white/25 bg-transparent transition-all duration-500"
+                className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-full bg-white transition-transform duration-500"
                 style={{
-                  transform: showInitial ? 'rotateY(90deg) scale(0.55)' : 'rotateY(0deg) scale(0.9)',
+                  transform: showInitial ? 'rotateY(90deg) scale(0.55)' : 'rotateY(0deg) scale(1)',
                   opacity: showInitial ? 0 : 1,
                   backfaceVisibility: 'hidden',
                 }}
               >
-                <img src={cobrotherProfile} alt="Profile" className="w-full h-full object-contain p-1" />
+                <img
+                  src={cobrotherProfile}
+                  alt="CoBrother profile"
+                  className="h-[85%] w-[85%] object-contain brightness-0"
+                />
               </div>
 
               {/* Back - User Initial Circle */}
               <div
-                className="absolute inset-0 rounded-full flex items-center justify-center border border-white/25 bg-gradient-to-br from-black-500 to-indigo-600 text-white font-bold text-lg transition-all duration-500"
+                className="absolute inset-0 flex items-center justify-center rounded-full border border-blue-300/80 bg-gradient-to-br from-blue-600 to-indigo-600 text-lg font-bold text-white transition-all duration-500"
                 style={{
                   transform: showInitial ? 'rotateY(0deg) scale(0.9)' : 'rotateY(-90deg) scale(0.55)',
                   opacity: showInitial ? 1 : 0,
@@ -232,11 +233,11 @@ export default function TopNavbar({ homeMobileMenu = false }) {
       </div>
 
       {homeMobileMenu && mobileMenuOpen && (
-        <div className="md:hidden absolute top-full inset-x-0 px-4 py-3 bg-[#130d28] border-b border-white/10">
-          <div className="w-full flex flex-col gap-2">
+        <div className="absolute inset-x-0 top-full border-b border-blue-100 bg-gradient-to-b from-sky-50 to-blue-50/95 px-4 py-3 md:hidden">
+          <div className="flex w-full flex-col gap-2">
             <a
               href="/"
-              className="text-white text-sm px-3 py-2 rounded hover:bg-white/10 transition-colors"
+              className="rounded px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-blue-100/80"
               onClick={() => setMobileMenuOpen(false)}
             >
               Home

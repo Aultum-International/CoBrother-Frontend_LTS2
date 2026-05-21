@@ -258,7 +258,7 @@ export default function Home() {
 
   return (
 
-    <div className="bg-white">
+    <div className="relative bg-white">
 
       <TopNavbar homeMobileMenu />
 
@@ -276,9 +276,10 @@ export default function Home() {
 
 
 
-      <HeroGlow />
-
-      <DomainSearchBar />
+      <div className="home-hero-search-stack relative z-10">
+        <HeroGlow />
+        <DomainSearchBar className="-mt-1 pt-2 sm:-mt-2 sm:pt-3 lg:-mt-4 lg:pt-4" />
+      </div>
 
       <ExploreSection />
 
