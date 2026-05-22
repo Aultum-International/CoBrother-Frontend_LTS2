@@ -1,9 +1,10 @@
-import { memo } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import RoundInkStamp from '../domainHeroCarousel/RoundInkStamp';
 
 const statusStyles = {
-  sold: 'border-emerald-200/80 bg-emerald-50/80 text-emerald-700',
-  unsold: 'border-rose-200/80 bg-rose-50/80 text-rose-700',
+  sold: 'border-emerald-200/90 bg-emerald-50/95 text-emerald-700 shadow-[0_8px_18px_rgba(16,185,129,0.14)]',
+  unsold: 'border-rose-200/90 bg-rose-50/95 text-rose-700 shadow-[0_8px_18px_rgba(244,63,94,0.14)]',
 };
 
 const statusLabels = {
@@ -11,162 +12,132 @@ const statusLabels = {
   unsold: 'UNSOLD',
 };
 
+const STATUS_REVEAL_DELAY_MS = 3750;
+
 function StatusStamp({ status }) {
-  const isSold = status === 'sold';
-  const tone = isSold
-    ? {
-        color: '#059669',
-        plate: 'rgba(240, 253, 244, 0.86)',
-        inkOpacity: 0.88,
-        shadow: 'drop-shadow(0 12px 16px rgba(5, 150, 105, 0.24))',
-        textSize: 34,
-        label: 'SOLD',
-      }
-    : {
-        color: '#b91c1c',
-        plate: 'rgba(255, 241, 242, 0.94)',
-        inkOpacity: 0.98,
-        shadow: 'drop-shadow(0 14px 18px rgba(185, 28, 28, 0.3))',
-        textSize: 28,
-        label: 'UNSOLD',
-      };
+  const variant = status === 'sold' ? 'sold' : 'unsold';
 
   return (
-    <motion.div
-      className="pointer-events-none absolute -right-1 -top-3 z-20 h-[78px] w-[100px] origin-center"
-      initial={{ opacity: 0, scale: 1.45, rotate: -21, y: -26 }}
-      animate={{
-        opacity: 1,
-        scale: 1,
-        rotate: -12,
-        y: 0,
-      }}
-      transition={{
-        opacity: { duration: 0.42, ease: 'easeOut' },
-        scale: { type: 'spring', stiffness: 155, damping: 12, mass: 0.85 },
-        rotate: { type: 'spring', stiffness: 130, damping: 14, mass: 0.9 },
-        y: { type: 'spring', stiffness: 145, damping: 13, mass: 0.9 },
-      }}
-      style={{ color: tone.color, filter: tone.shadow }}
-    >
+    <div className="pointer-events-none absolute inset-y-2 right-3 z-20 flex w-[94px] items-center justify-center sm:right-4 sm:w-[104px]">
       <motion.span
-        className="absolute inset-4 rounded-full bg-current/10 blur-md"
+        className="absolute h-[62px] w-[62px] rounded-full bg-slate-900/12 blur-lg sm:h-[70px] sm:w-[70px]"
         initial={{ opacity: 0, scale: 0.35 }}
-        animate={{ opacity: [0, 0.42, 0.16], scale: [0.35, 1.18, 1] }}
-        transition={{ duration: 1.25, ease: [0.22, 1, 0.36, 1] }}
+        animate={{
+          opacity: [0, 0.14, 0.28, 0.22, 0.18, 0],
+          scale: [0.35, 0.72, 1.18, 1.04, 1, 0.92],
+        }}
+        transition={{ duration: 3.45, times: [0, 0.38, 0.6, 0.72, 0.86, 1], ease: [0.22, 1, 0.36, 1] }}
       />
-      <svg
-        viewBox="0 0 180 140"
-        className="h-full w-full overflow-visible"
-        aria-hidden="true"
+      <motion.div
+        className="absolute h-[72px] w-[72px] rounded-full bg-white/30 opacity-0 blur-sm sm:h-[80px] sm:w-[80px]"
+        animate={{ opacity: [0, 0, 0.22, 0.06, 0], scale: [0.7, 0.9, 1.12, 1.02, 0.95] }}
+        transition={{ duration: 3.45, times: [0, 0.5, 0.62, 0.82, 1], ease: 'easeOut' }}
+      />
+      <motion.div
+        className="relative z-10 flex h-[78px] w-[78px] origin-center items-center justify-center sm:h-[86px] sm:w-[86px]"
+        initial={{ opacity: 0, scale: 1.58, rotate: -28, y: -42, filter: 'blur(5px)' }}
+        animate={{
+          opacity: [0, 0.72, 1, 1, 1, 0],
+          scale: [1.58, 1.25, 0.92, 1.045, 1, 0.98],
+          rotate: [-28, -20, -10, -13, -12, -12],
+          y: [-42, -14, 4, -2, 0, 0],
+          filter: [
+            'blur(5px)',
+            'blur(2px)',
+            'blur(0px)',
+            'blur(0px)',
+            'blur(0px)',
+            'blur(0px)',
+          ],
+        }}
+        transition={{
+          duration: 3.45,
+          times: [0, 0.38, 0.6, 0.72, 0.86, 1],
+          ease: [0.16, 0.88, 0.22, 1],
+        }}
+        style={{
+          transformOrigin: '50% 58%',
+        }}
       >
-        <defs>
-          <filter id={`stamp-rough-${status}`}>
-            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed={isSold ? 7 : 11} />
-            <feDisplacementMap in="SourceGraphic" scale="0.9" />
-          </filter>
-        </defs>
-
-        <g
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          filter={`url(#stamp-rough-${status})`}
+        <motion.div
+          className="h-full w-full"
+          animate={{ scaleY: [1, 1, 0.86, 1.06, 1, 1] }}
+          transition={{ duration: 3.45, times: [0, 0.52, 0.6, 0.72, 0.86, 1], ease: [0.2, 0.9, 0.22, 1] }}
+          style={{
+            filter: 'drop-shadow(0 14px 18px rgba(15, 23, 42, 0.18))',
+            transformOrigin: '50% 64%',
+          }}
         >
-          <circle
-            cx="90"
-            cy="70"
-            r="57"
-            strokeWidth="9"
-            strokeDasharray="2 5"
-            opacity="0.9"
-          />
-          <circle cx="90" cy="70" r="48" strokeWidth="4" opacity="0.86" />
-          <circle cx="90" cy="70" r="42" strokeWidth="2.5" opacity="0.7" />
-          <rect
-            x="22"
-            y="43"
-            width="136"
-            height="54"
-            rx="4"
-            strokeWidth="7"
-            transform="rotate(-13 90 70)"
-            fill={tone.plate}
-          />
-          <circle cx="34" cy="70" r="4.5" fill="currentColor" strokeWidth="0" transform="rotate(-13 90 70)" />
-          <circle cx="146" cy="70" r="4.5" fill="currentColor" strokeWidth="0" transform="rotate(-13 90 70)" />
-        </g>
+          <RoundInkStamp variant={variant} size="md" className="h-full w-full" />
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+}
 
-        <g fill="currentColor" opacity={tone.inkOpacity} filter={`url(#stamp-rough-${status})`}>
-          <text
-            x="90"
-            y="78"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            transform="rotate(-13 90 70)"
-            className="select-none fill-current font-sans font-black tracking-[0.06em]"
-            style={{ fontSize: tone.textSize }}
-          >
-            {tone.label}
-          </text>
-          <text x="56" y="45" className="fill-current text-[20px] font-black">★</text>
-          <text x="84" y="33" className="fill-current text-[18px] font-black">★</text>
-          <text x="112" y="45" className="fill-current text-[20px] font-black">★</text>
-          <text x="61" y="111" className="fill-current text-[18px] font-black">★</text>
-          <text x="91" y="118" className="fill-current text-[20px] font-black">★</text>
-          <text x="121" y="110" className="fill-current text-[18px] font-black">★</text>
-        </g>
-      </svg>
-    </motion.div>
+function StatusBadge({ status, visible }) {
+  const label = statusLabels[status] || statusLabels.unsold;
+
+  return (
+    <motion.span
+      className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] ${
+        statusStyles[status] || statusStyles.unsold
+      }`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: visible ? 1 : 0, scale: visible ? 1 : 0.96 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      aria-hidden={!visible}
+    >
+      {label}
+    </motion.span>
   );
 }
 
 const SmallDomainTickerCard = memo(function SmallDomainTickerCard({
   item,
+  slotId,
   index = 0,
   focused = false,
+  statusVisible = false,
+  onStatusReveal,
   cardWidth = 224,
 }) {
-  const isSold = item.status === 'sold';
+  const [stampRunId, setStampRunId] = useState(0);
+
+  useEffect(() => {
+    if (!focused || statusVisible) return undefined;
+
+    setStampRunId((current) => current + 1);
+    const statusTimer = window.setTimeout(() => {
+      onStatusReveal?.(slotId);
+    }, STATUS_REVEAL_DELAY_MS);
+
+    return () => window.clearTimeout(statusTimer);
+  }, [focused, onStatusReveal, slotId, statusVisible]);
 
   return (
     <motion.article
-      className="group relative flex h-[70px] shrink-0 items-center justify-between gap-3 overflow-hidden rounded-2xl border border-white/80 bg-white/80 px-3.5 py-3 shadow-[0_16px_38px_rgba(15,23,42,0.13)] backdrop-blur-xl sm:h-[76px] sm:px-4"
+      className="group relative flex h-[86px] shrink-0 items-center justify-between gap-3 overflow-visible rounded-2xl border-0 bg-white/90 px-4 py-3 shadow-[0_16px_38px_rgba(15,23,42,0.13)] backdrop-blur-xl sm:h-[90px] sm:px-5"
       style={{ width: cardWidth }}
       initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
-      animate={{ opacity: 1, y: focused ? -1 : 0, filter: 'blur(0px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
       transition={{ duration: 0.45, delay: Math.min(index, 5) * 0.06, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.9),rgba(238,242,255,0.34),rgba(255,255,255,0.58))]" />
-      <div className="pointer-events-none absolute -right-10 -top-10 h-20 w-20 rounded-full bg-cyan-300/20 blur-2xl transition-opacity duration-300 group-hover:opacity-90" />
-      {focused ? <StatusStamp status={item.status} /> : null}
+      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-white/90" />
+      <div className="pointer-events-none absolute -right-10 -top-10 h-20 w-20 rounded-full bg-cyan-300/14 blur-2xl transition-opacity duration-300 group-hover:opacity-80" />
+      {focused && !statusVisible ? <StatusStamp key={stampRunId} status={item.status} /> : null}
 
-      <div className="relative min-w-0">
-        <p className="truncate text-[14px] font-bold leading-tight text-slate-900 sm:text-base">
+      <div className="relative min-w-0 flex-1 pr-1">
+        <p className="whitespace-nowrap text-[13px] font-bold leading-tight text-slate-900 sm:text-[15px]">
           {item.domain}
         </p>
-        <p className="mt-1 truncate text-[11px] font-medium text-slate-500">
+        <p className="mt-1.5 whitespace-nowrap text-[11px] font-medium text-slate-500 sm:text-[12px]">
           {item.owner || 'Verified buyer'}
         </p>
       </div>
 
-      <div className="relative flex shrink-0 flex-col items-end gap-1">
-        <span
-          className={`rounded-full border px-2 py-1 text-[9px] font-black uppercase tracking-[0.14em] ${
-            statusStyles[item.status] || statusStyles.unsold
-          }`}
-        >
-          {statusLabels[item.status] || 'UNSOLD'}
-        </span>
-        {isSold ? (
-          <motion.span
-            className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.55)]"
-            animate={{ opacity: [0.45, 1, 0.45], scale: [0.9, 1.16, 0.9] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-            aria-hidden
-          />
-        ) : null}
+      <div className="relative z-10 flex h-10 w-[94px] shrink-0 items-center justify-center sm:w-[104px]">
+        {statusVisible ? <StatusBadge status={item.status} visible /> : null}
       </div>
     </motion.article>
   );

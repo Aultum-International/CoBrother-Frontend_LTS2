@@ -6,15 +6,21 @@ import {
   useRef,
   useState,
 } from 'react';
-import { motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion';
+import {
+  motion,
+  useMotionValue,
+  useMotionValueEvent,
+  useReducedMotion,
+  useTransform,
+} from 'framer-motion';
 import SmallDomainTickerCard from './SmallDomainTickerCard';
 import { DOMAIN_TICKER_ITEMS } from './mockDomainTickerData';
 
 const CARD_GAP_PX = 12;
-const DESKTOP_CARD_WIDTH = 224;
-const MOBILE_CARD_WIDTH = 184;
+const DESKTOP_CARD_WIDTH = 292;
+const MOBILE_CARD_WIDTH = 264;
 const LOOP_MS = 38000;
-const PAUSE_MS = 3900;
+const PAUSE_MS = 7200;
 const CENTER_TOLERANCE = 24;
 
 function TickerSlot({
@@ -24,7 +30,21 @@ function TickerSlot({
   wrapWidth,
   cardWidth,
   focused,
+  statusVisible,
+  onStatusReveal,
+  onSlotExit,
 }) {
+  const isInViewport = useCallback(
+    (currentX) => {
+      const left = currentX + slotIndex * (cardWidth + CARD_GAP_PX);
+      const right = left + cardWidth;
+      return right > 0 && left < wrapWidth;
+    },
+    [cardWidth, slotIndex, wrapWidth],
+  );
+  const [inViewport, setInViewport] = useState(() => isInViewport(x.get()));
+  const inViewportRef = useRef(inViewport);
+
   const opacity = useTransform(x, (currentX) => {
     const center = currentX + slotIndex * (cardWidth + CARD_GAP_PX) + cardWidth / 2;
     const leftFadeEnd = 86;
@@ -40,6 +60,18 @@ function TickerSlot({
 
   const blur = useTransform(opacity, [0, 0.45, 1], ['blur(2px)', 'blur(0.6px)', 'blur(0px)']);
 
+  useMotionValueEvent(x, 'change', (currentX) => {
+    const nextInViewport = isInViewport(currentX);
+    if (nextInViewport !== inViewportRef.current) {
+      inViewportRef.current = nextInViewport;
+      setInViewport(nextInViewport);
+    }
+  });
+
+  useEffect(() => {
+    if (!inViewport) onSlotExit?.(slotIndex);
+  }, [inViewport, onSlotExit, slotIndex]);
+
   return (
     <motion.div
       className="shrink-0 transform-gpu will-change-transform"
@@ -47,8 +79,11 @@ function TickerSlot({
     >
       <SmallDomainTickerCard
         item={item}
+        slotId={slotIndex}
         index={slotIndex % DOMAIN_TICKER_ITEMS.length}
         focused={focused}
+        statusVisible={statusVisible}
+        onStatusReveal={onStatusReveal}
         cardWidth={cardWidth}
       />
     </motion.div>
@@ -62,6 +97,7 @@ export default function CompactDomainTicker({ className = '' }) {
   const [wrapWidth, setWrapWidth] = useState(420);
   const [cardWidth, setCardWidth] = useState(DESKTOP_CARD_WIDTH);
   const [focusedSlot, setFocusedSlot] = useState(null);
+  const [revealedSlots, setRevealedSlots] = useState(() => new Set());
   const focusedSlotRef = useRef(null);
   const pauseUntilRef = useRef(0);
   const armedRef = useRef(true);
@@ -99,9 +135,28 @@ export default function CompactDomainTicker({ className = '' }) {
   useEffect(() => {
     x.set(-segment);
     setFocusedSlot(null);
+    setRevealedSlots(new Set());
     pauseUntilRef.current = 0;
     armedRef.current = true;
   }, [segment, x]);
+
+  const onStatusReveal = useCallback((slotIndex) => {
+    setRevealedSlots((prev) => {
+      if (prev.has(slotIndex)) return prev;
+      const next = new Set(prev);
+      next.add(slotIndex);
+      return next;
+    });
+  }, []);
+
+  const onSlotExit = useCallback((slotIndex) => {
+    setRevealedSlots((prev) => {
+      if (!prev.has(slotIndex)) return prev;
+      const next = new Set(prev);
+      next.delete(slotIndex);
+      return next;
+    });
+  }, []);
 
   const findCenteredSlot = useCallback((currentX) => {
     const center = wrapWidthRef.current / 2;
@@ -163,17 +218,11 @@ export default function CompactDomainTicker({ className = '' }) {
   return (
     <section
       ref={wrapRef}
-      className={`relative min-w-0 overflow-x-clip overflow-y-visible bg-transparent [background:transparent!important] ${className}`.trim()}
+      className={`relative min-w-0 overflow-x-clip overflow-y-visible border-0 bg-transparent [background:transparent!important] ${className}`.trim()}
       aria-label="Recently sold premium domains"
-      style={{
-        WebkitMaskImage:
-          'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.2) 7%, black 18%, black 82%, rgba(0,0,0,0.2) 93%, transparent 100%)',
-        maskImage:
-          'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.2) 7%, black 18%, black 82%, rgba(0,0,0,0.2) 93%, transparent 100%)',
-      }}
     >
       <motion.div
-        className="flex w-max transform-gpu items-center gap-3 py-3 will-change-transform"
+        className="relative z-0 flex w-max transform-gpu items-center gap-3 py-3 will-change-transform"
         style={{ x, translateZ: 0 }}
       >
         {tickerItems.map((item, index) => (
@@ -184,6 +233,9 @@ export default function CompactDomainTicker({ className = '' }) {
             x={x}
             wrapWidth={wrapWidth}
             focused={focusedSlot === index}
+            statusVisible={revealedSlots.has(index)}
+            onStatusReveal={onStatusReveal}
+            onSlotExit={onSlotExit}
             cardWidth={cardWidth}
           />
         ))}

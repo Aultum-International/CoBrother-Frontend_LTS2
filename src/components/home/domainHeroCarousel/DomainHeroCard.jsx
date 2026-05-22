@@ -80,7 +80,7 @@ const DomainHeroCard = memo(function DomainHeroCard({
       await new Promise((r) => setTimeout(r, 120));
       if (cancelled) return;
       setShowSlam(true);
-      await new Promise((r) => setTimeout(r, 1120));
+      await new Promise((r) => setTimeout(r, 3100));
       if (cancelled) return;
       setShowSlam(false);
       onRevealDone?.(item.id);
