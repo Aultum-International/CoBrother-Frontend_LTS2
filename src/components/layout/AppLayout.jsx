@@ -147,9 +147,9 @@ export default function AppLayout({ children }) {
       data-app-layout-scroll
     >
       <div className="app-layout-workspace flex w-full items-stretch">
-      {/* Desktop Left Sidebar — workspace only; does not extend beside footer */}
-      <aside 
-        className={`hidden lg:flex bg-[#0f0f1a] flex-col flex-shrink-0 self-stretch transition-all duration-300 ${
+      {/* Desktop Left Sidebar — workspace only; ends above full-width footer */}
+      <aside
+        className={`app-layout-sidebar hidden lg:flex bg-[#0f0f1a] flex-col flex-shrink-0 self-stretch transition-all duration-300 ${
           sidebarCollapsed ? 'w-20' : 'w-64'
         }`}
       >
@@ -334,8 +334,8 @@ export default function AppLayout({ children }) {
         </>
       )}
 
-      {/* Main Content Area */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      {/* Main column: header + page content (footer is outside workspace) */}
+      <div className="app-layout-main-column flex min-w-0 flex-1 flex-col">
         {/* Top Header */}
         <header className="sticky top-0 z-30 shrink-0 border-b border-gray-200 bg-white px-4 py-4 lg:px-8 flex items-center justify-between relative">
           <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -456,7 +456,7 @@ export default function AppLayout({ children }) {
       </div>
       </div>
 
-      <div className="h-16 shrink-0 lg:h-24" aria-hidden="true" />
+      <div className="app-layout-footer-spacer h-16 shrink-0 lg:h-24" aria-hidden="true" />
 
       <HomeFooter />
 

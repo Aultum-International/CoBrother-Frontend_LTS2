@@ -288,9 +288,9 @@ export default function Home() {
 
           <HomeListingCarousel />
 
-          <section className="py-12 md:py-20 bg-gray-50">
-
-          <div className="home-hero-align-inner">
+          <section className="home-features-section py-12 md:py-20 bg-gray-50">
+          <div className="home-features-section-grid" aria-hidden="true" />
+          <div className="home-hero-align-inner home-features-section-content">
 
 
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -7,6 +7,52 @@ import AnimatedLogoutButton from './AnimatedLogoutButton';
 import CurrencyDropdown from './CurrencyDropdown';
 import LanguageDropdown from './LanguageDropdown';
 
+const ProfileFlipAvatar = memo(function ProfileFlipAvatar({ flipped, userInitial }) {
+  return (
+    <div className="home-profile-flip-scene" aria-hidden="true">
+      <div className={`home-profile-flip-inner${flipped ? ' is-flipped' : ''}`}>
+        <div className="home-profile-flip-face home-profile-flip-face--front">
+          <img
+            src={cobrotherProfile}
+            alt=""
+            className="home-profile-flip-icon"
+            draggable={false}
+          />
+        </div>
+        <div className="home-profile-flip-face home-profile-flip-face--back">
+          <span className="home-profile-flip-initial">{userInitial}</span>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+function getUserInitialFromUser(user) {
+  if (!user) return '';
+  return (
+    user.fullName?.charAt(0)?.toUpperCase() ||
+    user.name?.charAt(0)?.toUpperCase() ||
+    user.email?.charAt(0)?.toUpperCase() ||
+    'U'
+  );
+}
+
+function getDisplayNameFromUser(user) {
+  if (!user) return 'User';
+  const fName = user.firstName || user.firstname || user.FIRSTNAME || user.FirstName || '';
+  const lName = user.lastName || user.lastname || user.LASTNAME || user.LastName || '';
+  const full = user.fullName || user.fullname || user.FULLNAME || user.name || user.NAME || user.Name || '';
+  if (full) return full;
+  if (fName && lName) return `${fName} ${lName}`;
+  if (fName) return fName;
+  if (lName) return lName;
+  if (user.email) {
+    const username = user.email.split('@')[0].replace(/\./g, ' ');
+    return username.charAt(0).toUpperCase() + username.slice(1);
+  }
+  return 'User';
+}
+
 export default function HomeTopNavActions() {
   const { t } = useTranslation();
   const { user, logout, refreshUser } = useAuth();
@@ -14,6 +60,15 @@ export default function HomeTopNavActions() {
   const [showInitial, setShowInitial] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const profileRef = useRef(null);
+
+  const userKey = user?.id ?? user?.email ?? null;
+
+  const userInitial = useMemo(
+    () => getUserInitialFromUser(user),
+    [user?.fullName, user?.name, user?.email],
+  );
+
+  const displayName = useMemo(() => getDisplayNameFromUser(user), [user]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -32,7 +87,7 @@ export default function HomeTopNavActions() {
   }, [profileDropdownOpen, refreshUser]);
 
   useEffect(() => {
-    if (!user) {
+    if (!userKey) {
       setShowInitial(false);
       return undefined;
     }
@@ -44,39 +99,17 @@ export default function HomeTopNavActions() {
       clearTimeout(startFlip);
       clearInterval(interval);
     };
-  }, [user]);
+  }, [userKey]);
 
-  const getUserInitial = () => {
-    if (!user) return '';
-    return (
-      user.fullName?.charAt(0)?.toUpperCase() ||
-      user.name?.charAt(0)?.toUpperCase() ||
-      user.email?.charAt(0)?.toUpperCase() ||
-      'U'
-    );
-  };
-
-  const getDisplayName = () => {
-    if (!user) return 'User';
-    const fName = user.firstName || user.firstname || user.FIRSTNAME || user.FirstName || '';
-    const lName = user.lastName || user.lastname || user.LASTNAME || user.LastName || '';
-    const full = user.fullName || user.fullname || user.FULLNAME || user.name || user.NAME || user.Name || '';
-    if (full) return full;
-    if (fName && lName) return `${fName} ${lName}`;
-    if (fName) return fName;
-    if (lName) return lName;
-    if (user.email) {
-      const username = user.email.split('@')[0].replace(/\./g, ' ');
-      return username.charAt(0).toUpperCase() + username.slice(1);
-    }
-    return 'User';
-  };
-
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     setProfileDropdownOpen(false);
     await logout();
     navigate('/');
-  };
+  }, [logout, navigate]);
+
+  const toggleProfileDropdown = useCallback(() => {
+    setProfileDropdownOpen((prev) => !prev);
+  }, []);
 
   return (
     <>
@@ -95,39 +128,25 @@ export default function HomeTopNavActions() {
       <div className="home-top-nav-profile relative shrink-0" ref={profileRef}>
         <button
           type="button"
-          className="home-top-nav-profile-btn relative block h-8 w-8 shrink-0 cursor-pointer rounded-full border-2 border-slate-300 bg-white shadow-sm no-underline transition-[box-shadow] duration-300 hover:border-slate-400 hover:bg-white hover:shadow-md focus:outline-none md:h-9 md:w-9"
-          style={{
-            perspective: '500px',
-            transformStyle: 'preserve-3d',
-          }}
-          onClick={() => setProfileDropdownOpen((prev) => !prev)}
+          className="home-top-nav-profile-btn relative block h-8 w-8 shrink-0 cursor-pointer rounded-full border-2 border-slate-300 bg-white p-0 shadow-sm no-underline transition-[box-shadow,border-color] duration-300 hover:border-slate-400 hover:bg-white hover:shadow-md focus:outline-none md:h-9 md:w-9"
+          onClick={toggleProfileDropdown}
           aria-label="Account menu"
           aria-expanded={profileDropdownOpen}
         >
-          <div
-            className="absolute inset-0 flex items-center justify-center overflow-hidden rounded-full bg-white transition-transform duration-500"
-            style={{
-              transform: showInitial ? 'rotateY(90deg) scale(0.55)' : 'rotateY(0deg) scale(1)',
-              opacity: showInitial ? 0 : 1,
-              backfaceVisibility: 'hidden',
-            }}
-          >
-            <img
-              src={cobrotherProfile}
-              alt="CoBrother profile"
-              className="h-[85%] w-[85%] object-contain brightness-0"
-            />
-          </div>
-          <div
-            className="absolute inset-0 flex items-center justify-center rounded-full border border-blue-300/80 bg-gradient-to-br from-blue-600 to-indigo-600 text-lg font-bold text-white transition-all duration-500"
-            style={{
-              transform: showInitial ? 'rotateY(0deg) scale(0.9)' : 'rotateY(-90deg) scale(0.55)',
-              opacity: showInitial ? 1 : 0,
-              backfaceVisibility: 'hidden',
-            }}
-          >
-            {getUserInitial()}
-          </div>
+          {userKey ? (
+            <ProfileFlipAvatar flipped={showInitial} userInitial={userInitial} />
+          ) : (
+            <div className="home-profile-flip-scene" aria-hidden="true">
+              <div className="home-profile-flip-face home-profile-flip-face--front home-profile-flip-face--static">
+                <img
+                  src={cobrotherProfile}
+                  alt=""
+                  className="home-profile-flip-icon"
+                  draggable={false}
+                />
+              </div>
+            </div>
+          )}
         </button>
 
         {profileDropdownOpen && (
@@ -136,7 +155,7 @@ export default function HomeTopNavActions() {
               <>
                 <div className="px-4 py-3 border-b border-gray-100">
                   <p className="text-sm font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent truncate">
-                    {getDisplayName()}
+                    {displayName}
                   </p>
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>

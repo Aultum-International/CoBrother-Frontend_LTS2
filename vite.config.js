@@ -25,7 +25,7 @@ export default defineConfig({
       '/api': {
         target: 'https://backend.cobrother.com',
         changeOrigin: true,
-        secure: true,
+        secure: false,
       },
 
       '/oauth2': {
