@@ -1,15 +1,31 @@
-# Node modules
+# Dependencies
 node_modules/
 
-# Env files
+# Environment & secrets (never commit)
 .env
 .env.*
 !.env.example
+
+# Build output
+dist/
+build/
+out/
+
+# Vite / tooling cache
+.vite/
+.cache/
+*.tsbuildinfo
+.eslintcache
+
+# Test / coverage
+coverage/
 
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # OS files
 .DS_Store
@@ -18,6 +34,8 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
-# Misc
+# Local overrides
 *.local
