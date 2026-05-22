@@ -33,7 +33,7 @@ export default defineConfig({
         target: 'https://backend.cobrother.com',
 
         changeOrigin: true,
-        secure: true,
+        secure: false,
       },
 
     },

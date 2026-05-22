@@ -278,18 +278,20 @@ export default function Home() {
 
       <div className="home-hero-search-stack relative z-10">
         <HeroGlow />
-        <DomainSearchBar className="-mt-1 pt-2 sm:-mt-2 sm:pt-3 lg:-mt-4 lg:pt-4" />
       </div>
 
-      <ExploreSection />
+      <div className="home-hero-align-outer">
+        <div className="home-hero-align-inner">
+          <DomainSearchBar embedded className="-mt-1 pt-2 sm:-mt-2 sm:pt-3 lg:-mt-4 lg:pt-4" />
 
-      <HomeListingCarousel />
+          <ExploreSection />
 
+          <HomeListingCarousel />
 
+          <section className="py-12 md:py-20 bg-gray-50">
 
-      <section className="py-12 md:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+          <div className="home-hero-align-inner">
 
-        <div className="max-w-[1200px] mx-auto">
 
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
 
@@ -315,11 +317,11 @@ export default function Home() {
 
           </div>
 
+            </div>
+
+          </section>
         </div>
-
-      </section>
-
-
+      </div>
 
       <HomeFooter />
 

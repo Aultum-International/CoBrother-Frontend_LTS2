@@ -14,12 +14,12 @@ export default function SiteGradientBorder() {
           z-index: 1100;
         }
 
-        .site-static-border::before,
-        .site-static-border::after {
+        .site-static-border::before {
           content: '';
           position: absolute;
           inset: 0;
           pointer-events: none;
+          padding: 2px;
           -webkit-mask:
             linear-gradient(#fff 0 0) content-box,
             linear-gradient(#fff 0 0);
@@ -28,34 +28,15 @@ export default function SiteGradientBorder() {
             linear-gradient(#fff 0 0) content-box,
             linear-gradient(#fff 0 0);
           mask-composite: exclude;
-        }
-
-        .site-static-border::before {
-          padding: 2px;
           background:
             linear-gradient(135deg,
               rgba(0, 195, 255, 0.62) 0%,
               rgba(99, 102, 241, 0.44) 24%,
-              rgba(120, 80, 220, 0.48) 48%,
-              rgba(168, 85, 247, 0.42) 66%,
+              rgba(88, 28, 135, 0.72) 48%,
+              rgba(76, 29, 149, 0.68) 66%,
               rgba(255, 48, 108, 0.46) 86%,
               rgba(0, 195, 255, 0.48) 100%);
-          box-shadow:
-            inset 0 0 0 1px rgba(120, 80, 220, 0.24),
-            0 0 18px rgba(120, 80, 220, 0.16);
-        }
-
-        .site-static-border::after {
-          padding: 9px;
-          opacity: 0.72;
-          filter: blur(13px);
-          background:
-            linear-gradient(135deg,
-              rgba(0, 195, 255, 0.32) 0%,
-              rgba(99, 102, 241, 0.18) 28%,
-              rgba(120, 80, 220, 0.26) 52%,
-              rgba(168, 85, 247, 0.2) 72%,
-              rgba(255, 48, 108, 0.26) 100%);
+          box-shadow: 0 0 18px rgba(76, 29, 149, 0.22);
         }
       `}</style>
     </>

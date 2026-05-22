@@ -6,6 +6,17 @@ import { CURRENCY_LABELS } from '../../constants/currencies';
 /**
  * Shared currency selector (TopNavbar dark bar + AppLayout light).
  */
+const CURRENCY_SHORT = {
+  INR: '₹',
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  AED: 'AED',
+  SGD: 'S$',
+  AUD: 'A$',
+  CAD: 'C$',
+};
+
 export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
   const { currency, setCurrency, supportedCurrencies } = useCurrency();
   const [open, setOpen] = useState(false);
@@ -29,16 +40,21 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
     ? 'absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg min-w-[140px] overflow-hidden z-[1001]'
     : 'absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg min-w-[140px] overflow-hidden z-[1002]';
 
+  const fullLabel = CURRENCY_LABELS[currency] || currency;
+  const shortLabel = CURRENCY_SHORT[currency] || currency;
+  const isNavUtil = className.includes('home-nav-util-currency');
+
   return (
-    <div className={`relative ${className}`.trim()} ref={ref}>
+    <div className={`relative shrink-0 ${className}`.trim()} ref={ref}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={triggerCls}
+        className={`${triggerCls}${isNavUtil ? ' home-nav-util-btn' : ''}`.trim()}
         aria-expanded={open}
         aria-haspopup="listbox"
       >
-        <span className="truncate">{CURRENCY_LABELS[currency] || currency}</span>
+        <span className="home-nav-currency-label home-nav-currency-label--full truncate">{fullLabel}</span>
+        <span className="home-nav-currency-label home-nav-currency-label--short truncate">{shortLabel}</span>
         <ChevronDown size={13} className="shrink-0 text-slate-500" strokeWidth={2} />
       </button>
       {open && (

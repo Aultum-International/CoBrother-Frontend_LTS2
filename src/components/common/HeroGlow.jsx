@@ -10,7 +10,7 @@ export default function HeroGlow() {
 
       <div className="pointer-events-none absolute inset-0 z-0 overflow-x-hidden glow-layer" aria-hidden />
 
-      <div className="relative z-10 mx-auto w-full max-w-[1200px]">
+      <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8">
           {/* Left: headline, copy, CTA, trust — above carousel so text is never covered */}
           <div className="relative z-20 w-full min-w-0 lg:max-w-[700px]">

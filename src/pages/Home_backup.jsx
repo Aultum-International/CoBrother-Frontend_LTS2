@@ -102,7 +102,7 @@ export default function Home() {
       <footer className="py-12 border-t border-gray-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-gray-600 mb-2">
-            © 2026 CoBrother™ Aultum International. All rights reserved.
+            © 2026 CoBrother™ All rights reserved.
             <br />
             Made with ❤️ in India.
           </p>

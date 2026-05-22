@@ -1,80 +1,87 @@
-import { Mail, Phone, MapPin, MessageCircle, Clock, Send } from 'lucide-react';
+import { useMemo } from 'react';
+import { Mail, Phone, MessageCircle, Clock, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import coBrotherLogo from '../assets/Cobrother_logo.png';
 import HomeFooter from '../components/common/HomeFooter';
 
 export default function ContactPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const contactInfo = [
-    {
-      icon: Mail,
-      title: 'Email Us',
-      details: 'support@cobrother.com',
-      link: 'mailto:support@cobrother.com',
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
-    },
-    {
-      icon: Phone,
-      title: 'Call Us',
-      details: '+91 98765 43210',
-      link: 'tel:+919876543210',
-      color: 'text-indigo-600',
-      bgColor: 'bg-indigo-50'
-    },
-    {
-      icon: MessageCircle,
-      title: 'WhatsApp',
-      details: '+91 98765 43210',
-      link: 'https://wa.me/919876543210',
-      color: 'text-green-600',
-      bgColor: 'bg-green-50'
-    }
-  ];
+  const contactInfo = useMemo(
+    () => [
+      {
+        icon: Mail,
+        title: t('emailUs'),
+        details: 'support@cobrother.com',
+        link: 'mailto:support@cobrother.com',
+        color: 'text-purple-600',
+        bgColor: 'bg-purple-50',
+      },
+      {
+        icon: Phone,
+        title: t('callUs'),
+        details: '+91 98765 43210',
+        link: 'tel:+919876543210',
+        color: 'text-indigo-600',
+        bgColor: 'bg-indigo-50',
+      },
+      {
+        icon: MessageCircle,
+        title: t('whatsapp'),
+        details: '+91 98765 43210',
+        link: 'https://wa.me/919876543210',
+        color: 'text-green-600',
+        bgColor: 'bg-green-50',
+      },
+    ],
+    [t],
+  );
 
-  const businessHours = [
-    { day: 'Monday - Saturday', hours: '9:00 AM - 6:00 PM' },
-    { day: 'Sunday', hours: 'Holiday' }
-  ];
+  const businessHours = useMemo(
+    () => [
+      { day: t('businessHoursWeekdays'), hours: t('businessHoursWeekdaysTime') },
+      { day: t('businessHoursSunday'), hours: t('businessHoursSundayTime') },
+    ],
+    [t],
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-indigo-50">
-      {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <img 
-            src={coBrotherLogo} 
-            alt="CoBrother" 
-            className="h-10 cursor-pointer" 
+          <img
+            src={coBrotherLogo}
+            alt="CoBrother"
+            className="h-10 cursor-pointer"
             onClick={() => navigate('/')}
           />
-          <button 
+          <button
+            type="button"
             className="btn-glow btn-glow-sm"
             onClick={() => navigate('/')}
           >
-            Back to Home
+            {t('backToHomeLabel')}
           </button>
         </div>
       </nav>
 
-      {/* Hero Section */}
       <section className="py-16 px-4 max-md:py-12">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 border border-purple-300 rounded-full text-sm font-semibold text-purple-700 mb-6">
             <Send size={16} />
-            We're Here to Help
+            {t('contactHeroBadge')}
           </div>
           <h1 className="font-display text-5xl md:text-6xl font-bold text-gray-900 mb-6 max-md:text-4xl">
-            Get in <span className="bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">Touch</span>
+            {t('contactHeroTitle')}
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto max-md:text-lg">
-            Have questions about CoBrother? We'd love to hear from you. Reach out to us through any of the channels below.
+            {t('contactHeroSubtitle')}
           </p>
         </div>
       </section>
 
-      {/* Contact Cards */}
       <section className="py-12 px-4 max-md:py-8">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-md:gap-4">
@@ -108,7 +115,6 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Business Hours */}
       <section className="py-12 px-4 max-md:py-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8 max-md:p-6">
@@ -116,7 +122,7 @@ export default function ContactPage() {
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center max-md:w-10 max-md:h-10">
                 <Clock className="text-purple-600" size={24} strokeWidth={2} />
               </div>
-              <h2 className="font-display text-2xl font-bold text-gray-900 max-md:text-xl">Business Hours</h2>
+              <h2 className="font-display text-2xl font-bold text-gray-900 max-md:text-xl">{t('businessHours')}</h2>
             </div>
             <div className="space-y-4">
               {businessHours.map((item, index) => (
@@ -130,28 +136,29 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-16 px-4 max-md:py-12">
         <div className="max-w-4xl mx-auto text-center">
           <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-12 shadow-2xl max-md:p-8">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4 max-md:text-2xl">
-              Ready to Get Started?
+              {t('readyToGetStarted')}
             </h2>
             <p className="text-purple-100 text-lg mb-8 max-md:text-base max-md:mb-6">
-              Join thousands of businesses already using CoBrother to grow their ventures.
+              {t('ctaJoinDescription')}
             </p>
             <div className="flex gap-4 justify-center max-md:flex-col">
               <button
+                type="button"
                 className="btn-glow"
                 onClick={() => navigate('/login')}
               >
-                Sign In
+                {t('signIn')}
               </button>
               <button
+                type="button"
                 className="btn-glow"
                 onClick={() => navigate('/join-form')}
               >
-                Join Us
+                {t('joinUs')}
               </button>
             </div>
           </div>

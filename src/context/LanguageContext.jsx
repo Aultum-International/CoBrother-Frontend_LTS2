@@ -31,6 +31,9 @@ export const LanguageProvider = ({ children }) => {
 
   const changeLanguage = (langCode) => {
     setLanguage(langCode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedLanguage', langCode);
+    }
     i18n.changeLanguage(langCode);
   };
 

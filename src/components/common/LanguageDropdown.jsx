@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useLanguage } from '../../context/LanguageContext';
 
 const LANGUAGES = [
   { code: 'en', name: 'English (IND)' },
@@ -23,6 +24,7 @@ function languageLabel(i18nLanguage) {
 
 export default function LanguageDropdown({ variant = 'dark', className = '' }) {
   const { i18n } = useTranslation();
+  const { changeLanguage } = useLanguage();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -42,17 +44,19 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
   const panelCls =
     'absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[140px] overflow-hidden z-[1002]';
 
+  const isNavUtil = className.includes('home-nav-util-language');
+
   return (
-    <div className={`relative ${className}`.trim()} ref={ref}>
+    <div className={`relative shrink-0 ${className}`.trim()} ref={ref}>
       <button
         type="button"
-        className={triggerCls}
+        className={`${triggerCls}${isNavUtil ? ' home-nav-util-btn' : ''}`.trim()}
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="listbox"
       >
         <Globe size={13} className="shrink-0 text-slate-500 md:h-3.5 md:w-3.5" strokeWidth={2} />
-        <span className="hidden truncate md:inline">{languageLabel(i18n.language)}</span>
+        <span className="home-nav-language-label truncate">{languageLabel(i18n.language)}</span>
         <ChevronDown size={13} className="shrink-0 text-slate-500" strokeWidth={2} />
       </button>
       {open && (
@@ -67,7 +71,7 @@ export default function LanguageDropdown({ variant = 'dark', className = '' }) {
                   : 'text-gray-700 hover:bg-gray-100'
               }`}
               onClick={() => {
-                i18n.changeLanguage(lang.code);
+                changeLanguage(lang.code);
                 setOpen(false);
               }}
             >

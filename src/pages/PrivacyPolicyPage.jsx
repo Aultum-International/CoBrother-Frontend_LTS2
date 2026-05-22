@@ -146,7 +146,13 @@ export default function PrivacyPolicyPage() {
                 </PolicySection>
                 <PolicySection id="cookies" title="6. Cookies and tracking technologies">
                   <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                    We use cookies, web beacons, and scripts to improve performance, remember preferences, analyze usage, and deliver relevant content. You can manage cookies through your browser settings.
+                    We use cookies, web beacons, and similar technologies to operate the platform, remember your preferences, and—only with your consent—to measure site usage (for example, Google Analytics) and support advertising (for example, Meta Pixel).
+                  </p>
+                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed mt-2">
+                    When you first visit our website, a cookie banner lets you accept all cookies, reject non-essential cookies, or manage preferences by category. Your choices are stored in a cookie on your device so we can honour them on future visits. You can update your preferences at any time using the &quot;Cookie preferences&quot; link in the site footer.
+                  </p>
+                  <p className="text-slate-600 text-sm sm:text-base leading-relaxed mt-2">
+                    Non-essential tracking scripts do not load until you opt in. You may also control cookies through your browser settings.
                   </p>
                 </PolicySection>
                 <PolicySection id="security" title="7. Data storage and security">

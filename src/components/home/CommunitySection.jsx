@@ -41,8 +41,8 @@ export default function CommunitySection() {
 
   if (loading) {
     return (
-      <section className="bg-white py-4 md:py-6 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-[1200px] mx-auto">
+      <section className="bg-white py-4 md:py-6 ">
+        <div className="w-full">
           <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
             {t('disruptors')}
           </h3>
@@ -56,8 +56,8 @@ export default function CommunitySection() {
 
   if (featuredCommunities.length === 0) {
     return (
-      <section className="bg-white py-4 md:py-6 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-[1200px] mx-auto">
+      <section className="bg-white py-4 md:py-6 ">
+        <div className="w-full">
           <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
             {t('disruptors')}
           </h3>
@@ -68,8 +68,8 @@ export default function CommunitySection() {
   }
 
   return (
-    <section className="bg-white py-4 md:py-6 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-[1200px] mx-auto">
+    <section className="bg-white py-4 md:py-6 ">
+      <div className="w-full">
         <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
           {t('disruptors')}
         </h3>

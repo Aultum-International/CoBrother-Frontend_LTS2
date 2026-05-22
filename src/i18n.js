@@ -1,38 +1,30 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import en from './locales/en.json';
-import enGB from './locales/en-GB.json';
-import enUS from './locales/en-US.json';
-import hi from './locales/hi.json';
-import zh from './locales/zh.json';
-import ur from './locales/ur.json';
-import fr from './locales/fr.json';
-import pt from './locales/pt.json';
-import de from './locales/de.json';
+import { buildI18nResources, supportedLanguages } from './i18n/buildResources';
 
-const resources = {
-  en: { translation: en },
-  'en-GB': { translation: enGB },
-  'en-US': { translation: enUS },
-  hi: { translation: hi },
-  zh: { translation: zh },
-  ur: { translation: ur },
-  fr: { translation: fr },
-  pt: { translation: pt },
-  de: { translation: de },
-};
+const resources = buildI18nResources();
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
+    supportedLngs: supportedLanguages,
     fallbackLng: 'en',
+    nonExplicitSupportedLngs: true,
+    load: 'languageOnly',
     debug: false,
     interpolation: {
       escapeValue: false,
     },
+    react: {
+      useSuspense: false,
+      bindI18n: 'languageChanged',
+      bindI18nStore: 'added removed',
+    },
+    returnEmptyString: false,
+    returnNull: false,
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],

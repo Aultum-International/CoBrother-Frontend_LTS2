@@ -6,12 +6,12 @@ export default function RotatingBorderBeam() {
   return (
     <div className="static-edge-beam-root pointer-events-none fixed inset-0 z-[90]" aria-hidden>
       <style>{`
-        .static-edge-beam-root::before,
-        .static-edge-beam-root::after {
+        .static-edge-beam-root::before {
           content: '';
           position: absolute;
           inset: 0;
           pointer-events: none;
+          padding: 2px;
           -webkit-mask:
             linear-gradient(#fff 0 0) content-box,
             linear-gradient(#fff 0 0);
@@ -20,27 +20,13 @@ export default function RotatingBorderBeam() {
             linear-gradient(#fff 0 0) content-box,
             linear-gradient(#fff 0 0);
           mask-composite: exclude;
-        }
-
-        .static-edge-beam-root::before {
-          padding: 2px;
           background:
             linear-gradient(135deg,
               rgba(0, 195, 255, 0.58),
               rgba(99, 102, 241, 0.34) 30%,
-              rgba(120, 80, 220, 0.42) 58%,
+              rgba(88, 28, 135, 0.72) 58%,
               rgba(255, 48, 108, 0.4));
-        }
-
-        .static-edge-beam-root::after {
-          padding: 7px;
-          opacity: 0.62;
-          filter: blur(12px);
-          background:
-            linear-gradient(135deg,
-              rgba(0, 195, 255, 0.3),
-              rgba(120, 80, 220, 0.24),
-              rgba(255, 48, 108, 0.24));
+          box-shadow: 0 0 18px rgba(76, 29, 149, 0.22);
         }
       `}</style>
     </div>

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown, Menu, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +7,7 @@ import logoBlack from '../../assets/Cobrother_logo.png';
 import logoGreen from '../../assets/Cobrother_Green.png';
 import AnimatedLogoutButton from './AnimatedLogoutButton';
 import BackButton from './BackButton';
+import HomeTopNavActions from './HomeTopNavActions';
 
 function HomeNavLogo({ className = '' }) {
   return (
@@ -114,18 +115,18 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
       {t('signIn')}
     </button>
   ) : (
-    <AnimatedLogoutButton onClick={() => setShowLogoutConfirm(true)} label="Logout" />
+    <AnimatedLogoutButton onClick={() => setShowLogoutConfirm(true)} label={t('logout')} />
   );
 
   return (
     <>
       <nav
-        className="home-main-nav w-full bg-white border-b border-gray-100 sticky z-[1000]"
+        className="home-main-nav w-full min-w-0 bg-white border-b border-gray-100 sticky z-[1000]"
         style={{ top: 'var(--home-topbar-height, 40px)' }}
         ref={navRef}
       >
-        <div className="home-main-nav-inner w-full h-14 md:h-16 flex items-center justify-between gap-3">
-          <div className="flex items-center min-w-0 flex-1 xl:flex-initial gap-3 sm:gap-5">
+        <div className="home-main-nav-inner">
+          <div className="home-main-nav-start">
           <button
             type="button"
             className="home-nav-logo-btn shrink-0"
@@ -162,9 +163,9 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 open={openDropdown === 'auctions'}
                 onToggle={() => toggleDesktopDropdown('auctions')}
               >
-                <DropdownLink onClick={() => go('/auctions')}>Domain Auction</DropdownLink>
-                <DropdownLink onClick={() => go('/venture-auction')}>Venture Auction</DropdownLink>
-                <DropdownLink onClick={() => go('/disruptors')}>Disruptor Auction</DropdownLink>
+                <DropdownLink onClick={() => go('/auctions')}>{t('auctionDomain')}</DropdownLink>
+                <DropdownLink onClick={() => go('/venture-auction')}>{t('auctionVenture')}</DropdownLink>
+                <DropdownLink onClick={() => go('/disruptors')}>{t('auctionDisruptor')}</DropdownLink>
               </NavDropdown>
 
               <NavDropdown
@@ -188,16 +189,10 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
           </div>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0 ml-auto">
-            {showBack && (
-              <div className="home-nav-desktop-cta hidden sm:block">
-                <BackButton to="/" label="Home" variant="pill" />
-              </div>
-            )}
-            <div className="home-nav-desktop-cta home-nav-cta-group">
-              {authButton}
+          <div className="home-main-nav-toolbar">
+            <div className="home-top-nav-actions">
+              <HomeTopNavActions />
             </div>
-
             <button
               type="button"
               className="home-nav-hamburger"
@@ -207,6 +202,17 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
             >
               {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
+          </div>
+
+          <div className="home-main-nav-end">
+            {showBack && (
+              <div className="home-nav-desktop-cta hidden sm:block">
+                <BackButton to="/" label={t('Home')} variant="pill" />
+              </div>
+            )}
+            <div className="home-nav-desktop-cta home-nav-cta-group">
+              {authButton}
+            </div>
           </div>
         </div>
       </nav>
@@ -224,7 +230,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
           />
           <aside className="home-nav-drawer" aria-label="Main navigation">
             <div className="home-nav-drawer-header">
-              <span className="home-nav-drawer-title">Menu</span>
+              <span className="home-nav-drawer-title">{t('navMenu')}</span>
               <button type="button" className="home-nav-drawer-close" onClick={closeMobileMenu} aria-label="Close menu">
                 <X size={22} strokeWidth={2} />
               </button>
@@ -256,9 +262,9 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                 open={mobileAccordion === 'auctions'}
                 onToggle={() => setMobileAccordion((v) => (v === 'auctions' ? null : 'auctions'))}
               >
-                <button type="button" className="home-mobile-link" onClick={() => go('/auctions')}>Domain Auction</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/venture-auction')}>Venture Auction</button>
-                <button type="button" className="home-mobile-link" onClick={() => go('/disruptors')}>Disruptor Auction</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/auctions')}>{t('auctionDomain')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/venture-auction')}>{t('auctionVenture')}</button>
+                <button type="button" className="home-mobile-link" onClick={() => go('/disruptors')}>{t('auctionDisruptor')}</button>
               </MobileAccordion>
 
               <MobileAccordion
@@ -282,7 +288,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
 
             <div className="home-nav-drawer-footer">
               {showBack && (
-                <BackButton to="/" label="Home" variant="pill" className="w-full justify-center mb-3" />
+                <BackButton to="/" label={t('Home')} variant="pill" className="w-full justify-center mb-3" />
               )}
               {!user ? (
                 <button type="button" className="btn-glow btn-glow-md w-full" onClick={() => go('/login')}>
@@ -295,7 +301,7 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
                     closeMobileMenu();
                     setShowLogoutConfirm(true);
                   }}
-                  label="Logout"
+                  label={t('logout')}
                 />
               )}
             </div>
@@ -307,17 +313,17 @@ export default function HomeNavbar({ navRef, openDropdown, setOpenDropdown, navi
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white border border-gray-200 rounded-xl shadow-2xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
-            <p className="text-gray-600 text-sm mb-6">Are you sure you want to logout?</p>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">{t('confirmLogout')}</h3>
+            <p className="text-gray-600 text-sm mb-6">{t('confirmLogoutMessage')}</p>
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <button
                 type="button"
                 className="w-full sm:flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-200"
                 onClick={() => setShowLogoutConfirm(false)}
               >
-                Cancel
+                {t('cancel')}
               </button>
-              <AnimatedLogoutButton onClick={handleLogout} label="Logout" />
+              <AnimatedLogoutButton onClick={handleLogout} label={t('logout')} />
             </div>
           </div>
         </div>

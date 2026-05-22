@@ -184,8 +184,8 @@ export default function HomeListingCarousel() {
 
   if (loading) {
     return (
-      <section className="py-12 md:py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-50 to-white border-y border-gray-100">
-        <div className="max-w-7xl mx-auto flex justify-center py-16">
+      <section className="py-12 md:py-16 bg-gradient-to-b from-slate-50 to-white border-y border-gray-100">
+        <div className="w-full flex justify-center py-16">
           <div className="w-12 h-12 border-4 border-gray-300 border-t-indigo-600 rounded-full animate-spin" />
         </div>
       </section>
@@ -197,13 +197,13 @@ export default function HomeListingCarousel() {
   }
 
   return (
-    <section className="py-12 md:py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-50 to-white border-y border-gray-100 overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8 md:mb-10">
+    <section className="py-12 md:py-16 bg-gradient-to-b from-slate-50 to-white border-y border-gray-100 overflow-hidden">
+      <div className="w-full">
+        <div className="home-listing-carousel-header mb-8 md:mb-10">
           <h2 className="font-display text-2xl md:text-3xl font-bold text-gray-900 mb-2">
             {t('homeCarouselTitle')}
           </h2>
-          <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto">
+          <p className="text-sm md:text-base text-gray-600 max-w-2xl">
             {t('homeCarouselSubtitle')}
           </p>
         </div>

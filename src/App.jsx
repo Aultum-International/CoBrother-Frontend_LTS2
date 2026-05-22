@@ -2,7 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 
 import SiteGradientBorder from './components/common/SiteGradientBorder';
+import CookieConsentBanner from './components/common/CookieConsentBanner';
 import { AuthProvider } from './context/AuthContext';
+import { CookieConsentProvider } from './context/CookieConsentContext';
 import { CurrencyProvider } from './context/CurrencyContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { ProtectedRoute, ProfileGuard } from './components/auth/ProtectedRoute';
@@ -50,9 +52,11 @@ export default function App() {
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <LanguageProvider>
         <CurrencyProvider>
-          <AuthProvider>
-            <SiteGradientBorder />
-            <Routes>
+          <CookieConsentProvider>
+            <AuthProvider>
+              <SiteGradientBorder />
+              <CookieConsentBanner />
+              <Routes>
 
             {/* Public */}
             <Route path="/" element={<Home />} />
@@ -315,8 +319,9 @@ export default function App() {
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/login" replace />} />
 
-            </Routes>
-          </AuthProvider>
+              </Routes>
+            </AuthProvider>
+          </CookieConsentProvider>
         </CurrencyProvider>
       </LanguageProvider>
     </BrowserRouter>

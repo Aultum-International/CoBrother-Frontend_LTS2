@@ -1,5 +1,5 @@
 {
-  "footerCopyright": "Â© 2026 CoBrotherâ„¢ Aultum International. All rights reserved.",
+  "footerCopyright": "Â© 2026 CoBrotherâ„¢ All rights reserved.",
   "footerMade": "Made with ðŸ’œ in India.",
   "contactUs": "Contact us",
   "myAccount": "My account",
@@ -98,5 +98,23 @@
   "buyAndSellSoftware": "Buy and sell software products built by the community.",
   "allVentures": "All Ventures",
   "listVenture": "List Venture",
-  "analytics": "Analytics"
+  "analytics": "Analytics",
+  "cookieConsentBannerLabel": "Cookie consent",
+  "cookieConsentBannerTitle": "We value your privacy",
+  "cookieConsentBannerBody": "We use cookies to run the site, remember your preferences, and—only if you agree—to measure traffic and show relevant ads. You can change your choices anytime.",
+  "cookieConsentAcceptAll": "Accept All",
+  "cookieConsentReject": "Reject Non-Essential",
+  "cookieConsentManage": "Manage Preferences",
+  "cookieConsentManageTitle": "Cookie preferences",
+  "cookieConsentManageSubtitle": "Choose which optional cookies we may use.",
+  "cookieConsentSavePreferences": "Save preferences",
+  "cookieConsentClose": "Close",
+  "cookieConsentEssentialTitle": "Essential cookies",
+  "cookieConsentEssentialDesc": "Required for security, sign-in, and core site features. These cannot be turned off.",
+  "cookieConsentAnalyticsTitle": "Analytics cookies",
+  "cookieConsentAnalyticsDesc": "Help us understand how visitors use the site (e.g. Google Analytics). Data is collected only if you enable this category.",
+  "cookieConsentMarketingTitle": "Marketing cookies",
+  "cookieConsentMarketingDesc": "Used for advertising and remarketing (e.g. Meta Pixel). These load only if you enable this category.",
+  "cookieConsentAlwaysOn": "Always on",
+  "cookieConsentFooterLink": "Cookie preferences"
 }
