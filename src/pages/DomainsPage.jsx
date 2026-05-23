@@ -2,7 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LayoutDashboard, Plus, Gavel, ShoppingCart, MessageSquare, Trash2, CheckCircle, Share2, ArrowUpRight } from 'lucide-react';
+import { LayoutDashboard, Plus, CheckCircle } from 'lucide-react';
+import EditActionLabel from '../components/common/EditActionLabel';
+import '../styles/domain-listing-cards.css';
+import DomainListingCard from '../components/listings/DomainListingCard';
+import { normalizeDomainExtension, resolveDomainDisplay } from '../utils/domainDisplay';
 import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -25,17 +29,33 @@ import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
 import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
 import { asArray } from '../utils/asArray';
 import { APP_BASE_URL } from '../config/urls';
-
-const DOMAIN_PRICING_OPTIONS = [
-  { value: 'FIXED',      label: 'Fixed Price' },
-  { value: 'NEGOTIABLE', label: 'Negotiable'  },
-];
+import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
+import { DOMAIN_PRICING_OPTIONS } from '../constants/listingCategories';
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
   PENDING:   { color: '#c8a96e', bg: 'rgba(200,169,110,0.1)', border: 'rgba(200,169,110,0.3)' },
   SOLD:      { color: '#c86e6e', bg: 'rgba(200,110,110,0.1)', border: 'rgba(200,110,110,0.3)' },
 };
+
+function buildDomainFormState(domain, navCurrency) {
+  const display = domain ? resolveDomainDisplay(domain) : { name: '', ext: null, fullDomain: '' };
+  return {
+    domainName: ['—', 'Unnamed', 'domain'].includes(display.name) ? '' : display.name,
+    domainExtension: display.ext?.full ?? (domain ? '' : '.com'),
+    askingPrice: domain?.askingPrice != null ? String(domain.askingPrice) : '',
+    pricingDemand: domain?.pricingDemand ?? '',
+    currency: domain?.currency || navCurrency || DEFAULT_LISTING_CURRENCY,
+    saleType: domain?.saleType ?? 'ONE_TIME',
+    minBidPrice: '',
+    auctionDuration: 'SEVEN_DAYS',
+    contactInfo: {
+      email: domain?.contactInfo?.email ?? '',
+      phoneNumber: domain?.contactInfo?.phoneNumber ?? '',
+    },
+    agreement: { terms: true },
+  };
+}
 
 export default function DomainsPage() {
   const { t } = useTranslation();
@@ -46,6 +66,7 @@ export default function DomainsPage() {
   const [allDomains, setAllDomains]         = useState([]);
   const [loading, setLoading]               = useState(true);
   const [showForm, setShowForm]             = useState(false);
+  const [editTarget, setEditTarget]         = useState(null);
   const [buyTarget, setBuyTarget]           = useState(null);
   const [successDomain, setSuccessDomain]   = useState(null);
   const [detailTarget, setDetailTarget]     = useState(null);
@@ -88,6 +109,16 @@ export default function DomainsPage() {
     .finally(() => setLoading(false));
 }, [filterTab]);
 
+  const { closeListingDetail } = useOpenListingDetailFromUrl({
+    items: domainRows,
+    loading,
+    setDetail: setDetailTarget,
+    fetchById: async (id) => {
+      const { data } = await domainAPI.get(id);
+      return data?.data ?? data;
+    },
+  });
+
   const handleDelete = async () => {
     try {
       await domainAPI.delete(deleteTarget);
@@ -126,7 +157,7 @@ export default function DomainsPage() {
             <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => navigate('/domains/dashboard')}>
               <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
             </button>
-            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => setShowForm(true)}>
+            <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => { setShowForm(true); setEditTarget(null); }}>
               <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listDomain')}</span>
             </button>
           </div>
@@ -134,25 +165,31 @@ export default function DomainsPage() {
 
         <div className="flex gap-2 mb-6">
           <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => { setFilterTab('all'); setShowForm(false); }}>{t('allDomains')}</button>
+            onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}>{t('allDomains')}</button>
           <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => { setFilterTab('mine'); setShowForm(false); }}>{t('myListings')}</button>
+            onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
         </div>
 
-        {showForm && (
+        {(showForm || editTarget) && (
           <div className="mb-6">
             <DomainForm
+              editDomain={editTarget}
               onSaved={d => {
                 const snap = captureAppLayoutScroll();
                 flushSync(() => {
-                  setAllDomains(prev => [d, ...prev]);
-                  setShowForm(false);
-                  setShowConfetti(true);
+                  if (editTarget) {
+                    setAllDomains(prev => prev.map(x => (x.id === d.id ? { ...x, ...d } : x)));
+                    setEditTarget(null);
+                  } else {
+                    setAllDomains(prev => [d, ...prev]);
+                    setShowForm(false);
+                    setShowConfetti(true);
+                  }
                 });
                 scheduleRestoreAppLayoutScroll(snap);
-                setTimeout(() => setShowConfetti(false), 4000);
+                if (!editTarget) setTimeout(() => setShowConfetti(false), 4000);
               }}
-              onCancel={() => setShowForm(false)}
+              onCancel={() => { setShowForm(false); setEditTarget(null); }}
             />
           </div>
         )}
@@ -202,20 +239,22 @@ export default function DomainsPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+            <div className="domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {paginated.map(d => (
-                <DomainCard
-                  key={d.id}
+                <div key={d.id} className="domain-listing-card-shell">
+                <DomainListingCard
                   domain={d}
                   isOwner={d.listedBy?.id === user?.id}
                   likeState={getLike(d.id)}
                   onLike={() => toggleLike(d.id)}
                   onView={() => setDetailTarget(d)}
+                  onEdit={() => { setEditTarget(d); setShowForm(false); }}
                   onBuy={() => setBuyTarget(d)}
                   onEnquire={() => setEnquireTarget(d)}
                   onViewAuction={() => navigate(`/auction/${d.auction?.id}`)}
                   onDelete={() => setDeleteTarget(d.id)}
                 />
+                </div>
               ))}
             </div>
             <Pagination page={page} totalPages={totalPages}
@@ -246,12 +285,17 @@ export default function DomainsPage() {
           isOwner={detailTarget.listedBy?.id === user?.id}
           likeState={getLike(detailTarget.id)}
           onLike={() => toggleLike(detailTarget.id)}
-          onClose={() => { setDetailTarget(null); refreshDomains(); }}
-          onBuy={() => { setBuyTarget(detailTarget); setDetailTarget(null); }}
-          onEnquire={() => { setEnquireTarget(detailTarget); setDetailTarget(null); }}
+          onClose={() => { closeListingDetail(); refreshDomains(); }}
+          onBuy={() => { setBuyTarget(detailTarget); closeListingDetail(); }}
+          onEnquire={() => { setEnquireTarget(detailTarget); closeListingDetail(); }}
           onViewAuction={() => {
             navigate(`/auction/${detailTarget.auction?.id}`);
-            setDetailTarget(null);
+            closeListingDetail();
+          }}
+          onEdit={() => {
+            setEditTarget(detailTarget);
+            setShowForm(false);
+            closeListingDetail();
           }}
         />
       )}
@@ -292,277 +336,83 @@ export default function DomainsPage() {
   );
 }
 
-// ─── Domain Card ──────────────────────────────────────────────────────────────
-function DomainCard({ domain, isOwner, onView, onBuy, onEnquire, onViewAuction,
-                       onDelete, likeState, onLike }) {
-  const { formatPrice } = useCurrency();
-  const [shareOpen, setShareOpen] = useState(false);
-  const shareRef = useRef(null);
-  const s           = STATUS_COLORS[domain.domainStatus] || STATUS_COLORS.AVAILABLE;
-  const isAuction   = domain.saleType === 'AUCTION';
-  const isHighValue = isPremiumDomain(domain);
-  const auction     = domain.auction;
-  const auctionLive = auction?.status === 'ACTIVE' || auction?.status === 'EXTENDED';
-  const domainInitials = (domain.domainName || '')
-    .replace(/[^a-zA-Z0-9]/g, '')
-    .slice(0, 2)
-    .toUpperCase() || '?';
-
-  // Close share dropdown on outside click
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (shareRef.current && !shareRef.current.contains(e.target)) {
-        setShareOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-// Share URL when `window` is undefined (SSR); browser uses `window.location.origin`.
-  const shareUrl =
-    typeof window !== 'undefined'
-      ? `${window.location.origin}/domains`
-      : `${APP_BASE_URL.replace(/\/$/, '')}/domains`;
-  const shareText = `Check out this domain: ${domain.domainName}${domain.domainExtension} - Listed on CoBrother!`;
-
-  const linkedinShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
-  const facebookShare = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
-  const whatsappShare = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-
-  const handleShare = (platform) => {
-    window.open(platform, '_blank', 'width=600,height=400');
-    setShareOpen(false);
-  };
-
-  const accentGrad = isAuction
-    ? 'from-purple-600 via-fuchsia-500 to-pink-500'
-    : 'from-indigo-600 via-blue-500 to-cyan-400';
-
-  return (
-    <div
-      className="card-glow-hover group relative bg-white rounded-2xl overflow-hidden cursor-pointer flex flex-col border border-gray-200 shadow-sm transition-all duration-300"
-      onClick={onView}
-    >
-      {/* Gradient header with large image */}
-      <div className={`relative bg-gradient-to-r ${accentGrad} px-4 pt-3.5 pb-3.5 min-h-[90px] flex items-end`}>
-        {domain.logo
-          ? <img src={domain.logo} alt={domain.domainName}
-              className="absolute top-0 right-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-300" />
-          : null
-        }
-        <div className="relative z-10 flex items-end justify-between w-full">
-          <div className="flex items-center gap-2">
-            {domain.logo
-              ? <img src={domain.logo} alt={domain.domainName}
-                  className="w-14 h-14 rounded-xl object-cover ring-[3px] ring-white/50 shadow-lg" />
-              : <div className="w-14 h-14 rounded-xl flex items-center justify-center font-display text-2xl font-extrabold text-white ring-[3px] ring-white/30 shadow-lg bg-white/15 backdrop-blur-sm">
-                  {domainInitials}
-                </div>
-            }
-            <div>
-              <span className={`px-2 py-[3px] text-[10px] font-bold rounded-md uppercase tracking-wide ${isAuction ? 'bg-yellow-400 text-gray-900' : 'bg-white/25 backdrop-blur-sm text-white'}`}>
-                {isAuction ? '🔨 Auction' : domain.domainExtension}
-              </span>
-              {isOwner && (
-                <span className="ml-1.5 px-2 py-[3px] bg-white text-indigo-600 text-[10px] font-extrabold rounded-md uppercase tracking-wide shadow-sm">
-                  ✦ Owner
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-        {domain.takenDown && (
-          <span className="absolute top-3 right-3 z-10 px-2 py-[3px] bg-red-500 text-white text-[10px] font-bold rounded-md uppercase tracking-wide shadow-sm">
-            ⚠ Taken Down
-          </span>
-        )}
-      </div>
-
-      {/* Body */}
-      <div className="relative px-4 pb-4 pt-3 flex flex-col flex-1">
-        {/* Domain name + status/pricing tags on right */}
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="font-display text-[0.95rem] font-extrabold text-gray-900 truncate leading-snug">
-            {domain.domainName}{domain.domainExtension}
-          </h3>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {!isAuction && (
-              <span className={`px-1.5 py-[2px] text-[9px] font-bold rounded uppercase tracking-wide border ${
-                domain.domainStatus === 'AVAILABLE' ? 'bg-green-50 text-green-600 border-green-200' :
-                domain.domainStatus === 'SOLD'      ? 'bg-red-50 text-red-500 border-red-200' :
-                                                      'bg-amber-50 text-amber-600 border-amber-200'
-              }`}>
-                {domain.domainStatus}
-              </span>
-            )}
-            <span className="px-1.5 py-[2px] bg-gray-100 text-gray-500 text-[9px] font-bold rounded uppercase tracking-wide whitespace-nowrap">
-              {domain.pricingDemand || 'Fixed'}
-            </span>
-          </div>
-        </div>
-
-        {/* Badges row */}
-        <div className="flex items-center gap-1.5 flex-wrap mb-3">
-          {domain.verified && (
-            <span className="px-2 py-[2px] text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-md">
-              ✓ Verified
-            </span>
-          )}
-          {isHighValue && domain.domainStatus === 'AVAILABLE' && (
-            <span className="px-2 py-[2px] text-[10px] font-bold text-purple-600 bg-purple-50 border border-purple-200 rounded-md">
-              Premium
-            </span>
-          )}
-          {isAuction && (
-            <>
-              {auction?.status === 'ACTIVE'   && <span className="text-[10px] text-emerald-600 font-bold">🟢 Live</span>}
-              {auction?.status === 'EXTENDED' && <span className="text-[10px] text-amber-500 font-bold">⚡ Extended</span>}
-              {auction?.status === 'DRAFT'    && <span className="text-[10px] text-gray-400">⏳ Draft</span>}
-            </>
-          )}
-        </div>
-
-        {/* Price block */}
-        {isAuction && auction ? (
-          <div className="rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 px-3 py-2 mb-3">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-extrabold text-purple-700 tracking-tight">
-                {formatPrice(auction.currentHighestBid > 0 ? auction.currentHighestBid : auction.minBidPrice)}
-              </span>
-              <span className="text-[10px] text-purple-400 font-semibold">
-                {auction.currentHighestBid > 0 ? 'highest' : 'min bid'}
-              </span>
-            </div>
-            <span className="text-[10px] text-purple-400">{auction.totalBids} bid{auction.totalBids !== 1 ? 's' : ''}</span>
-          </div>
-        ) : (
-          <div className="rounded-lg bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 px-3 py-2 mb-3">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-extrabold text-emerald-700 tracking-tight">
-                {formatPrice(domain.askingPrice)}
-              </span>
-              <span className="text-[10px] text-emerald-400 font-semibold">asking price</span>
-            </div>
-          </div>
-        )}
-
-        {/* Stats row */}
-        <div className="flex items-center gap-2.5 text-[11px] text-gray-400 font-medium py-2 border-t border-gray-100 mt-auto">
-          <span className="flex items-center gap-1">👁 {domain.views || 0}</span>
-          <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} />
-
-          {isOwner ? (
-            <>
-              <div className="relative ml-auto" ref={shareRef}>
-                <button
-                  className="p-1 rounded-md hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600"
-                  onClick={(e) => { e.stopPropagation(); setShareOpen(!shareOpen); }}
-                  title="Share"
-                >
-                  <Share2 size={13} />
-                </button>
-
-                {shareOpen && (
-                  <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px]">
-                    <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
-                      <span className="text-[10px] font-semibold text-gray-500">Share via</span>
-                    </div>
-                    <button className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                      onClick={(e) => { e.stopPropagation(); handleShare(linkedinShare); }}>
-                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                      LinkedIn
-                    </button>
-                    <button className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-                      onClick={(e) => { e.stopPropagation(); handleShare(facebookShare); }}>
-                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                      Facebook
-                    </button>
-                    <button className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-                      onClick={(e) => { e.stopPropagation(); handleShare(whatsappShare); }}>
-                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                      WhatsApp
-                    </button>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : domain.domainStatus === 'AVAILABLE' ? (
-                isHighValue ? (
-                  <button
-                    onClick={e => { e.stopPropagation(); onEnquire(); }}
-                    className={`flex-1 py-2 bg-gradient-to-r ${accentGrad} text-white text-xs font-bold rounded-lg transition-all hover:opacity-90 inline-flex items-center justify-center gap-1.5`}>
-                    <MessageSquare size={13} /> Enquire
-                  </button>
-                ) : (
-                  <button
-                    onClick={e => { e.stopPropagation(); onBuy(); }}
-                    className={`flex-1 py-2 bg-gradient-to-r ${accentGrad} text-white text-xs font-bold rounded-lg transition-all hover:opacity-90 inline-flex items-center justify-center gap-1.5`}>
-                    <ShoppingCart size={13} /> Buy Now
-                  </button>
-                )
-              ) : (
-                <span className="flex-1 py-2 text-center text-[11px] text-gray-400 font-medium">
-                  {domain.domainStatus === 'SOLD' ? 'Sold' : 'Pending'}
-                </span>
-              )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Domain Form ──────────────────────────────────────────────────────────────
-function DomainForm({ onSaved, onCancel }) {
+function DomainForm({ editDomain, onSaved, onCancel }) {
   const { currency: navCurrency } = useCurrency();
-  const [form, setForm] = useState({
-    domainName: '', domainExtension: '',
-    askingPrice: '', pricingDemand: '',
-    currency: navCurrency || DEFAULT_LISTING_CURRENCY,
-    saleType: 'ONE_TIME', minBidPrice: '', auctionDuration: 'SEVEN_DAYS',
-    contactInfo: { email: '', phoneNumber: '' },
-    agreement: { terms: false },
-  });
+  const isEdit = Boolean(editDomain?.id);
+  const [form, setForm] = useState(() => buildDomainFormState(editDomain, navCurrency));
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  const [savedDomain, setSavedDomain]       = useState(null);
-  const [imageFile, setImageFile]           = useState(null);
-  const [imagePreview, setImagePreview]     = useState(null);
-  const [imageUploading, setImageUploading] = useState(false);
-  const [imageError, setImageError]         = useState('');
-  const fileInputRef                        = useRef(null);
+  const [imageFile, setImageFile]       = useState(null);
+  const [imagePreview, setImagePreview] = useState(() => editDomain?.logo ?? null);
+  const [imageError, setImageError]     = useState('');
+  const fileInputRef                    = useRef(null);
+
+  useEffect(() => {
+    setForm(buildDomainFormState(editDomain, navCurrency));
+    setError('');
+    setImageFile(null);
+    setImagePreview(editDomain?.logo ?? null);
+    setImageError('');
+  }, [editDomain?.id, navCurrency]);
 
   const setContact = (k, v) =>
     setForm(f => ({ ...f, contactInfo: { ...f.contactInfo, [k]: v } }));
 
+  const setExtension = (ext) => {
+    const full = ext.startsWith('.') ? ext : `.${ext}`;
+    setForm(f => ({ ...f, domainExtension: full }));
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
-    if (form.saleType === 'AUCTION' && (!form.minBidPrice || parseFloat(form.minBidPrice) <= 0)) {
+    const extNorm = normalizeDomainExtension(form.domainExtension);
+    if (!extNorm) {
+      setError('Please select or enter a domain extension (.com, .in, etc.).');
+      return;
+    }
+    if (!isEdit && form.saleType === 'AUCTION' && (!form.minBidPrice || parseFloat(form.minBidPrice) <= 0)) {
       setError('Please enter a valid minimum bid price.');
       return;
     }
     setLoading(true); setError('');
     try {
       const payload = {
-        domainName:      form.domainName,
-        domainExtension: form.domainExtension,
+        domainName:      form.domainName.trim(),
+        domainExtension: extNorm.full,
         askingPrice:     form.saleType === 'AUCTION' ? 0 : parseFloat(form.askingPrice),
         pricingDemand:   form.pricingDemand,
-        saleType:        form.saleType,
         contactInfo:     form.contactInfo,
-        agreement:       form.agreement,
       };
-      const { data: domain } = await domainAPI.create(payload);
-      if (form.saleType === 'AUCTION' && domain.id) {
-        await auctionAPI.create(domain.id, {
-          minBidPrice: parseFloat(form.minBidPrice),
-          duration:    form.auctionDuration,
-        });
+      let saved = null;
+      if (isEdit) {
+        const { data: updated } = await domainAPI.update(editDomain.id, payload);
+        saved = updated?.data ?? updated;
+      } else {
+        const createPayload = {
+          ...payload,
+          saleType: form.saleType,
+          agreement: form.agreement,
+        };
+        const { data: domain } = await domainAPI.create(createPayload);
+        saved = domain;
+        if (form.saleType === 'AUCTION' && domain.id) {
+          await auctionAPI.create(domain.id, {
+            minBidPrice: parseFloat(form.minBidPrice),
+            duration:    form.auctionDuration,
+          });
+        }
       }
-      setSavedDomain(domain);
+      if (imageFile && saved?.id) {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        const { data } = await domainAPI.uploadImage(saved.id, formData);
+        saved = { ...saved, logo: data.logoUrl };
+      }
+      onSaved(saved);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to list domain.');
+      setError(err.response?.data?.error || (isEdit ? 'Failed to update domain.' : 'Failed to list domain.'));
     } finally { setLoading(false); }
   };
 
@@ -577,96 +427,77 @@ function DomainForm({ onSaved, onCancel }) {
     reader.readAsDataURL(file);
   };
 
-  const handleImageUpload = async () => {
-    if (!imageFile || !savedDomain) return;
-    setImageUploading(true); setImageError('');
-    try {
-      const formData = new FormData();
-      formData.append('file', imageFile);
-      const { data } = await domainAPI.uploadImage(savedDomain.id, formData);
-      onSaved({ ...savedDomain, logo: data.logoUrl });
-    } catch (err) {
-      setImageError(err.response?.data?.error || 'Upload failed. You can add a logo later.');
-      setImageUploading(false);
-    }
-  };
-
-  const handleSkip = () => onSaved(savedDomain);
-
   const isAuction = form.saleType === 'AUCTION';
+  const selectedExt = normalizeDomainExtension(form.domainExtension);
 
   const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white outline-none focus:border-purple-500 transition-all w-full placeholder:text-gray-400';
   const labelCls = 'text-sm font-medium text-gray-700';
 
-  if (savedDomain) {
-    return (
-      <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
-        <h3 className="font-display text-2xl text-gray-900 font-semibold">
-          Add a Logo <span className="text-sm text-gray-400 font-normal">(optional)</span>
-        </h3>
-        <p className="text-gray-500 text-sm mt-1">
-          Upload a logo for <strong className="text-purple-600">{savedDomain.domainName}{savedDomain.domainExtension}</strong>. You can also do this later.
-        </p>
-        <div className="mt-5">
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all mb-3 ${
-              imagePreview ? 'border-gray-400 bg-gray-50' : 'border-gray-200 bg-gray-50 hover:border-gray-400'
-            }`}
-          >
-            {imagePreview ? (
-              <img src={imagePreview} alt="Preview" className="max-h-[120px] max-w-full rounded-lg object-contain mx-auto" />
-            ) : (
-              <>
-                <div className="text-4xl mb-2">🖼</div>
-                <div className="text-sm text-gray-500">Click to choose an image</div>
-                <div className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP</div>
-              </>
-            )}
-          </div>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-          {imagePreview && (
-            <button type="button" className="text-xs text-gray-500 hover:text-red-500 mb-3"
-              onClick={() => { setImageFile(null); setImagePreview(null); }}>✕ Remove</button>
-          )}
-          {imageError && <div className="text-sm text-red-500 mb-3">{imageError}</div>}
-          <div className="flex gap-3">
-            <button type="button" className="btn-glow flex-1"
-              disabled={!imageFile || imageUploading} onClick={handleImageUpload}>
-              {imageUploading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'List Your Domain →'}
-            </button>
-            <button type="button" className="btn-glow" onClick={handleSkip}>Skip</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const extPreview = normalizeDomainExtension(form.domainExtension);
+  const previewFull = extPreview
+    ? `${form.domainName}${extPreview.full}`
+    : form.domainName;
 
   return (
     <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
-      <h3 className="font-display text-2xl text-gray-900 font-semibold">List Your Domain</h3>
-      <p className="text-gray-500 text-sm mt-1">Fill in the details to list your domain for sale.</p>
+      <h3 className="font-display text-2xl text-gray-900 font-semibold">
+        {isEdit ? 'Edit Domain Listing' : 'List Your Domain'}
+      </h3>
+      <p className="text-gray-500 text-sm mt-1">
+        {isEdit
+          ? 'Update your listing details. Sale type cannot be changed after listing.'
+          : 'Fill in the details to list your domain for sale.'}
+      </p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
-        <div className="flex flex-col gap-1.5">
-          <label className={labelCls}>Domain Name <span className="text-red-500">*</span></label>
-          <input className={inputCls}
-            value={form.domainName + form.domainExtension}
-            onChange={e => {
-              const full = e.target.value;
-              const dot  = full.indexOf('.');
-              if (dot !== -1) {
-                setForm(f => ({ ...f, domainName: full.slice(0, dot), domainExtension: full.slice(dot) }));
-              } else {
-                setForm(f => ({ ...f, domainName: full, domainExtension: '' }));
-              }
-            }}
-            placeholder="e.g. mybrand.com" required
-          />
-          <span className="text-xs text-gray-500 mt-1 block">
-            Include the extension (e.g. .com, .in, .io)
-          </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>Domain name <span className="text-red-500">*</span></label>
+            <input
+              className={inputCls}
+              value={form.domainName}
+              onChange={e => setForm(f => ({ ...f, domainName: e.target.value.replace(/\s/g, '').toLowerCase() }))}
+              placeholder="e.g. mybrand"
+              required
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelCls}>Extension <span className="text-red-500">*</span></label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {['.com', '.in', '.io', '.net', '.org', '.co', '.ai'].map((ext) => (
+                <button
+                  key={ext}
+                  type="button"
+                  onClick={() => setExtension(ext)}
+                  className={`px-2.5 py-1 rounded-md text-xs font-bold border transition-colors ${
+                    selectedExt?.full === ext
+                      ? 'bg-indigo-600 text-white border-indigo-600'
+                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-indigo-300'
+                  }`}
+                >
+                  {ext.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <input
+              className={inputCls}
+              value={form.domainExtension}
+              onChange={e => setExtension(e.target.value)}
+              placeholder=".com"
+              required
+            />
+          </div>
         </div>
+        {form.domainName && extPreview && (
+          <p className="text-sm text-slate-600 -mt-2 flex items-center gap-2 flex-wrap">
+            <span>Preview:</span>
+            <span className={`domain-listing-card__ext-badge domain-listing-card__ext-badge--${extPreview.cssKey}`}>
+              {extPreview.label}
+            </span>
+            <strong>{previewFull}</strong>
+          </p>
+        )}
 
+        {!isEdit && (
         <div className="flex flex-col gap-1.5">
           <label className={labelCls}>Sale Type <span className="text-red-500">*</span></label>
           <div className="grid grid-cols-2 gap-3 mt-1.5">
@@ -691,9 +522,10 @@ function DomainForm({ onSaved, onCancel }) {
             ))}
           </div>
         </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
-          {!isAuction && (
+          {(!isAuction || isEdit) && (
             <CurrencyPriceInput
               id="domain-asking-price"
               label="Asking Price"
@@ -717,7 +549,7 @@ function DomainForm({ onSaved, onCancel }) {
           </div>
         </div>
 
-        {isAuction && (
+        {!isEdit && isAuction && (
           <>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -775,6 +607,46 @@ function DomainForm({ onSaved, onCancel }) {
           </div>
         </div>
 
+        <div className="flex flex-col gap-1.5">
+          <label className={labelCls}>
+            Logo <span className="text-slate-400 font-normal">(optional)</span>
+          </label>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => fileInputRef.current?.click()}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
+            className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${
+              imagePreview ? 'border-gray-400 bg-gray-50' : 'border-gray-200 bg-gray-50 hover:border-gray-400'
+            }`}
+          >
+            {imagePreview ? (
+              <img src={imagePreview} alt="Logo preview" className="max-h-[100px] max-w-full rounded-lg object-contain mx-auto" />
+            ) : (
+              <>
+                <div className="text-3xl mb-1.5">🖼</div>
+                <div className="text-sm text-gray-500">Click to upload a logo</div>
+                <div className="text-xs text-gray-400 mt-0.5">PNG, JPG, WEBP</div>
+              </>
+            )}
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+          {imagePreview && (
+            <button
+              type="button"
+              className="text-xs text-gray-500 hover:text-red-500 self-start"
+              onClick={() => {
+                setImageFile(null);
+                setImagePreview(isEdit && editDomain?.logo ? editDomain.logo : null);
+              }}
+            >
+              ✕ Remove
+            </button>
+          )}
+          {imageError && <div className="text-sm text-red-500">{imageError}</div>}
+        </div>
+
+        {!isEdit && (
         <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 max-w-full">
           <input
             type="checkbox"
@@ -792,13 +664,14 @@ function DomainForm({ onSaved, onCancel }) {
           </span>
           <span className="text-sm text-gray-700 leading-snug">I confirm I own this domain and agree to the Terms & Conditions.</span>
         </label>
+        )}
 
         {error && <div className="text-sm text-red-500">{error}</div>}
 
         <div className="flex gap-3 mt-2">
           <button type="submit" className="btn-glow flex-1" disabled={loading}>
             {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> :
-              isAuction ? 'List for Auction →' : 'Add Logo →'}
+              isEdit ? 'Save changes' : isAuction ? 'List for auction' : 'List domain'}
           </button>
           <button type="button" className="btn-glow" onClick={onCancel}>Cancel</button>
         </div>
@@ -945,7 +818,7 @@ function PurchaseSuccessModal({ domain, onClose }) {
 
 // ─── Domain Detail Modal ──────────────────────────────────────────────────────
 function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
-                              onViewAuction, likeState, onLike }) {
+                              onViewAuction, onEdit, likeState, onLike }) {
   const { formatPrice } = useCurrency();
   const [detail, setDetail]   = useState(null);
   const [loading, setLoading] = useState(true);
@@ -961,6 +834,7 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
   }, [domain.id]);
 
   const d           = detail || domain;
+  const display     = resolveDomainDisplay(d);
   const c           = d.contactInfo || {};
   const s           = STATUS_COLORS[d.domainStatus] || STATUS_COLORS.AVAILABLE;
   const isAuction   = d.saleType === 'AUCTION';
@@ -994,8 +868,18 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
                   </span>
                 )}
               </div>
-              <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-1">{d.domainName}{d.domainExtension}</h2>
-              <p className="text-sm text-gray-500">{d.pricingDemand}</p>
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                {display.ext && (
+                  <span className={`domain-listing-card__ext-badge domain-listing-card__ext-badge--${display.ext.cssKey}`}>
+                    {display.ext.label}
+                  </span>
+                )}
+                <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 m-0">{display.name}</h2>
+              </div>
+              {display.ext && (
+                <p className="text-sm text-slate-500 mb-1">{display.fullDomain}</p>
+              )}
+              <p className="text-sm text-gray-500">{d.pricingDemand === 'NEGOTIABLE' ? 'Negotiable' : 'Fixed price'}</p>
             </div>
 
             <div className="flex gap-2 flex-wrap mb-4">
@@ -1079,6 +963,11 @@ function DomainDetailModal({ domain, isOwner, onClose, onBuy, onEnquire,
             )}
 
             <div className="flex gap-3 mt-6 flex-wrap items-center">
+              {isOwner && onEdit && (
+                <button type="button" className="btn-glow btn-glow-sm inline-flex items-center gap-1.5" onClick={onEdit}>
+                  <EditActionLabel iconSize={16}>Edit listing</EditActionLabel>
+                </button>
+              )}
               {!isOwner && (
                 isAuction ? (
                   auctionLive ? (

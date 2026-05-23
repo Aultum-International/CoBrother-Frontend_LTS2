@@ -26,7 +26,10 @@ export default function LoginPage() {
 
   const [searchParams] = useSearchParams();
 
-  const from = location.state?.from?.pathname || '/dashboard';
+  const from =
+    location.state?.from ||
+    localStorage.getItem('redirectAfterLogin') ||
+    '/dashboard';
 
 
 
@@ -98,7 +101,16 @@ export default function LoginPage() {
 
     const fetchedUser = await refreshUser();
 
-    navigate(fetchedUser?.profileComplete ? from : '/complete-profile', { replace: true });
+    const redirectPath =
+      localStorage.getItem('redirectAfterLogin') ||
+      (typeof from === 'string' ? from : from?.pathname) ||
+      '/dashboard';
+    localStorage.removeItem('redirectAfterLogin');
+
+    navigate(
+      fetchedUser?.profileComplete ? redirectPath : '/complete-profile',
+      { replace: true },
+    );
 
   };
 

@@ -7,8 +7,8 @@ import TopNavbar from '../common/TopNavbar';
 
 const sidebarItems = [
   { icon: Home, label: 'Dashboard', to: '/dashboard' },
-  { icon: Handshake, label: 'Ventures', to: '/ventures' },
   { icon: Globe, label: 'Domains', to: '/domains' },
+  { icon: Handshake, label: 'Ventures', to: '/ventures' },
   { icon: Zap, label: 'Technology', to: '/cocreation' },
   { icon: Users, label: 'Disruptor', to: '/community' },
   { icon: Gavel, label: 'Auctions', to: '/auctions' },
@@ -75,15 +75,15 @@ export default function SidebarLayout({ children }) {
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                   accent
                     ? active
-                      ? 'bg-amber-500/25 text-amber-200 border border-amber-400/30'
-                      : 'text-amber-400/90 hover:bg-amber-500/15 hover:text-amber-200 border border-transparent'
+                      ? 'bg-indigo-500/20 text-indigo-100 border border-indigo-400/30'
+                      : 'text-indigo-300/90 hover:bg-indigo-500/15 hover:text-indigo-100 border border-transparent'
                     : active
                       ? 'bg-white/10 text-white'
                       : 'text-gray-400 hover:bg-white/5 hover:text-white'
                 }`}
               >
-                <Icon size={20} className={accent ? (active ? 'text-amber-300' : 'text-amber-400/80') : active ? 'text-indigo-400' : ''} />
-                <span className="font-medium text-sm">{item.label}</span>
+                <Icon size={20} className={accent ? (active ? 'text-indigo-300' : 'text-indigo-400/80') : active ? 'text-indigo-400' : ''} />
+                <span className="font-medium text-[0.9375rem]">{item.label}</span>
               </Link>
             );
           })}
@@ -143,15 +143,15 @@ export default function SidebarLayout({ children }) {
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                       accent
                         ? active
-                          ? 'bg-amber-500/25 text-amber-200 border border-amber-400/30'
-                          : 'text-amber-400/90 hover:bg-amber-500/15 hover:text-amber-200'
+                          ? 'bg-indigo-500/20 text-indigo-100 border border-indigo-400/30'
+                          : 'text-indigo-300/90 hover:bg-indigo-500/15 hover:text-indigo-100'
                         : active
                           ? 'bg-white/10 text-white'
                           : 'text-gray-400 hover:bg-white/5 hover:text-white'
                     }`}
                   >
-                    <Icon size={20} className={accent ? (active ? 'text-amber-300' : 'text-amber-400/80') : active ? 'text-indigo-400' : ''} />
-                    <span className="font-medium text-sm">{item.label}</span>
+                    <Icon size={20} className={accent ? (active ? 'text-indigo-300' : 'text-indigo-400/80') : active ? 'text-indigo-400' : ''} />
+                    <span className="font-medium text-[0.9375rem]">{item.label}</span>
                   </Link>
                 );
               })}

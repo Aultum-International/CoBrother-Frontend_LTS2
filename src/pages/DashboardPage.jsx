@@ -82,30 +82,30 @@ export default function DashboardPage() {
   return (
     <AppLayout>
       <div className="app-dashboard w-full max-w-7xl mx-auto flex flex-col gap-5 sm:gap-6 lg:gap-8 min-w-0">
-        <section className="rounded-2xl overflow-hidden shadow-md border border-gray-100">
+        <section className="rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 bg-white">
           {showAdmin && (
-            <div className="border-b border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 px-4 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <div className="border-b border-indigo-100 bg-gradient-to-r from-slate-50 via-indigo-50/80 to-violet-50/60 px-4 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
               <div className="flex items-start sm:items-center gap-3 min-w-0">
-                <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 border border-amber-200">
+                <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 border border-indigo-200/80">
                   <Shield size={20} strokeWidth={2} aria-hidden />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-bold uppercase tracking-wide text-amber-900/80">{t('dashboardAdminTitle')}</p>
-                  <p className="text-sm text-amber-950/80 mt-0.5 leading-snug">
+                  <p className="text-xs font-bold uppercase tracking-wide text-indigo-900/90">{t('dashboardAdminTitle')}</p>
+                  <p className="text-sm text-slate-600 mt-0.5 leading-snug">
                     {t('dashboardAdminBody')}
                   </p>
                 </div>
               </div>
               <Link
                 to="/admin"
-                className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center rounded-full bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold px-5 py-2.5 shadow-sm transition-colors"
+                className="w-full sm:w-auto shrink-0 inline-flex items-center justify-center rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2.5 shadow-sm transition-colors"
               >
                 {t('dashboardAdminCTA')}
               </Link>
             </div>
           )}
 
-          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 p-5 sm:p-6 lg:p-8 text-white">
+          <div className="bg-gradient-to-br from-indigo-600 via-violet-600 to-indigo-700 p-5 sm:p-6 lg:p-8 text-white">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="min-w-0">
                 <p className="text-white/80 text-sm mb-1">{t('dashboardWelcomeBack')}</p>
@@ -119,9 +119,9 @@ export default function DashboardPage() {
                   <span className="text-xs text-white/70">{t('dashboardRoleLabel')}</span>
                   <span className="text-sm font-semibold text-white">{rolePillText}</span>
                 </div>
-                <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-green-500/20 backdrop-blur rounded-full">
-                  <span className="text-xs text-green-200">{t('dashboardProfileLabel')}</span>
-                  <span className="text-sm font-semibold text-green-300">{t('dashboardProfileComplete')}</span>
+                <div className="inline-flex items-center gap-2 px-3 py-2 sm:px-4 bg-white/15 backdrop-blur rounded-full border border-white/20">
+                  <span className="text-xs text-white/70">{t('dashboardProfileLabel')}</span>
+                  <span className="text-sm font-semibold text-white">{t('dashboardProfileComplete')}</span>
                 </div>
               </div>
             </div>

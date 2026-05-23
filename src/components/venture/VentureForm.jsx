@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useCurrency } from '../../context/CurrencyContext';
 import CurrencyPriceInput from '../common/CurrencyPriceInput';
 import { DEFAULT_LISTING_CURRENCY } from '../../constants/currencies';
-
-const INDUSTRIES = ['SAAS', 'ECOMMERCE', 'SERVICES', 'AI_AUTOMATION', 'FINTECH', 'OTHER'];
+import { VENTURE_INDUSTRIES } from '../../constants/listingCategories';
 const VENTURE_TYPES = [
   { value: 'FIFTY_FIFTY', label: '50:50 — Equal Synergy' },
   { value: 'SIXTY_FORTY', label: '60:40 — Majority Founder' },
@@ -219,7 +218,7 @@ export default function VentureForm({ initialData, onSubmit, loading, error, sub
             <label className="text-sm font-medium text-gray-700">Industry <span className="text-red-400">*</span></label>
             <select value={form.brandDetails.industry} onChange={(e) => setBrand('industry', e.target.value)} required className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm outline-none transition-all duration-200 cursor-pointer focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.12)]">
               <option value="">Select industry</option>
-              {INDUSTRIES.map((i) => <option key={i} value={i}>{i.replace('_', ' ')}</option>)}
+              {VENTURE_INDUSTRIES.map((i) => <option key={i} value={i}>{i.replace(/_/g, ' ')}</option>)}
             </select>
           </div>
         </div>

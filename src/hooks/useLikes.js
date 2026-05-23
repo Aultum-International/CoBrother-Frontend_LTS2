@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { likeAPI } from '../api/services';
 import { asArray } from '../utils/asArray';
+import { isLoggedIn } from '../utils/listingNavigation';
 
 /**
  * Manages like state for a list of items.
@@ -9,38 +10,61 @@ import { asArray } from '../utils/asArray';
  */
 export function useLikes(type, items) {
   const list = asArray(items);
-  // Map of entityId -> { liked, count }
+  const entityIdsKey = useMemo(
+    () => list.map((i) => i.id).filter(Boolean).join(','),
+    [list],
+  );
   const [likeMap, setLikeMap] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!list.length) return;
-    const ids = list.map(i => i.id).filter(Boolean);
+    if (!isLoggedIn() || !entityIdsKey) {
+      setLikeMap({});
+      return;
+    }
+    const ids = entityIdsKey.split(',').filter(Boolean);
     if (ids.length === 0) return;
 
+    let cancelled = false;
     setLoading(true);
-    likeAPI.bulkStatus(type, ids)
-      .then(({ data }) => setLikeMap(data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [type, list.length]);
+    likeAPI
+      .bulkStatus(type, ids.map((id) => Number(id)))
+      .then(({ data }) => {
+        if (!cancelled) setLikeMap(data ?? {});
+      })
+      .catch(() => {
+        if (!cancelled) setLikeMap({});
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-  const toggle = useCallback(async (entityId) => {
-    try {
-      const { data } = await likeAPI.toggle(type, entityId);
-      setLikeMap(prev => ({
-        ...prev,
-        [String(entityId)]: { liked: data.liked, count: data.count }
-      }));
-      return data;
-    } catch (e) {
-      console.error('Like toggle failed', e);
-    }
-  }, [type]);
+    return () => {
+      cancelled = true;
+    };
+  }, [type, entityIdsKey]);
 
-  const get = useCallback((entityId) => {
-    return likeMap[String(entityId)] || { liked: false, count: 0 };
-  }, [likeMap]);
+  const toggle = useCallback(
+    async (entityId) => {
+      if (!isLoggedIn()) return null;
+      try {
+        const { data } = await likeAPI.toggle(type, entityId);
+        setLikeMap((prev) => ({
+          ...prev,
+          [String(entityId)]: { liked: data.liked, count: data.count },
+        }));
+        return data;
+      } catch {
+        return null;
+      }
+    },
+    [type],
+  );
+
+  const get = useCallback(
+    (entityId) => likeMap[String(entityId)] || { liked: false, count: 0 },
+    [likeMap],
+  );
 
   return { likeMap, toggle, get, loading };
 }

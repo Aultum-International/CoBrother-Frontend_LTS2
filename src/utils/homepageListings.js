@@ -1,32 +1,32 @@
 import { asArray } from './asArray';
 
-/** Whether a listing should appear on the public homepage (active, not removed). */
+/** Whether a listing is visible on marketplace browse pages and can be homepage-featured. */
 export function isActiveListing(item, type = 'domain') {
   if (!item) return false;
   if (item.takenDown === true) return false;
   if (item.deleted === true || item.isDeleted === true) return false;
   if (item.active === false) return false;
 
-  if (type === 'domain') {
-    const status = (item.domainStatus ?? '').toString().toUpperCase();
-    if (status === 'SOLD' || status === 'REMOVED' || status === 'DELETED') return false;
-  }
+  // Domains, ventures, and software use boolean `status` for marketplace visibility.
+  if (item.status === false) return false;
 
-  if (type === 'venture') {
-    if (item.status && ['REMOVED', 'DELETED', 'INACTIVE'].includes(String(item.status).toUpperCase())) {
+  if (type === 'domain') {
+    const domainStatus = (item.domainStatus ?? '').toString().toUpperCase();
+    if (domainStatus === 'SOLD' || domainStatus === 'REMOVED' || domainStatus === 'DELETED') {
       return false;
     }
   }
 
   if (type === 'software') {
-    const status = (item.status ?? '').toString().toUpperCase();
-    if (status === 'SOLD' || status === 'REMOVED' || status === 'DELETED') return false;
+    const softwareStatus = (item.softwareStatus ?? '').toString().toUpperCase();
+    if (softwareStatus === 'SOLD' || softwareStatus === 'REMOVED' || softwareStatus === 'DELETED') {
+      return false;
+    }
   }
 
   if (type === 'community') {
-    if (item.status && ['REMOVED', 'DELETED', 'INACTIVE'].includes(String(item.status).toUpperCase())) {
-      return false;
-    }
+    const profileStatus = (item.status ?? '').toString().toUpperCase();
+    if (['REMOVED', 'DELETED', 'INACTIVE'].includes(profileStatus)) return false;
   }
 
   return true;
@@ -70,15 +70,20 @@ export function isGuestCreatedListing(item, type = 'domain') {
   return !ADMIN_ROLES.has(role);
 }
 
-/** Homepage cards pinned via Admin → Homepage Features (guest listings only). */
+/** Homepage cards pinned via Admin → Homepage Features (admin + user listings). */
 export function isHomepageFeaturedListing(item, type = 'domain') {
-  return isGuestCreatedListing(item, type) && Boolean(item.featured);
+  return isActiveListing(item, type) && Boolean(item.featured);
 }
 
 export function filterHomepageListings(items, type = 'domain') {
   return asArray(items).filter((item) => isActiveListing(item, type));
 }
 
-export function filterFeaturedGuestListings(items, type = 'domain') {
+export function filterFeaturedListings(items, type = 'domain') {
   return asArray(items).filter((item) => isHomepageFeaturedListing(item, type));
+}
+
+/** @deprecated Use filterFeaturedListings — kept for callers not yet migrated */
+export function filterFeaturedGuestListings(items, type = 'domain') {
+  return filterFeaturedListings(items, type);
 }

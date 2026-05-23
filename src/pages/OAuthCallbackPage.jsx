@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { consumeRedirectAfterLogin } from '../utils/listingNavigation';
 
 /**
  * Spring Boot OAuth2 success handler redirects here:
@@ -45,13 +46,20 @@ export default function OAuthCallbackPage() {
     refreshUser()
       .then((fetchedUser) => {
         const isComplete = fetchedUser?.profileComplete ?? profileCompleteParam;
+        const redirectPath = consumeRedirectAfterLogin();
         console.log('[OAuth] profileComplete:', isComplete, 'user:', fetchedUser?.email);
-        navigate(isComplete ? '/dashboard' : '/complete-profile', { replace: true });
+        const destination = isComplete
+          ? (redirectPath || '/dashboard')
+          : '/complete-profile';
+        navigate(destination, { replace: true });
       })
       .catch((err) => {
         console.error('[OAuth] refreshUser failed:', err);
-        // Use URL param as fallback
-        navigate(profileCompleteParam ? '/dashboard' : '/complete-profile', { replace: true });
+        const redirectPath = consumeRedirectAfterLogin();
+        const destination = profileCompleteParam
+          ? (redirectPath || '/dashboard')
+          : '/complete-profile';
+        navigate(destination, { replace: true });
       });
   }, []);
 

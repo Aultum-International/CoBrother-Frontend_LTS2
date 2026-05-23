@@ -1,5 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { currencyAPI } from '../api/services';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import { SUPPORTED_CURRENCIES } from '../constants/currencies';
 import {
   mergeCurrencyMeta,
@@ -23,29 +22,8 @@ export function CurrencyProvider({ children }) {
       return DEFAULT_CURRENCY;
     }
   });
-  const [meta, setMeta] = useState(() => mergeCurrencyMeta());
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    currencyAPI
-      .getSupported()
-      .then(({ data }) => {
-        const next = {};
-        (data?.currencies || []).forEach((row) => {
-          if (row?.code && row.symbol != null) {
-            next[row.code.toUpperCase()] = {
-              symbol: row.symbol,
-              rateFromInr: Number(row.rateFromInr) || undefined,
-            };
-          }
-        });
-        if (Object.keys(next).length > 0) {
-          setMeta(mergeCurrencyMeta(next));
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoaded(true));
-  }, []);
+  const [meta] = useState(() => mergeCurrencyMeta());
+  const loaded = true;
 
   const setCurrency = useCallback((code) => {
     const upper = (code || DEFAULT_CURRENCY).toUpperCase();

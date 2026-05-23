@@ -6,8 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { notificationAPI } from '../../api/services';
 import coBrotherLogo from '../../assets/Cobrother_Green.png';
 import TechnologyIcon from '../../assets/CoCreation.png';
-import CommunityIcon from '../../assets/CoBrother_profileW.png';
-import AnimatedLogoutButton from '../common/AnimatedLogoutButton';
+import CommunityIcon from '../../assets/Community-profileicon-gray.png';
 import CurrencyDropdown from '../common/CurrencyDropdown';
 import LanguageDropdown from '../common/LanguageDropdown';
 import HomeFooter from '../common/HomeFooter';
@@ -16,10 +15,16 @@ import { getAppBackTarget } from '../../utils/appNavigation';
 
 const sidebarItems = [
   { icon: Home, labelKey: 'dashboard', to: '/dashboard', isImage: false },
-  { icon: Handshake, labelKey: 'coVentures', to: '/ventures', isImage: false },
   { icon: Globe, labelKey: 'domains', to: '/domains', isImage: false },
-  { icon: TechnologyIcon, labelKey: 'technology', to: '/cocreation', isImage: true },
-  { icon: CommunityIcon, labelKey: 'disruptor', to: '/community', isImage: true },
+  { icon: Handshake, labelKey: 'coVentures', to: '/ventures', isImage: false },
+  { icon: TechnologyIcon, labelKey: 'technology', to: '/cocreation', isImage: true, iconImgClass: 'app-sidebar-icon-img--technology' },
+  {
+    icon: CommunityIcon,
+    labelKey: 'disruptor',
+    to: '/community',
+    isImage: true,
+    iconImgClass: 'app-sidebar-icon-img--disruptor',
+  },
   { icon: Gavel, labelKey: 'auctions', to: '/auctions', isImage: false },
   { icon: ShoppingBag, labelKey: 'purchases', to: '/purchases', isImage: false },
 ];
@@ -143,100 +148,153 @@ export default function AppLayout({ children }) {
 
   return (
     <div
-      className="h-screen overflow-y-auto overflow-x-hidden bg-gray-50"
+      className="flex min-h-screen flex-col overflow-x-hidden overflow-y-auto bg-gray-50"
       data-app-layout-scroll
     >
-      <div className="app-layout-workspace flex w-full items-stretch">
+      <div className="app-layout-workspace flex w-full flex-1 items-stretch">
       {/* Desktop Left Sidebar — workspace only; ends above full-width footer */}
       <aside
-        className={`app-layout-sidebar hidden lg:flex bg-[#0f0f1a] flex-col flex-shrink-0 self-stretch transition-all duration-300 ${
-          sidebarCollapsed ? 'w-20' : 'w-64'
+        className={`app-layout-sidebar app-sidebar hidden lg:flex min-h-full flex-col flex-shrink-0 self-stretch ${
+          sidebarCollapsed ? 'is-collapsed w-[4.75rem]' : 'w-[15.5rem]'
         }`}
       >
-        {/* Logo & Collapse Toggle */}
-        <div className={`p-4 border-b border-white/10 flex items-center ${sidebarCollapsed ? 'justify-start' : 'justify-between'}`}>
+        <div className="app-sidebar-header">
           {!sidebarCollapsed && (
-            <Link to="/" className="flex items-center">
+            <Link to="/" className="app-sidebar-logo-link">
               <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo" />
             </Link>
           )}
           <button
+            type="button"
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="group relative w-10 h-10 rounded-xl bg-[#1e293b] border border-gray-600 text-gray-300 hover:text-white hover:bg-[#334155] hover:border-gray-500 hover:shadow-[0_0_15px_rgba(99,102,241,0.3)] active:scale-95 transition-all duration-200 flex items-center justify-center"
+            className="app-sidebar-toggle"
             title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            <PanelLeft 
-              size={22} 
-              className={`transition-transform duration-300 ${sidebarCollapsed ? 'rotate-180' : ''}`} 
+            <PanelLeft
+              size={20}
+              className={sidebarCollapsed ? 'rotate-180' : ''}
               strokeWidth={2}
             />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => {
-            const active = isActive(item.to);
-            const Icon = item.icon;
-            const accent = item.adminAccent;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-lg transition-all duration-200 ${
-                  accent
-                    ? active
-                      ? 'bg-amber-500/25 text-amber-200 border border-amber-400/30'
-                      : 'text-amber-400/90 hover:bg-amber-500/15 hover:text-amber-200 border border-transparent'
-                    : active
-                      ? 'bg-white/10 text-white'
-                      : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                }`}
-                title={sidebarCollapsed ? t(item.labelKey) : ''}
-              >
-                {item.isImage ? (
-                  <img src={item.icon} alt={t(item.labelKey)} className={`w-5 h-5 object-contain brightness-0 invert ${active ? 'opacity-100' : 'opacity-70'}`} />
-                ) : (
-                  <Icon size={20} className={accent ? (active ? 'text-amber-300' : 'text-amber-400/80') : active ? 'text-indigo-400' : ''} />
-                )}
-                {!sidebarCollapsed && <span className="font-medium text-sm">{t(item.labelKey)}</span>}
-              </Link>
-            );
-          })}
+        <nav className="app-sidebar-nav" aria-label="Main navigation">
+          {!sidebarCollapsed && <p className="app-sidebar-section-label">Menu</p>}
+          <div className="app-sidebar-nav-list">
+            {navItems.map((item) => {
+              const active = isActive(item.to);
+              const Icon = item.icon;
+              const accent = item.adminAccent;
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={[
+                    'app-sidebar-link',
+                    active && 'is-active',
+                    accent && 'is-admin',
+                    sidebarCollapsed && 'is-collapsed',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  title={sidebarCollapsed ? t(item.labelKey) : ''}
+                >
+                  <span className="app-sidebar-icon-slot">
+                    {item.isImage ? (
+                      <img
+                        src={item.icon}
+                        alt={t(item.labelKey)}
+                        className={`app-sidebar-icon-img${item.iconImgClass ? ` ${item.iconImgClass}` : ''}`}
+                        draggable={false}
+                      />
+                    ) : (
+                      <Icon size={20} strokeWidth={2} />
+                    )}
+                  </span>
+                  {!sidebarCollapsed && (
+                    <span className="app-sidebar-link-label">{t(item.labelKey)}</span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
 
-        {/* Bottom Actions - Home, Notification, Update Profile, Logout */}
-        <div className="p-3 border-t border-white/10 space-y-1">
-          <Link
-            to="/"
-            className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all`}
-            title={sidebarCollapsed ? t('Home') : ''}
-          >
-            <Home size={20} />
-            {!sidebarCollapsed && <span className="font-medium text-sm">{t('Home')}</span>}
-          </Link>
-          <button 
-            onClick={handleBellOpen}
-            className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all w-full relative`}
-            title={sidebarCollapsed ? t('notifications') : ''}
-          >
-            <Bell size={20} />
-            {!sidebarCollapsed && <span className="font-medium text-sm">{t('notifications')}</span>}
-            {unreadCount > 0 && (
-              <span className={`bg-red-500 text-white text-xs font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1 ${sidebarCollapsed ? 'absolute -top-1 -right-1' : 'ml-auto'}`}>
-                {unreadCount > 99 ? '99+' : unreadCount}
+        <div className="app-sidebar-footer">
+          {!sidebarCollapsed && <p className="app-sidebar-section-label">Account</p>}
+          <div className="app-sidebar-footer-inner">
+            <Link
+              to="/"
+              className={[
+                'app-sidebar-link app-sidebar-link--footer',
+                sidebarCollapsed && 'is-collapsed',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              title={sidebarCollapsed ? t('Home') : ''}
+            >
+              <span className="app-sidebar-icon-slot">
+                <Home size={20} strokeWidth={2} />
               </span>
-            )}
-          </button>
-          <Link
-            to="/complete-profile"
-            className={`flex items-center ${sidebarCollapsed ? 'justify-center px-2' : 'gap-3 px-4'} py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all`}
-            title={sidebarCollapsed ? t('updateProfile') : ''}
-          >
-            <User size={20} />
-            {!sidebarCollapsed && <span className="font-medium text-sm">{t('updateProfile')}</span>}
-          </Link>
-<div className={`flex ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start px-3'} py-2`}>            <AnimatedLogoutButton onClick={() => setShowLogoutConfirm(true)} label={t('logout')} />
+              {!sidebarCollapsed && <span className="app-sidebar-link-label">{t('Home')}</span>}
+            </Link>
+            <button
+              type="button"
+              onClick={handleBellOpen}
+              className={[
+                'app-sidebar-link app-sidebar-link--footer',
+                sidebarCollapsed && 'is-collapsed',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              title={sidebarCollapsed ? t('notifications') : ''}
+            >
+              <span className="app-sidebar-icon-slot">
+                <Bell size={20} strokeWidth={2} />
+              </span>
+              {!sidebarCollapsed && (
+                <span className="app-sidebar-link-label">{t('notifications')}</span>
+              )}
+              {unreadCount > 0 && (
+                <span className={`app-sidebar-badge${sidebarCollapsed ? '' : ' ml-auto'}`}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </button>
+            <Link
+              to="/complete-profile"
+              className={[
+                'app-sidebar-link app-sidebar-link--footer',
+                sidebarCollapsed && 'is-collapsed',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              title={sidebarCollapsed ? t('updateProfile') : ''}
+            >
+              <span className="app-sidebar-icon-slot">
+                <User size={20} strokeWidth={2} />
+              </span>
+              {!sidebarCollapsed && (
+                <span className="app-sidebar-link-label">{t('updateProfile')}</span>
+              )}
+            </Link>
+            <button
+              type="button"
+              onClick={() => setShowLogoutConfirm(true)}
+              className={[
+                'app-sidebar-link app-sidebar-link--footer app-sidebar-link--logout',
+                sidebarCollapsed && 'is-collapsed',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              title={sidebarCollapsed ? t('logout') : ''}
+            >
+              <span className="app-sidebar-icon-slot">
+                <LogOut size={20} strokeWidth={2} />
+              </span>
+              {!sidebarCollapsed && <span className="app-sidebar-link-label">{t('logout')}</span>}
+            </button>
           </div>
         </div>
       </aside>
@@ -245,92 +303,118 @@ export default function AppLayout({ children }) {
       {mobileOpen && (
         <>
           <div
-            className="lg:hidden fixed inset-0 bg-black/50 z-40"
+            className="app-sidebar-backdrop lg:hidden fixed inset-0 z-40"
             onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
           />
-          <aside className="lg:hidden fixed inset-y-0 left-0 w-64 bg-[#0f0f1a] z-50 flex flex-col">
-            {/* Mobile Logo */}
-            <div className="p-4 border-b border-white/10 flex items-center justify-between">
-              <Link to="/" className="flex items-center" onClick={() => setMobileOpen(false)}>
-                <img src={coBrotherLogo} alt="CoBrother" className="h-8 w-auto" />
+          <aside className="app-sidebar app-sidebar--drawer lg:hidden fixed inset-y-0 left-0 flex flex-col">
+            <div className="app-sidebar-header">
+              <Link to="/" className="app-sidebar-logo-link" onClick={() => setMobileOpen(false)}>
+                <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo" />
               </Link>
               <button
+                type="button"
                 onClick={() => setMobileOpen(false)}
-                className="p-2 text-gray-400 hover:text-white"
+                className="app-sidebar-close"
+                aria-label="Close menu"
               >
-                <X size={24} />
+                <X size={22} strokeWidth={2} />
               </button>
             </div>
 
-            {/* Navigation */}
-            <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-              {navItems.map((item) => {
-                const active = isActive(item.to);
-                const Icon = item.icon;
-                const accent = item.adminAccent;
-                return (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                      accent
-                        ? active
-                          ? 'bg-amber-500/25 text-amber-200 border border-amber-400/30'
-                          : 'text-amber-400/90 hover:bg-amber-500/15 hover:text-amber-200'
-                        : active
-                          ? 'bg-white/10 text-white'
-                          : 'text-gray-400 hover:bg-white/5 hover:text-white'
-                    }`}
-                  >
-                    {item.isImage ? (
-                      <img src={item.icon} alt={t(item.labelKey)} className={`w-5 h-5 object-contain ${active ? 'opacity-100' : 'opacity-70'}`} />
-                    ) : (
-                      <Icon size={20} className={accent ? (active ? 'text-amber-300' : 'text-amber-400/80') : active ? 'text-indigo-400' : ''} />
-                    )}
-                    <span className="font-medium text-sm">{t(item.labelKey)}</span>
-                  </Link>
-                );
-              })}
+            <nav className="app-sidebar-nav" aria-label="Main navigation">
+              <p className="app-sidebar-section-label">Menu</p>
+              <div className="app-sidebar-nav-list">
+                {navItems.map((item) => {
+                  const active = isActive(item.to);
+                  const Icon = item.icon;
+                  const accent = item.adminAccent;
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      onClick={() => setMobileOpen(false)}
+                      className={[
+                        'app-sidebar-link',
+                        active && 'is-active',
+                        accent && 'is-admin',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                    >
+                      <span className="app-sidebar-icon-slot">
+                        {item.isImage ? (
+                          <img
+                        src={item.icon}
+                        alt={t(item.labelKey)}
+                        className={`app-sidebar-icon-img${item.iconImgClass ? ` ${item.iconImgClass}` : ''}`}
+                        draggable={false}
+                      />
+                        ) : (
+                          <Icon size={20} strokeWidth={2} />
+                        )}
+                      </span>
+                      <span className="app-sidebar-link-label">{t(item.labelKey)}</span>
+                    </Link>
+                  );
+                })}
+              </div>
             </nav>
 
-            {/* Bottom Actions */}
-            <div className="p-3 border-t border-white/10 space-y-1">
-              <Link
-                to="/"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all"
-              >
-                <Home size={20} />
-                <span className="font-medium text-sm">{t('Home')}</span>
-              </Link>
-              <button 
-                onClick={handleBellOpen}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all w-full"
-              >
-                <Bell size={20} />
-                <span className="font-medium text-sm">{t('notifications')}</span>
-                {unreadCount > 0 && (
-                  <span className="ml-auto bg-red-500 text-white text-xs font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
-                    {unreadCount > 99 ? '99+' : unreadCount}
+            <div className="app-sidebar-footer">
+              <p className="app-sidebar-section-label">Account</p>
+              <div className="app-sidebar-footer-inner">
+                <Link
+                  to="/"
+                  onClick={() => setMobileOpen(false)}
+                  className="app-sidebar-link app-sidebar-link--footer"
+                >
+                  <span className="app-sidebar-icon-slot">
+                    <Home size={20} strokeWidth={2} />
                   </span>
-                )}
-              </button>
-              <Link
-                to="/complete-profile"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white transition-all"
-              >
-                <User size={20} />
-{!sidebarCollapsed && <span className="font-medium text-sm">Update Profile</span>}
-</Link>
-
-<div className={`flex ${sidebarCollapsed ? 'justify-center px-2' : 'justify-start px-3'} py-2`}>
-  <AnimatedLogoutButton onClick={() => setShowLogoutConfirm(true)} label="Logout" />
-</div>
-
-</div>
-</aside>
+                  <span className="app-sidebar-link-label">{t('Home')}</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleBellOpen}
+                  className="app-sidebar-link app-sidebar-link--footer"
+                >
+                  <span className="app-sidebar-icon-slot">
+                    <Bell size={20} strokeWidth={2} />
+                  </span>
+                  <span className="app-sidebar-link-label">{t('notifications')}</span>
+                  {unreadCount > 0 && (
+                    <span className="app-sidebar-badge ml-auto">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+                <Link
+                  to="/complete-profile"
+                  onClick={() => setMobileOpen(false)}
+                  className="app-sidebar-link app-sidebar-link--footer"
+                >
+                  <span className="app-sidebar-icon-slot">
+                    <User size={20} strokeWidth={2} />
+                  </span>
+                  <span className="app-sidebar-link-label">{t('updateProfile')}</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileOpen(false);
+                    setShowLogoutConfirm(true);
+                  }}
+                  className="app-sidebar-link app-sidebar-link--footer app-sidebar-link--logout"
+                >
+                  <span className="app-sidebar-icon-slot">
+                    <LogOut size={20} strokeWidth={2} />
+                  </span>
+                  <span className="app-sidebar-link-label">{t('logout')}</span>
+                </button>
+              </div>
+            </div>
+          </aside>
         </>
       )}
 
@@ -356,8 +440,13 @@ export default function AppLayout({ children }) {
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            <LanguageDropdown variant="light" />
-            <CurrencyDropdown variant="light" />
+            <div className="app-layout-header-utils home-nav-util-group" role="group" aria-label="Regional settings">
+              <LanguageDropdown variant="minimal" className="home-nav-util-language" />
+              <span className="home-nav-util-divider" aria-hidden="true">
+                |
+              </span>
+              <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
+            </div>
             {/* Working Bell Icon with Notification Panel */}
             <div className="relative" ref={bellRef}>
               <button 
@@ -456,25 +545,36 @@ export default function AppLayout({ children }) {
       </div>
       </div>
 
-      <div className="app-layout-footer-spacer h-16 shrink-0 lg:h-24" aria-hidden="true" />
-
       <HomeFooter />
 
       {/* Logout Confirmation Dialog */}
       {showLogoutConfirm && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="app-logout-confirm-title"
+        >
           <div className="bg-white border border-gray-200 rounded-xl shadow-2xl p-6 max-w-sm w-full">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Confirm Logout</h3>
-            <p className="text-gray-600 text-sm mb-6">Are you sure you want to logout?</p>
-            <div className="flex flex-col sm:flex-row items-center gap-3">
+            <h3 id="app-logout-confirm-title" className="text-lg font-bold text-gray-900 mb-2">
+              {t('confirmLogout')}
+            </h3>
+            <p className="text-gray-600 text-sm mb-6">{t('confirmLogoutMessage')}</p>
+            <div className="flex flex-col sm:flex-row items-stretch gap-3">
               <button
                 type="button"
-                className="w-full sm:flex-1 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg border border-gray-300 hover:bg-gray-200 transition-colors"
+                className="w-full sm:flex-1 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
                 onClick={() => setShowLogoutConfirm(false)}
               >
-                Cancel
+                {t('cancel')}
               </button>
-              <AnimatedLogoutButton onClick={handleLogout} label="Logout" />
+              <button
+                type="button"
+                className="w-full sm:flex-1 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors"
+                onClick={handleLogout}
+              >
+                {t('logout')}
+              </button>
             </div>
           </div>
         </div>

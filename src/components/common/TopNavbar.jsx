@@ -7,7 +7,7 @@ export default function TopNavbar({ homeMobileMenu = false }) {
 
   return (
     <div
-      className={`home-top-nav sticky top-0 z-[1001] w-full min-w-0 border-b border-blue-200/80 bg-gradient-to-r from-sky-50 via-blue-50 to-cyan-50 font-body shadow-[inset_0_-1px_0_rgba(59,130,246,0.08)] ${
+      className={`home-top-nav sticky top-0 z-[1001] w-full min-w-0 border-b border-slate-200/70 bg-white/85 font-body backdrop-blur-md backdrop-saturate-150 ${
         stackedWithMainNav ? 'home-top-nav-stacked' : 'home-top-nav-standalone'
       }`}
     >

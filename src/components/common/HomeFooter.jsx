@@ -182,7 +182,7 @@ const ScrollLink = ({ to, children, className }) => {
 
 const headingClass =
 
-  'relative mb-4 pb-3 text-xs font-semibold uppercase tracking-wider text-indigo-950/90 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-14 after:rounded-full after:bg-gradient-to-r after:from-blue-500 after:via-indigo-500 after:to-violet-500 after:shadow-[0_0_12px_rgba(99,102,241,0.35)] after:content-[""] sm:after:w-16';
+  'mb-2.5 inline-block w-fit border-b border-slate-300/70 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-800 sm:text-xs';
 
 
 
@@ -336,7 +336,7 @@ export default function HomeFooter() {
 
 
 
-        <div className="mt-10 border-t border-indigo-200/50 pt-5 text-center sm:mt-12 sm:pt-6 sm:text-left">
+        <div className="mt-10 border-t border-slate-200/45 pt-5 text-center sm:mt-12 sm:pt-6 sm:text-left">
 
           <p className="text-xs text-slate-600 sm:text-sm">
 
@@ -355,7 +355,7 @@ export default function HomeFooter() {
 
   return (
 
-    <footer className="home-footer-theme relative mt-auto overflow-hidden border-t border-indigo-200/60 bg-gradient-to-b from-slate-50 via-white to-indigo-50/70 text-slate-700">
+    <footer className="home-footer-theme relative mt-auto overflow-hidden border-t border-slate-200/50 bg-gradient-to-b from-slate-50 via-white to-indigo-50/70 text-slate-700">
 
       <div
 

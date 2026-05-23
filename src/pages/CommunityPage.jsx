@@ -10,14 +10,14 @@ import AppLayout from '../components/layout/AppLayout';
 import DisruptorIcon from '../assets/Cobrother_Profile.png';
 import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
+import { COMMUNITY_INDUSTRIES } from '../constants/listingCategories';
+import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
+import CommunityListingCard from '../components/listings/CommunityListingCard';
+import EditActionLabel from '../components/common/EditActionLabel';
 
 const ROLES = [
   'FOUNDER','CO_FOUNDER','INVESTOR','MENTOR',
   'OPERATOR','FREELANCER','STUDENT','OTHER'
-];
-const INDUSTRIES = [
-  'TECH','FINANCE','HEALTHCARE','EDUCATION','FOOD_AND_BEVERAGE','RETAIL',
-  'REAL_ESTATE','MEDIA','MANUFACTURING','LOGISTICS','AGRICULTURE','OTHER'
 ];
 const WORK_TYPES = [
   { value: 'FREELANCE',   label: 'Freelance' },
@@ -111,6 +111,16 @@ export default function CommunityPage() {
       .finally(() => setLoading(false));
   }, [user]);
 
+  const { closeListingDetail } = useOpenListingDetailFromUrl({
+    items: profiles,
+    loading,
+    setDetail: setDetailProfile,
+    fetchById: async (id) => {
+      const { data } = await communityAPI.getOne(id);
+      return data?.data ?? data;
+    },
+  });
+
   const handleConnectLinkedIn = async () => {
     setLinkedInError('');
     setLinkedInLoading(true);
@@ -198,8 +208,8 @@ export default function CommunityPage() {
                 <button className="btn-glow btn-glow-sm" onClick={() => navigate('/profile/analytics')}>
                   📈 Analytics
                 </button>
-                <button className="btn-glow btn-glow-sm" onClick={() => setShowForm(v => !v)}>
-                  ✏ Edit Profile
+                <button type="button" className="btn-glow btn-glow-sm inline-flex items-center justify-center" onClick={() => setShowForm(v => !v)}>
+                  <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
                 </button>
               </div>
             ) : (
@@ -271,7 +281,7 @@ export default function CommunityPage() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
             {filteredProfiles.map(p => (
-              <CommunityCard
+              <CommunityListingCard
                 key={p.id} profile={p}
                 isMe={p.appUser?.id === user?.id}
                 likeState={getLike(p.id)}
@@ -288,8 +298,8 @@ export default function CommunityPage() {
         <CommunityDetailModal
           profile={detailProfile}
           isMe={detailProfile.appUser?.id === user?.id}
-          onClose={() => setDetailProfile(null)}
-          onEdit={() => { setMyProfile(detailProfile); setShowForm(true); setDetailProfile(null); }}
+          onClose={closeListingDetail}
+          onEdit={() => { setMyProfile(detailProfile); setShowForm(true); closeListingDetail(); }}
           onViewAuction={(auctionId) => navigate(`/community-auction/${auctionId}`)}
         />
       )}
@@ -640,7 +650,11 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onViewAuction })
             )}
 
             <div className="flex gap-3 mt-6">
-              {isMe && <button className="btn-glow" onClick={onEdit}>✏ Edit Profile</button>}
+              {isMe && (
+                <button type="button" className="btn-glow inline-flex items-center justify-center" onClick={onEdit}>
+                  <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
+                </button>
+              )}
               <button className="btn-glow" onClick={onClose}>Close</button>
             </div>
           </>
@@ -710,7 +724,7 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
             <label className="text-sm font-medium text-gray-700">Industry <span className="text-red-500">*</span></label>
             <select name="industry" value={form.industry} onChange={handleChange} required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 cursor-pointer transition-all">
               <option value="">Select industry</option>
-              {INDUSTRIES.map(i => <option key={i} value={i}>{i.replace(/_/g, ' ')}</option>)}
+              {COMMUNITY_INDUSTRIES.map(i => <option key={i} value={i}>{i.replace(/_/g, ' ')}</option>)}
             </select>
           </div>
         </div>
@@ -742,59 +756,10 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
   );
 }
 
-// ─── Community Card ───────────────────────────────────────────────────────────
-function CommunityCard({ profile, isMe, onView, onEdit, likeState, onLike }) {
-  const skills = profile.skills?.split(',').map(s => s.trim()).filter(Boolean) || [];
-  return (
-    <div className={`card-glow-hover p-6 bg-white rounded-[18px] flex flex-col gap-3 cursor-pointer relative border ${isMe ? 'border-indigo-300' : 'border-gray-200'}`} onClick={onView}>
-      {isMe && (
-        <button className="absolute top-3.5 right-3.5 inline-flex items-center justify-center w-7 h-7 bg-gray-50 border border-gray-200 rounded-full text-gray-500 p-0 cursor-pointer hover:bg-gray-100"
-          onClick={e => { e.stopPropagation(); onEdit(); }} title="Edit profile">✏</button>
-      )}
-      <div className="flex items-center gap-3">
-        {profile.imageUrl
-          ? <img src={profile.imageUrl} alt={profile.name} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-          : <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-xl font-semibold text-indigo-600 flex-shrink-0">{profile.name?.[0]?.toUpperCase() || '?'}</div>
-        }
-        <div>
-          <h4 className="font-semibold text-[0.95rem] text-gray-900">{profile.name || 'Anonymous'}</h4>
-          {profile.role && (
-            <div className="inline-block mt-0.5 px-1.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded text-[0.7rem] text-indigo-600 uppercase tracking-wider">{profile.role.replace(/_/g, ' ')}</div>
-          )}
-        </div>
-      </div>
-      <div className="flex flex-col gap-1">
-        <span className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider">Industry & Location</span>
-        <div className="flex flex-wrap gap-1.5">
-          {profile.industry && <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700">{profile.industry.replace(/_/g, ' ')}</span>}
-          {profile.location && <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">📍 {profile.location}</span>}
-        </div>
-      </div>
-      {skills.length > 0 && (
-        <div className="flex flex-col gap-1">
-          <span className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider">Skills</span>
-          <div className="flex flex-wrap gap-1.5">
-            {skills.slice(0, 4).map(s => <span key={s} className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-xs text-gray-600">{s}</span>)}
-            {skills.length > 4 && <span className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-xs text-gray-400">+{skills.length - 4}</span>}
-          </div>
-        </div>
-      )}
-      {profile.linkedInProfileUrl && (
-        <a href={profile.linkedInProfileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs text-[#0077b5] no-underline mt-0.5 hover:text-[#005885]" onClick={e => e.stopPropagation()}>
-          <LinkedInIcon size={13} /> LinkedIn ↗
-        </a>
-      )}
-      <div className="flex justify-between items-center mt-1">
-        <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} forceRed />
-      </div>
-    </div>
-  );
-}
-
 function LinkedInIcon({ size = 18 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
     </svg>
   );
 }

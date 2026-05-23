@@ -4,6 +4,7 @@ import { coVentureAPI, likeAPI, ventureAPI, ventureAuctionAPI } from '../api/ser
 import useCurrency from '../context/CurrencyContext';
 import AppLayout from '../components/layout/AppLayout';
 import VentureGstinVerificationModal from '../components/venture/VentureGstinVerificationModal';
+import EditActionLabel from '../components/common/EditActionLabel';
 
 const STATUS_META = {
   PENDING:  { label: 'Pending',  color: '#c8a96e', bg: 'rgba(200,169,110,0.12)', icon: '⏳' },
@@ -241,8 +242,8 @@ function VentureListingRow({ venture, onVerify, onViewAuction, onListingChanged 
             <button className="btn-glow btn-glow-sm" onClick={handleReactivate}>
               List again
             </button>
-            <button className="btn-glow btn-glow-sm" onClick={() => navigate(`/ventures/${venture.id}/edit`)}>
-              Edit
+            <button type="button" className="btn-glow btn-glow-sm inline-flex items-center justify-center" onClick={() => navigate(`/ventures/${venture.id}/edit`)}>
+              <EditActionLabel iconSize={16}>Edit</EditActionLabel>
             </button>
           </>
         )}

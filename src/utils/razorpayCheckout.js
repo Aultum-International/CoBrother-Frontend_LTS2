@@ -78,6 +78,29 @@ export function getRazorpayOrderId(order) {
   return order?.orderId ?? order?.razorpayOrderId ?? order?.razorpay_order_id ?? '';
 }
 
+let razorpayScriptPromise = null;
+
+function loadRazorpayScript() {
+  if (typeof window !== 'undefined' && window.Razorpay) {
+    return Promise.resolve();
+  }
+  if (razorpayScriptPromise) return razorpayScriptPromise;
+
+  razorpayScriptPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => {
+      razorpayScriptPromise = null;
+      reject(new Error('Failed to load Razorpay SDK'));
+    };
+    document.head.appendChild(script);
+  });
+
+  return razorpayScriptPromise;
+}
+
 export function buildRazorpayPrefill(user, orderData = {}) {
   const email =
     user?.email ||
@@ -92,7 +115,7 @@ export function buildRazorpayPrefill(user, orderData = {}) {
   return { email, contact };
 }
 
-export function openRazorpayCheckout({
+export async function openRazorpayCheckout({
   orderData,
   user,
   description,
@@ -102,9 +125,7 @@ export function openRazorpayCheckout({
   themeColor = '#c8a96e',
 }) {
   try {
-    if (!window.Razorpay) {
-      throw new Error('Razorpay SDK not loaded');
-    }
+    await loadRazorpayScript();
 
     const order = normalizeOrderData(orderData);
     const amount = getRazorpayAmount(order);

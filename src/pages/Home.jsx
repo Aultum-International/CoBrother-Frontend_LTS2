@@ -26,7 +26,6 @@ import HeroGlow from '../components/common/HeroGlow';
 
 import ExploreSection from '../components/common/ExploreSection';
 
-import HomeListingCarousel from '../components/home/HomeListingCarousel';
 
 import DomainSearchBar from '../components/common/DomainSearchBar';
 
@@ -258,7 +257,7 @@ export default function Home() {
 
   return (
 
-    <div className="relative bg-white">
+    <div className="relative min-w-0 overflow-x-hidden bg-white">
 
       <TopNavbar homeMobileMenu />
 
@@ -276,7 +275,7 @@ export default function Home() {
 
 
 
-      <div className="home-hero-search-stack relative z-10">
+      <div className="home-hero-search-stack relative z-10 overflow-x-hidden">
         <HeroGlow />
       </div>
 
@@ -285,43 +284,35 @@ export default function Home() {
           <DomainSearchBar embedded className="-mt-1 pt-2 sm:-mt-2 sm:pt-3 lg:-mt-4 lg:pt-4" />
 
           <ExploreSection />
-
-          <HomeListingCarousel />
-
-          <section className="home-features-section py-12 md:py-20 bg-gray-50">
-          <div className="home-features-section-grid" aria-hidden="true" />
-          <div className="home-hero-align-inner home-features-section-content">
-
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
-
-            {features.map((feature, index) => (
-
-              <div key={index} className="card-glow-hover p-5 md:p-8 bg-white border border-gray-200 rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center">
-
-                <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-purple mb-4 md:mb-5">{feature.icon}</div>
-
-                <h3 className="font-display text-lg md:text-xl font-medium text-gray-900 mb-2 md:mb-3">{t(feature.titleKey)}</h3>
-
-                <p className="text-sm text-gray-600 mb-5 md:mb-6 flex-1 leading-relaxed">{t(feature.descKey)}</p>
-
-                <GlowButton onClick={() => navigate(feature.link)}>
-
-                  {t('exploreBtn')} →
-
-                </GlowButton>
-
-              </div>
-
-            ))}
-
-          </div>
-
-            </div>
-
-          </section>
         </div>
       </div>
+
+      <section className="home-features-section py-12 md:py-20">
+        <div className="home-features-section-grid" aria-hidden="true" />
+        <div className="home-features-section-content home-hero-align-inner">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="card-glow-hover p-5 md:p-8 bg-white border border-gray-200 rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center"
+              >
+                <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-purple mb-4 md:mb-5">
+                  {feature.icon}
+                </div>
+                <h3 className="font-display text-lg md:text-xl font-medium text-gray-900 mb-2 md:mb-3">
+                  {t(feature.titleKey)}
+                </h3>
+                <p className="text-sm text-gray-600 mb-5 md:mb-6 flex-1 leading-relaxed">
+                  {t(feature.descKey)}
+                </p>
+                <GlowButton onClick={() => navigate(feature.link)}>
+                  {t('exploreBtn')} →
+                </GlowButton>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <HomeFooter />
 

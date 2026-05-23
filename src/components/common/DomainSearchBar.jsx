@@ -51,8 +51,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             ? { ...r, status: data.status, price: data.price ?? null, listing: data.listing ?? null }
             : r
         ));
-      } catch (err) {
-        console.error(fullDomain, err);
+      } catch {
         setResults(prev => prev.map(r =>
           r.domain === fullDomain ? { ...r, status: 'error' } : r
         ));

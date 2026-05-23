@@ -1,0 +1,36 @@
+export function normalizeDomainExtension(ext) {
+  const trimmed = (ext ?? '').toString().trim();
+  if (!trimmed || trimmed === '.') return null;
+  const full = trimmed.startsWith('.') ? trimmed : `.${trimmed}`;
+  const key = full.replace(/^\./, '').toLowerCase();
+  if (!key) return null;
+  const known = ['com', 'in', 'io', 'net', 'org', 'co', 'ai'];
+  return {
+    label: full.toUpperCase(),
+    cssKey: known.includes(key) ? key : 'default',
+    full,
+  };
+}
+
+/** Split name + extension for display (handles legacy rows with extension only in domainName). */
+export function resolveDomainDisplay(domain) {
+  let name = (domain?.domainName ?? '').trim();
+  let rawExt = (domain?.domainExtension ?? '').trim();
+
+  if (!rawExt && name.includes('.')) {
+    const dot = name.indexOf('.');
+    if (dot > 0) {
+      rawExt = name.slice(dot);
+      name = name.slice(0, dot);
+    }
+  }
+
+  const ext = normalizeDomainExtension(rawExt);
+  const cleanName = name.replace(/^[\s|.\-—]+$/g, '') ? name : '';
+  const displayName = cleanName || (ext ? 'domain' : 'Unnamed');
+  return {
+    name: displayName,
+    ext,
+    fullDomain: ext ? `${displayName}${ext.full}` : displayName,
+  };
+}

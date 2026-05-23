@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import cobrotherProfile from '../../assets/cobrother_community_profil.png';
-import AnimatedLogoutButton from './AnimatedLogoutButton';
 import CurrencyDropdown from './CurrencyDropdown';
 import LanguageDropdown from './LanguageDropdown';
 
@@ -59,6 +59,7 @@ export default function HomeTopNavActions() {
   const navigate = useNavigate();
   const [showInitial, setShowInitial] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const profileRef = useRef(null);
 
   const userKey = user?.id ?? user?.email ?? null;
@@ -69,6 +70,15 @@ export default function HomeTopNavActions() {
   );
 
   const displayName = useMemo(() => getDisplayNameFromUser(user), [user]);
+
+  useEffect(() => {
+    if (!showLogoutConfirm) return undefined;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showLogoutConfirm]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -101,7 +111,8 @@ export default function HomeTopNavActions() {
     };
   }, [userKey]);
 
-  const handleLogout = useCallback(async () => {
+  const handleLogoutConfirm = useCallback(async () => {
+    setShowLogoutConfirm(false);
     setProfileDropdownOpen(false);
     await logout();
     navigate('/');
@@ -113,14 +124,16 @@ export default function HomeTopNavActions() {
 
   return (
     <>
-      <CurrencyDropdown variant="light" className="home-nav-util-currency home-nav-util-trigger" />
-      <LanguageDropdown variant="light" className="home-nav-util-language home-nav-util-trigger" />
+      <div className="home-nav-util-group" role="group" aria-label="Regional settings">
+        <LanguageDropdown variant="minimal" className="home-nav-util-language" />
+        <span className="home-nav-util-divider" aria-hidden="true">
+          |
+        </span>
+        <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
+      </div>
 
-      <div className="relative hidden lg:block">
-        <a
-          href="/contact"
-          className="flex cursor-pointer items-center gap-1 rounded border-none bg-transparent px-3 py-2 text-sm font-normal text-slate-700 no-underline transition-colors duration-200 font-body hover:bg-blue-100/70 hover:text-blue-900"
-        >
+      <div className="relative hidden xl:block">
+        <a href="/contact" className="home-nav-contact-link">
           {t('contactUs')}
         </a>
       </div>
@@ -160,25 +173,18 @@ export default function HomeTopNavActions() {
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
                 <a
-                  href="/profile"
-                  className="menu-item-gradient block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
-                  onClick={() => setProfileDropdownOpen(false)}
-                >
-                  {t('profile')}
-                </a>
-                <a
-                  href="/contact"
-                  className="menu-item-gradient block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
-                  onClick={() => setProfileDropdownOpen(false)}
-                >
-                  {t('contactPage')}
-                </a>
-                <a
                   href="/dashboard"
                   className="menu-item-gradient block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
                   {t('dashboard')}
+                </a>
+                <a
+                  href="/contact"
+                  className="menu-item-gradient block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium xl:hidden"
+                  onClick={() => setProfileDropdownOpen(false)}
+                >
+                  {t('contactUs')}
                 </a>
                 <a
                   href="/complete-profile"
@@ -187,15 +193,17 @@ export default function HomeTopNavActions() {
                 >
                   {t('updateProfile')}
                 </a>
-                <a
-                  href="/contact"
-                  className="menu-item-gradient md:hidden block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors no-underline font-medium"
-                  onClick={() => setProfileDropdownOpen(false)}
-                >
-                  {t('contactUs')}
-                </a>
-                <div className="border-t border-gray-100 px-4 py-3 flex justify-center overflow-visible">
-                  <AnimatedLogoutButton onClick={handleLogout} label={t('logout')} />
+                <div className="border-t border-gray-100">
+                  <button
+                    type="button"
+                    className="block w-full px-4 py-2.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      setShowLogoutConfirm(true);
+                    }}
+                  >
+                    {t('logout')}
+                  </button>
                 </div>
               </>
             ) : (
@@ -209,7 +217,7 @@ export default function HomeTopNavActions() {
                 </a>
                 <a
                   href="/contact"
-                  className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline"
+                  className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-100 transition-colors no-underline xl:hidden"
                   onClick={() => setProfileDropdownOpen(false)}
                 >
                   {t('contactUs')}
@@ -219,6 +227,41 @@ export default function HomeTopNavActions() {
           </div>
         )}
       </div>
+
+      {showLogoutConfirm &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[10002] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="home-logout-confirm-title"
+          >
+            <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-6 shadow-2xl">
+              <h3 id="home-logout-confirm-title" className="text-lg font-bold text-gray-900">
+                {t('confirmLogout')}
+              </h3>
+              <p className="mt-2 text-sm text-gray-600">{t('confirmLogoutMessage')}</p>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                <button
+                  type="button"
+                  className="w-full rounded-lg border border-gray-300 bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                  onClick={() => setShowLogoutConfirm(false)}
+                >
+                  {t('cancel')}
+                </button>
+                <button
+                  type="button"
+                  className="w-full rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-100 transition-colors"
+                  onClick={handleLogoutConfirm}
+                >
+                  {t('logout')}
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

@@ -1,0 +1,365 @@
+/* Domain marketplace cards — clean SaaS listing grid */
+
+.domain-listing-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.domain-listing-card-shell {
+  min-width: 0;
+}
+
+.domain-listing-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.domain-listing-card:hover {
+  border-color: #c7d2fe;
+  box-shadow:
+    0 4px 6px -1px rgba(15, 23, 42, 0.06),
+    0 12px 24px -8px rgba(79, 70, 229, 0.12);
+  transform: translateY(-2px);
+}
+
+.domain-listing-card__header {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.65rem;
+  padding: 1rem 1rem 0.75rem;
+}
+
+.domain-listing-card__identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.domain-listing-card__avatar {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  border: 1px solid #e0e7ff;
+  background: linear-gradient(145deg, #eef2ff 0%, #f8fafc 100%);
+  color: #4338ca;
+  overflow: hidden;
+}
+
+.domain-listing-card__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.domain-listing-card__title-block {
+  min-width: 0;
+  flex: 1;
+}
+
+.domain-listing-card__name {
+  margin: 0;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+  min-width: 0;
+}
+
+.domain-listing-card__name-text {
+  word-break: break-word;
+  min-width: 0;
+}
+
+.domain-listing-card__ext-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.domain-listing-card__ext-badge--com {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.domain-listing-card__ext-badge--in {
+  color: #c2410c;
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.domain-listing-card__ext-badge--io {
+  color: #6d28d9;
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+}
+
+.domain-listing-card__ext-badge--net,
+.domain-listing-card__ext-badge--org {
+  color: #047857;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.domain-listing-card__ext-badge--default {
+  color: #475569;
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+.domain-listing-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-start;
+}
+
+.domain-listing-card__chip {
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.domain-listing-card__chip--available {
+  color: #047857;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+}
+
+.domain-listing-card__chip--sold {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.domain-listing-card__chip--pending {
+  color: #b45309;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+}
+
+.domain-listing-card__chip--muted {
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.domain-listing-card__chip--premium {
+  color: #7c3aed;
+  background: #f5f3ff;
+  border: 1px solid #ddd6fe;
+}
+
+.domain-listing-card__chip--owner {
+  color: #4338ca;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+}
+
+.domain-listing-card__body {
+  padding: 0 1rem 0.75rem;
+  flex: 1;
+}
+
+.domain-listing-card__price-box {
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #bbf7d0;
+}
+
+.domain-listing-card__price-box--auction {
+  background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%);
+  border-color: #e9d5ff;
+}
+
+.domain-listing-card__price-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.domain-listing-card__price-value {
+  margin-top: 0.15rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #059669;
+  line-height: 1.1;
+}
+
+.domain-listing-card__price-box--auction .domain-listing-card__price-value {
+  color: #7c3aed;
+}
+
+.domain-listing-card__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem 1rem;
+  border-top: 1px solid #f1f5f9;
+  margin-top: auto;
+}
+
+.domain-listing-card__stats {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.domain-listing-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.domain-listing-card__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.domain-listing-card__btn--primary {
+  flex: 1;
+  color: #fff;
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  border-color: #4f46e5;
+  box-shadow: 0 1px 2px rgba(79, 70, 229, 0.25);
+}
+
+.domain-listing-card__btn--primary:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+}
+
+.domain-listing-card__btn--ghost {
+  color: #475569;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.domain-listing-card__btn--ghost:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.domain-listing-card__btn--danger {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.domain-listing-card__btn--danger:hover {
+  background: #fee2e2;
+}
+
+.domain-listing-card__btn--icon {
+  padding: 0.45rem;
+  color: #64748b;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.domain-listing-card__btn--icon:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+.domain-listing-card__taken-down {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  z-index: 2;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #fff;
+  background: #dc2626;
+}
+
+.domain-listing-card--browse {
+  cursor: default;
+}
+
+.domain-listing-card--browse:hover {
+  transform: none;
+}
+
+.listing-browse-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.listing-browse-footer__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.listing-browse-footer__cta {
+  width: 100%;
+  justify-content: center;
+}

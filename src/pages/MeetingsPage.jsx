@@ -536,7 +536,7 @@ function CancelPrompt({ onConfirm, onBack }) {
         value={reason}
         onChange={e => setReason(e.target.value)}
         placeholder="e.g. Schedule conflict"
-        className="w-full px-2 py-1.5 border border-gray-300 rounded text-xs text-gray-900 mb-2 outline-none focus:border-red-400"
+        className="app-field-input w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs text-gray-900 mb-2 outline-none focus:border-red-400 bg-white"
       />
       <div className="flex gap-2">
         <button
