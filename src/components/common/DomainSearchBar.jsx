@@ -159,7 +159,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
       <div className={`w-full ${embedded ? '' : 'mx-auto max-w-[1200px]'}`}>
 
         {/* Desktop: compact search beside live domain feed */}
-        <div className={`hidden lg:flex lg:flex-row lg:items-center gap-4 xl:gap-5 ${embedded ? 'lg:justify-start' : 'lg:justify-center'}`}>
+        <div className={`hidden lg:flex lg:flex-row lg:items-end gap-4 xl:gap-5 ${embedded ? 'lg:justify-start' : 'lg:justify-center'}`}>
           <form onSubmit={handleSearch}
             className="search-glow-focus flex w-full max-w-[700px] flex-[1_1_640px] flex-row items-center gap-2 overflow-hidden rounded-2xl border border-indigo-400/40 bg-black py-2 pl-4 pr-2 shadow-[0_4px_24px_rgba(99,102,241,0.12)] transition-all duration-300 sm:pl-5 sm:rounded-full xl:max-w-[740px]">
             <Search className="h-5 w-5 shrink-0 text-slate-400" strokeWidth={2} />
@@ -191,7 +191,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   {t('search')}
 </button>
           </form>
-          <CompactDomainTicker className="hidden lg:block h-[94px] w-full max-w-[390px] flex-[0_1_390px] xl:max-w-[430px] xl:basis-[430px]" />
+          <CompactDomainTicker className="hidden lg:block w-full max-w-[390px] flex-[0_1_390px] self-end xl:max-w-[430px] xl:basis-[430px]" />
         </div>
 
         {/* Mobile / tablet */}

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import VentureListingCard from '../components/listings/VentureListingCard';
+import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
 import { VENTURE_EQUITY_TYPE_LABELS } from '../constants/ventureLabels';
 import { useTranslation } from 'react-i18next';
@@ -202,10 +203,10 @@ export default function VenturesPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+            <div className="listing-card-glow-grid grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
               {paginated.map(v => (
+                <ListingCardShell key={v.id}>
                 <VentureListingCard
-                  key={v.id}
                   venture={v}
                   isOwner={v.listedBy?.id === user?.id}
                   likeState={getLike(v.id)}
@@ -215,6 +216,7 @@ export default function VenturesPage() {
                   onEdit={() => navigate(`/ventures/${v.id}/edit`)}
                   onDelete={() => setDeleteTarget(v.id)}
                 />
+                </ListingCardShell>
               ))}
             </div>
             <Pagination

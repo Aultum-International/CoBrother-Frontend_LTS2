@@ -64,7 +64,7 @@ export default function DomainListingCard({
 
   if (browseMode) {
     return (
-      <article className="domain-listing-card domain-listing-card--browse">
+      <article className="domain-listing-card domain-listing-card--browse listing-card-glow card-glow-hover">
         {domain.takenDown && <span className="domain-listing-card__taken-down">Taken down</span>}
         <div className="domain-listing-card__header">
           <div className="domain-listing-card__identity">
@@ -126,7 +126,7 @@ export default function DomainListingCard({
   }
 
   return (
-    <article className="domain-listing-card" onClick={onView}>
+    <article className="domain-listing-card listing-card-glow card-glow-hover" onClick={onView}>
       {domain.takenDown && <span className="domain-listing-card__taken-down">Taken down</span>}
 
       <div className="domain-listing-card__header">

@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import LikeButton from '../common/LikeButton';
 import ListingBrowseFooter from './ListingBrowseFooter';
-import '../../styles/technology-listing-cards.css';
 
 const STATUS_COLORS = {
   AVAILABLE: { color: '#6ec896', bg: 'rgba(110,200,150,0.1)', border: 'rgba(110,200,150,0.3)' },
@@ -31,7 +30,7 @@ export default function TechnologyListingCard({
 
   return (
     <div
-      className={`technology-listing-card card-glow-hover group relative bg-white rounded-2xl flex flex-col shadow-sm transition-all duration-300 p-5 gap-2 h-full${
+      className={`listing-card-glow technology-listing-card card-glow-hover group relative bg-white rounded-2xl flex flex-col shadow-sm transition-all duration-300 p-5 gap-2 h-full${
         browseMode ? '' : ' cursor-pointer'
       }`}
       onClick={browseMode ? undefined : onView}

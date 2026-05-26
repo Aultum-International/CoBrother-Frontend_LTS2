@@ -23,6 +23,7 @@ import TopNavbar from '../components/common/TopNavbar';
 import HomeNavbar from '../components/common/HomeNavbar';
 
 import HeroGlow from '../components/common/HeroGlow';
+import ListingCardShell from '../components/listings/ListingCardShell';
 
 import ExploreSection from '../components/common/ExploreSection';
 
@@ -290,25 +291,24 @@ export default function Home() {
       <section className="home-features-section py-12 md:py-20">
         <div className="home-features-section-grid" aria-hidden="true" />
         <div className="home-features-section-content home-hero-align-inner">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
+          <div className="home-features-card-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-6">
             {features.map((feature, index) => (
-              <div
-                key={index}
-                className="card-glow-hover p-5 md:p-8 bg-white border border-gray-200 rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center"
-              >
-                <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-purple mb-4 md:mb-5">
-                  {feature.icon}
+              <ListingCardShell key={index} className="home-feature-card-shell">
+                <div className="listing-card-glow home-feature-card card-glow-hover p-5 md:p-8 bg-white rounded-[16px] md:rounded-[20px] shadow-sm flex flex-col items-center text-center h-full">
+                  <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center text-purple mb-4 md:mb-5">
+                    {feature.icon}
+                  </div>
+                  <h3 className="font-display text-lg md:text-xl font-medium text-gray-900 mb-2 md:mb-3">
+                    {t(feature.titleKey)}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-5 md:mb-6 flex-1 leading-relaxed">
+                    {t(feature.descKey)}
+                  </p>
+                  <GlowButton onClick={() => navigate(feature.link)}>
+                    {t('exploreBtn')} →
+                  </GlowButton>
                 </div>
-                <h3 className="font-display text-lg md:text-xl font-medium text-gray-900 mb-2 md:mb-3">
-                  {t(feature.titleKey)}
-                </h3>
-                <p className="text-sm text-gray-600 mb-5 md:mb-6 flex-1 leading-relaxed">
-                  {t(feature.descKey)}
-                </p>
-                <GlowButton onClick={() => navigate(feature.link)}>
-                  {t('exploreBtn')} →
-                </GlowButton>
-              </div>
+              </ListingCardShell>
             ))}
           </div>
         </div>

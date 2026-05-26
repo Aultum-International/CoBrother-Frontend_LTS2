@@ -6,6 +6,7 @@ import { LayoutDashboard, Plus, CheckCircle } from 'lucide-react';
 import EditActionLabel from '../components/common/EditActionLabel';
 import '../styles/domain-listing-cards.css';
 import DomainListingCard from '../components/listings/DomainListingCard';
+import ListingCardShell from '../components/listings/ListingCardShell';
 import { normalizeDomainExtension, resolveDomainDisplay } from '../utils/domainDisplay';
 import { domainAPI, domainEnquiryAPI, auctionAPI } from '../api/services';
 import { useAuth } from '../context/AuthContext';
@@ -239,9 +240,9 @@ export default function DomainsPage() {
           </div>
         ) : (
           <>
-            <div className="domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {paginated.map(d => (
-                <div key={d.id} className="domain-listing-card-shell">
+                <ListingCardShell key={d.id}>
                 <DomainListingCard
                   domain={d}
                   isOwner={d.listedBy?.id === user?.id}
@@ -254,7 +255,7 @@ export default function DomainsPage() {
                   onViewAuction={() => navigate(`/auction/${d.auction?.id}`)}
                   onDelete={() => setDeleteTarget(d.id)}
                 />
-                </div>
+                </ListingCardShell>
               ))}
             </div>
             <Pagination page={page} totalPages={totalPages}

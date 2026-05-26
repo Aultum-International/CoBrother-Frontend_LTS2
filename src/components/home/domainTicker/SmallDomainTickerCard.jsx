@@ -20,7 +20,7 @@ function StatusStamp({ status }) {
   return (
     <div className="pointer-events-none absolute inset-y-2 right-3 z-20 flex w-[94px] items-center justify-center sm:right-4 sm:w-[104px]">
       <motion.span
-        className="absolute h-[62px] w-[62px] rounded-full bg-slate-900/12 blur-lg sm:h-[70px] sm:w-[70px]"
+        className="absolute h-[62px] w-[62px] rounded-full bg-slate-400/8 blur-md sm:h-[70px] sm:w-[70px]"
         initial={{ opacity: 0, scale: 0.35 }}
         animate={{
           opacity: [0, 0.14, 0.28, 0.22, 0.18, 0],
@@ -64,7 +64,7 @@ function StatusStamp({ status }) {
           animate={{ scaleY: [1, 1, 0.86, 1.06, 1, 1] }}
           transition={{ duration: 3.45, times: [0, 0.52, 0.6, 0.72, 0.86, 1], ease: [0.2, 0.9, 0.22, 1] }}
           style={{
-            filter: 'drop-shadow(0 14px 18px rgba(15, 23, 42, 0.18))',
+            filter: 'drop-shadow(0 4px 12px rgba(15, 23, 42, 0.08))',
             transformOrigin: '50% 64%',
           }}
         >
@@ -117,14 +117,13 @@ const SmallDomainTickerCard = memo(function SmallDomainTickerCard({
 
   return (
     <motion.article
-      className="group relative flex h-[86px] shrink-0 items-center justify-between gap-3 overflow-visible rounded-2xl border-0 bg-white/90 px-4 py-3 shadow-[0_16px_38px_rgba(15,23,42,0.13)] backdrop-blur-xl sm:h-[90px] sm:px-5"
+      className="domain-ticker-card group relative flex h-[86px] shrink-0 items-center justify-between gap-3 overflow-visible rounded-2xl border border-slate-100/80 bg-white px-4 py-3 sm:h-[90px] sm:px-5"
       style={{ width: cardWidth }}
-      initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
-      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: Math.min(index, 5) * 0.06, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-white/90" />
-      <div className="pointer-events-none absolute -right-10 -top-10 h-20 w-20 rounded-full bg-cyan-300/14 blur-2xl transition-opacity duration-300 group-hover:opacity-80" />
+      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-white" />
       {focused && !statusVisible ? <StatusStamp key={stampRunId} status={item.status} /> : null}
 
       <div className="relative min-w-0 flex-1 pr-1">

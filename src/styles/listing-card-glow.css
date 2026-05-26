@@ -1,0 +1,103 @@
+/* Shared outer border glow — all listing cards (homepage + dashboards + future listings) */
+
+.listing-card-glow-grid,
+.technology-listing-grid,
+.domain-listing-grid,
+.home-features-card-grid {
+  overflow: visible;
+  padding: 12px 4px;
+}
+
+.listing-card-glow-shell,
+.technology-listing-card-shell,
+.domain-listing-card-shell,
+.home-feature-card-shell {
+  position: relative;
+  overflow: visible;
+  padding: 12px 10px;
+  min-width: 0;
+}
+
+.listing-card-glow-shell::before,
+.technology-listing-card-shell::before,
+.domain-listing-card-shell::before,
+.home-feature-card-shell::before {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  inset: 4px;
+  border-radius: 20px;
+  transition: opacity 0.35s ease;
+  filter: blur(16px);
+  background: linear-gradient(
+    90deg,
+    rgba(20, 184, 166, 0.65) 0%,
+    rgba(20, 184, 166, 0.15) 20%,
+    transparent 42%,
+    transparent 58%,
+    rgba(59, 130, 246, 0.15) 80%,
+    rgba(59, 130, 246, 0.65) 100%
+  );
+}
+
+.home-feature-card-shell::before {
+  border-radius: 22px;
+}
+
+.listing-card-glow-shell:hover::before,
+.technology-listing-card-shell:hover::before,
+.domain-listing-card-shell:hover::before,
+.home-feature-card-shell:hover::before {
+  opacity: 1;
+}
+
+.listing-card-glow.card-glow-hover,
+.technology-listing-card.card-glow-hover,
+.home-feature-card.card-glow-hover,
+.domain-listing-card.card-glow-hover,
+.venture-listing-card.card-glow-hover,
+.community-listing-card.card-glow-hover {
+  position: relative;
+  z-index: 1;
+  outline: none !important;
+  backface-visibility: hidden;
+  transition:
+    box-shadow 0.35s ease,
+    border-color 0.35s ease,
+    background-color 0.35s ease,
+    transform 0.35s ease;
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+.technology-listing-card.card-glow-hover,
+.venture-listing-card.card-glow-hover {
+  border: none !important;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.domain-listing-card.card-glow-hover,
+.community-listing-card.card-glow-hover,
+.home-feature-card.card-glow-hover {
+  border: 1px solid #e5e7eb;
+}
+
+.listing-card-glow.card-glow-hover:hover,
+.technology-listing-card.card-glow-hover:hover,
+.home-feature-card.card-glow-hover:hover,
+.domain-listing-card.card-glow-hover:hover,
+.venture-listing-card.card-glow-hover:hover,
+.community-listing-card.card-glow-hover:hover {
+  transform: translateY(-3px) translateZ(0);
+  border-color: rgba(20, 184, 166, 0.42) !important;
+  background-color: #fff;
+  box-shadow:
+    -12px 0 28px -6px rgba(20, 184, 166, 0.42),
+    12px 0 28px -6px rgba(59, 130, 246, 0.42),
+    0 0 24px rgba(20, 184, 166, 0.14),
+    0 0 32px rgba(59, 130, 246, 0.12),
+    0 14px 32px rgba(15, 23, 42, 0.12);
+}

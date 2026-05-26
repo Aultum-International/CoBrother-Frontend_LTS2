@@ -24,8 +24,8 @@ import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
 import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
-import '../styles/technology-listing-cards.css';
 import TechnologyListingCard from '../components/listings/TechnologyListingCard';
+import ListingCardShell from '../components/listings/ListingCardShell';
 import { COCREATION_CATEGORIES, COCREATION_CATEGORY_OPTIONS } from '../constants/listingCategories';
 
 export default function CoCreationPage() {
@@ -218,9 +218,9 @@ export default function CoCreationPage() {
           </div>
         ) : (
           <>
-  <div className="technology-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
+  <div className="listing-card-glow-grid technology-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6">
       {paginated.map(s => (
-        <div key={s.id} className="technology-listing-card-shell">
+        <ListingCardShell key={s.id}>
         <TechnologyListingCard
           item={s}
           isOwner={s.listedBy?.id === user?.id}
@@ -232,7 +232,7 @@ export default function CoCreationPage() {
           onAuction={() => setAuctionTarget(s)}
           auctionStatus={auctionStatuses[s.id]}
         />
-        </div>
+        </ListingCardShell>
       ))}
   </div>
 

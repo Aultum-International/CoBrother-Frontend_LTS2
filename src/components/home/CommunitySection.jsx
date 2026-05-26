@@ -7,6 +7,8 @@ import { navigateToListingDetail, isLoggedIn } from '../../utils/listingNavigati
 import { asArray } from '../../utils/asArray';
 import { useLikes } from '../../hooks/useLikes';
 import CommunityListingCard from '../listings/CommunityListingCard';
+import ListingCardShell from '../listings/ListingCardShell';
+import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 
 export default function CommunitySection() {
   const { t } = useTranslation();
@@ -42,18 +44,7 @@ export default function CommunitySection() {
   };
 
   if (loading) {
-    return (
-      <section className="bg-white py-4 md:py-6 ">
-        <div className="w-full">
-          <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
-            {t('disruptors')}
-          </h3>
-          <div className="flex items-center justify-center py-20">
-            <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
-          </div>
-        </div>
-      </section>
-    );
+    return <HomeSectionCardSkeleton title={t('disruptors')} />;
   }
 
   if (featuredCommunities.length === 0) {
@@ -75,16 +66,17 @@ export default function CommunitySection() {
         <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
           {t('disruptors')}
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+        <div className="listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
           {featuredCommunities.slice(0, 8).map((item) => (
+            <ListingCardShell key={item.id}>
             <CommunityListingCard
-              key={item.id}
               browseMode
               profile={item}
               likeState={getLike(item.id)}
               onLike={loggedIn ? () => toggleLike(item.id) : undefined}
               onView={() => handleViewProfile(item.id)}
             />
+            </ListingCardShell>
           ))}
         </div>
       </div>

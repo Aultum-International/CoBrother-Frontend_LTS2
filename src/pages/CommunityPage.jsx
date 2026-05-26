@@ -13,6 +13,7 @@ import LikeButton from '../components/common/LikeButton';
 import { COMMUNITY_INDUSTRIES } from '../constants/listingCategories';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
 import CommunityListingCard from '../components/listings/CommunityListingCard';
+import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
 
 const ROLES = [
@@ -279,16 +280,18 @@ export default function CommunityPage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+          <div className="listing-card-glow-grid grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
             {filteredProfiles.map(p => (
+              <ListingCardShell key={p.id}>
               <CommunityListingCard
-                key={p.id} profile={p}
+                profile={p}
                 isMe={p.appUser?.id === user?.id}
                 likeState={getLike(p.id)}
                 onLike={() => toggleLike(p.id)}
                 onView={() => setDetailProfile(p)}
                 onEdit={() => { setMyProfile(p); setShowForm(true); }}
               />
+              </ListingCardShell>
             ))}
           </div>
         )}

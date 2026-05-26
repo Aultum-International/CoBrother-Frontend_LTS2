@@ -11,7 +11,6 @@ import {
   useMotionValue,
   useMotionValueEvent,
   useReducedMotion,
-  useTransform,
 } from 'framer-motion';
 import SmallDomainTickerCard from './SmallDomainTickerCard';
 import { DOMAIN_TICKER_ITEMS } from './mockDomainTickerData';
@@ -45,21 +44,6 @@ function TickerSlot({
   const [inViewport, setInViewport] = useState(() => isInViewport(x.get()));
   const inViewportRef = useRef(inViewport);
 
-  const opacity = useTransform(x, (currentX) => {
-    const center = currentX + slotIndex * (cardWidth + CARD_GAP_PX) + cardWidth / 2;
-    const leftFadeEnd = 86;
-    const rightFadeStart = Math.max(leftFadeEnd + 1, wrapWidth - 86);
-
-    if (center <= 0 || center >= wrapWidth) return 0;
-    if (center < leftFadeEnd) return Math.max(0, Math.min(1, center / leftFadeEnd));
-    if (center > rightFadeStart) {
-      return Math.max(0, Math.min(1, (wrapWidth - center) / (wrapWidth - rightFadeStart)));
-    }
-    return 1;
-  });
-
-  const blur = useTransform(opacity, [0, 0.45, 1], ['blur(2px)', 'blur(0.6px)', 'blur(0px)']);
-
   useMotionValueEvent(x, 'change', (currentX) => {
     const nextInViewport = isInViewport(currentX);
     if (nextInViewport !== inViewportRef.current) {
@@ -73,10 +57,7 @@ function TickerSlot({
   }, [inViewport, onSlotExit, slotIndex]);
 
   return (
-    <motion.div
-      className="shrink-0 transform-gpu will-change-transform"
-      style={{ opacity, filter: blur, translateZ: 0 }}
-    >
+    <motion.div className="shrink-0 transform-gpu will-change-transform" style={{ translateZ: 0 }}>
       <SmallDomainTickerCard
         item={item}
         slotId={slotIndex}
@@ -218,11 +199,11 @@ export default function CompactDomainTicker({ className = '' }) {
   return (
     <section
       ref={wrapRef}
-      className={`relative min-w-0 overflow-x-clip overflow-y-visible border-0 bg-transparent [background:transparent!important] ${className}`.trim()}
+      className={`domain-ticker-viewport relative flex min-w-0 items-end border-0 bg-transparent ${className}`.trim()}
       aria-label="Recently sold premium domains"
     >
       <motion.div
-        className="relative z-0 flex w-max transform-gpu items-center gap-3 py-3 will-change-transform"
+        className="domain-ticker-track relative z-0 flex w-max transform-gpu items-end gap-3 py-0 will-change-transform"
         style={{ x, translateZ: 0 }}
       >
         {tickerItems.map((item, index) => (
@@ -240,6 +221,8 @@ export default function CompactDomainTicker({ className = '' }) {
           />
         ))}
       </motion.div>
+      <div className="domain-ticker-edge-fade domain-ticker-edge-fade--left" aria-hidden="true" />
+      <div className="domain-ticker-edge-fade domain-ticker-edge-fade--right" aria-hidden="true" />
     </section>
   );
 }

@@ -7,7 +7,8 @@ import { navigateToListingDetail, isLoggedIn } from '../../utils/listingNavigati
 import { asArray } from '../../utils/asArray';
 import { useLikes } from '../../hooks/useLikes';
 import TechnologyListingCard from '../listings/TechnologyListingCard';
-import '../../styles/technology-listing-cards.css';
+import ListingCardShell from '../listings/ListingCardShell';
+import HomeSectionCardSkeleton from './HomeSectionCardSkeleton';
 
 export default function TechnologySection() {
   const { t } = useTranslation();
@@ -43,18 +44,7 @@ export default function TechnologySection() {
   };
 
   if (loading) {
-    return (
-      <section className="bg-white py-4 md:py-6 ">
-        <div className="w-full">
-          <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
-            {t('technologySoftware')}
-          </h3>
-          <div className="flex items-center justify-center py-20">
-            <div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" />
-          </div>
-        </div>
-      </section>
-    );
+    return <HomeSectionCardSkeleton title={t('technologySoftware')} />;
   }
 
   if (featuredSoftwares.length === 0) {
@@ -76,9 +66,9 @@ export default function TechnologySection() {
         <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
           {t('technologySoftware')}
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+        <div className="listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
           {featuredSoftwares.slice(0, 8).map((item) => (
-              <div key={item.id} className="technology-listing-card-shell">
+              <ListingCardShell key={item.id}>
                 <TechnologyListingCard
                   browseMode
                   item={item}
@@ -86,7 +76,7 @@ export default function TechnologySection() {
                   onLike={loggedIn ? () => toggleLike(item.id) : undefined}
                   onView={() => handleViewDetails(item.id)}
                 />
-              </div>
+              </ListingCardShell>
           ))}
         </div>
       </div>

@@ -23,7 +23,7 @@ export default function CommunityListingCard({
 
   return (
     <div
-      className={`card-glow-hover p-6 bg-white rounded-[18px] flex flex-col gap-3 relative border h-full ${isMe ? 'border-indigo-300' : 'border-gray-200'}${browseMode ? '' : ' cursor-pointer'}`}
+      className={`listing-card-glow community-listing-card card-glow-hover p-6 bg-white rounded-[18px] flex flex-col gap-3 relative border h-full ${isMe ? 'border-indigo-300' : 'border-gray-200'}${browseMode ? '' : ' cursor-pointer'}`}
       onClick={browseMode ? undefined : onView}
     >
       {isMe && (

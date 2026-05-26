@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, CheckCircle2, Clock, Shield } from 'lucide-react';
+import HeroNetWebCanvas from './HeroNetWebCanvas';
 
 export default function HeroGlow() {
   const { t } = useTranslation();
@@ -9,6 +10,8 @@ export default function HeroGlow() {
     <section className="hero-glow-section relative overflow-x-hidden overflow-y-visible border-b-0 bg-transparent py-6 pl-4 pr-4 sm:py-8 sm:pl-6 sm:pr-5 md:py-10 md:pl-10 lg:pl-20 lg:pr-8">
 
       <div className="pointer-events-none absolute inset-0 z-0 overflow-x-hidden glow-layer" aria-hidden />
+
+      <HeroNetWebCanvas variant="hero" />
 
       <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8">
@@ -39,10 +42,13 @@ export default function HeroGlow() {
               <div>
                 <Link
                   to="/auctions"
-                  className="hero-explore-cta group inline-flex items-center gap-2 rounded-xl bg-[#232f3e] px-6 py-3 text-[14px] font-semibold text-white shadow-sm transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600 hover:via-indigo-600 hover:to-violet-600 hover:shadow-[0_8px_28px_rgba(79,70,229,0.45)] sm:px-7 sm:py-3.5"
+                  className="hero-explore-cta group inline-flex items-center gap-2 rounded-xl bg-[#232f3e] px-6 py-3 text-[14px] font-semibold text-white shadow-sm transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-600 hover:via-indigo-600 hover:to-violet-600 hover:text-white hover:shadow-[0_8px_28px_rgba(79,70,229,0.45)] sm:px-7 sm:py-3.5"
                 >
                   {t('heroExploreAuctions')}
-                  <ArrowRight className="hero-explore-arrow h-4 w-4 shrink-0" strokeWidth={2.25} />
+                  <ArrowRight
+                    className="hero-explore-arrow h-4 w-4 shrink-0 text-white transition-colors duration-300 group-hover:text-white"
+                    strokeWidth={2.25}
+                  />
                 </Link>
               </div>
 
@@ -111,7 +117,14 @@ export default function HeroGlow() {
           animation: hero-arrow-nudge 1.15s ease-in-out infinite;
         }
 
-        .hero-explore-cta:hover .hero-explore-arrow {
+        .hero-explore-cta:hover,
+        .hero-explore-cta:focus-visible {
+          color: #ffffff;
+        }
+
+        .hero-explore-cta:hover .hero-explore-arrow,
+        .hero-explore-cta:focus-visible .hero-explore-arrow {
+          color: #ffffff;
           animation-duration: 0.85s;
         }
 
@@ -122,18 +135,18 @@ export default function HeroGlow() {
         }
 
         .hero-headline {
-          font-size: clamp(1.75rem, 5vw, 3.15rem);
+          font-size: clamp(1.5rem, 4.2vw, 2.65rem);
         }
 
         @media (min-width: 640px) {
           .hero-headline {
-            font-size: clamp(2rem, 4.4vw, 3rem);
+            font-size: clamp(1.7rem, 3.8vw, 2.5rem);
           }
         }
 
         @media (min-width: 1024px) {
           .hero-headline {
-            font-size: clamp(2.15rem, 3vw, 2.85rem);
+            font-size: clamp(1.85rem, 2.6vw, 2.4rem);
           }
 
           .hero-headline-line1 {
@@ -151,7 +164,7 @@ export default function HeroGlow() {
 
         @media (min-width: 1280px) {
           .hero-headline {
-            font-size: 2.95rem;
+            font-size: 2.45rem;
           }
         }
       `}</style>
