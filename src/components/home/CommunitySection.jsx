@@ -66,7 +66,7 @@ export default function CommunitySection() {
         <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
           {t('disruptors')}
         </h3>
-        <div className="listing-card-glow-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+        <div className="listing-card-glow-grid home-featured-listings-grid grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
           {featuredCommunities.slice(0, 8).map((item) => (
             <ListingCardShell key={item.id}>
             <CommunityListingCard

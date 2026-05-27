@@ -104,7 +104,7 @@ export default function VentureListingCard({
         </div>
       </div>
 
-      <div className="relative px-4 pb-4 pt-3 flex flex-col flex-1">
+      <div className="relative flex min-h-0 flex-1 flex-col px-4 pb-4 pt-3">
         <div className="flex flex-col gap-1 mb-1">
           <h3 className="font-display text-sm font-extrabold text-gray-900 leading-snug break-words">
             {b.brandName}
@@ -192,7 +192,7 @@ export default function VentureListingCard({
         )}
 
         {browseMode ? (
-          <ListingBrowseFooter onViewDetails={onView} className="mt-2 border-t border-gray-100">
+          <ListingBrowseFooter onViewDetails={onView} className="mt-auto border-t border-gray-100 pt-2">
             <span className="flex items-center gap-2">
               <span>👁 {venture.views || 0}</span>
               {!isAuction && <span>📋 {venture.coVentureApplicationCount || 0}</span>}

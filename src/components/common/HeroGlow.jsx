@@ -97,6 +97,18 @@ export default function HeroGlow() {
           );
         }
 
+        @media (max-width: 1023px) {
+          .hero-glow-section .glow-layer {
+            animation-duration: 16s;
+            background: radial-gradient(
+              ellipse 72% 52% at 50% 4%,
+              hsl(var(--glow-hue), 72%, 62%, 0.26) 0%,
+              hsl(var(--glow-hue), 65%, 58%, 0.12) 48%,
+              transparent 74%
+            );
+          }
+        }
+
         @media (prefers-reduced-motion: reduce) {
           .glow-layer {
             animation: none;

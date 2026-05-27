@@ -359,3 +359,134 @@
   width: 100%;
   justify-content: center;
 }
+
+/* Mobile only (< Tailwind `sm` / 640px): compact cards + tighter grid for domain listings */
+@media (max-width: 639px) {
+  .domain-listing-grid {
+    gap: 0.5rem;
+  }
+
+  .domain-listing-card {
+    border-radius: 12px;
+  }
+
+  .domain-listing-card__header {
+    gap: 0.45rem;
+    padding: 0.65rem 0.55rem 0.5rem;
+  }
+
+  .domain-listing-card__identity {
+    gap: 0.45rem;
+  }
+
+  .domain-listing-card__avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    font-size: 0.75rem;
+  }
+
+  .domain-listing-card__name {
+    font-size: 0.8125rem;
+    gap: 0.3rem 0.4rem;
+  }
+
+  .domain-listing-card__ext-badge {
+    padding: 0.1rem 0.38rem;
+    font-size: 0.58rem;
+  }
+
+  .domain-listing-card__chips {
+    gap: 0.25rem;
+  }
+
+  .domain-listing-card__chip {
+    padding: 0.08rem 0.32rem;
+    font-size: 0.55rem;
+  }
+
+  .domain-listing-card__body {
+    padding: 0 0.55rem 0.5rem;
+  }
+
+  .domain-listing-card__body > p {
+    font-size: 0.6rem !important;
+    margin-bottom: 0.35rem !important;
+  }
+
+  .domain-listing-card__price-box {
+    padding: 0.45rem 0.5rem;
+    border-radius: 8px;
+  }
+
+  .domain-listing-card__price-label {
+    font-size: 0.58rem;
+  }
+
+  .domain-listing-card__price-value {
+    font-size: 0.95rem;
+  }
+
+  .domain-listing-card__footer {
+    gap: 0.45rem;
+    padding: 0.5rem 0.55rem 0.6rem;
+  }
+
+  .domain-listing-card__stats {
+    font-size: 0.62rem;
+    gap: 0.45rem;
+  }
+
+  .domain-listing-card__actions {
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .domain-listing-card__btn {
+    padding: 0.32rem 0.45rem;
+    font-size: 0.625rem;
+    border-radius: 6px;
+    gap: 0.22rem;
+  }
+
+  .domain-listing-card__btn--primary {
+    min-width: 0;
+  }
+
+  .domain-listing-card__btn--icon {
+    padding: 0.32rem;
+  }
+
+  .domain-listing-card__btn svg {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+    flex-shrink: 0;
+  }
+
+  .domain-listing-card__taken-down {
+    top: 0.45rem;
+    right: 0.45rem;
+    font-size: 0.55rem;
+    padding: 0.12rem 0.38rem;
+  }
+
+  .domain-listing-card .listing-browse-footer {
+    gap: 0.45rem;
+    padding-top: 0.5rem;
+    margin-top: 0.25rem;
+  }
+
+  .domain-listing-card .listing-browse-footer__meta {
+    font-size: 0.6875rem;
+    gap: 0.35rem;
+  }
+
+  .domain-listing-card .listing-browse-footer__cta.btn-glow {
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+    font-size: 0.65rem;
+    min-height: 0;
+  }
+}

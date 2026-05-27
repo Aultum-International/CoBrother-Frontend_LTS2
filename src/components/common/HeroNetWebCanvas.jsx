@@ -1,10 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const DEFAULT_PARTICLE_COUNT = 72;
-const LINK_DISTANCE = 140;
-const MOUSE_LINK_DISTANCE = 160;
-const PARTICLE_COLOR = '99, 102, 241';
 const LINE_COLOR = '129, 140, 248';
+const PARTICLE_COLOR = '99, 102, 241';
 
 function randomBetween(min, max) {
   return min + Math.random() * (max - min);
@@ -20,13 +18,51 @@ function createParticles(count, width, height) {
   }));
 }
 
+function getViewportTier() {
+  if (typeof window === 'undefined') return 'lg';
+  const w = window.innerWidth;
+  if (w < 640) return 'sm';
+  if (w < 1024) return 'md';
+  return 'lg';
+}
+
+function tierParams(tier) {
+  switch (tier) {
+    case 'sm':
+      return {
+        particleCount: 10,
+        linkDistance: 100,
+        mouseLinkDistance: 85,
+        lineAlpha: 0.055,
+        mouseLineAlpha: 0.07,
+        particleAlphaMul: 0.3,
+        velocityMul: 0.4,
+      };
+    case 'md':
+      return {
+        particleCount: 20,
+        linkDistance: 122,
+        mouseLinkDistance: 128,
+        lineAlpha: 0.075,
+        mouseLineAlpha: 0.1,
+        particleAlphaMul: 0.42,
+        velocityMul: 0.55,
+      };
+    default:
+      return {
+        particleCount: 64,
+        linkDistance: 140,
+        mouseLinkDistance: 160,
+        lineAlpha: 0.22,
+        mouseLineAlpha: 0.35,
+        particleAlphaMul: 1,
+        velocityMul: 1,
+      };
+  }
+}
+
 /**
- * Reusable constellation / net-web canvas background with mouse-reactive links.
- * pointer-events-none — does not block clicks on content above.
- */
-/**
- * Trapezoid inside hero canvas box: diagonal rises from bottom-left → top-right.
- * Box starts ~1.5rem past the text column (see wrapper class).
+ * Trapezoid clip — desktop hero only (keeps net off the headline column).
  */
 const HERO_CLIP = 'polygon(0% 100%, 100% 100%, 100% 0%, 14% 0%)';
 
@@ -44,8 +80,24 @@ export default function HeroNetWebCanvas({
   offsetY = 0,
 }) {
   const isHero = variant === 'hero';
-  const particleCount =
-    particleCountProp ?? (isHero ? 64 : DEFAULT_PARTICLE_COUNT);
+  const [viewportTier, setViewportTier] = useState(() => getViewportTier());
+  const tierRef = useRef(getViewportTier());
+  const animParamsRef = useRef(tierParams(viewportTier));
+
+  useEffect(() => {
+    const syncTier = () => {
+      const next = getViewportTier();
+      tierRef.current = next;
+      animParamsRef.current = tierParams(next);
+      setViewportTier((prev) => (prev === next ? prev : next));
+    };
+    syncTier();
+    window.addEventListener('resize', syncTier, { passive: true });
+    return () => window.removeEventListener('resize', syncTier);
+  }, []);
+
+  const isHeroDesktop = isHero && viewportTier === 'lg';
+
   const wrapperRef = useRef(null);
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
@@ -65,6 +117,9 @@ export default function HeroNetWebCanvas({
     reducedMotionRef.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const resize = () => {
+      const p = tierParams(tierRef.current);
+      animParamsRef.current = p;
+
       const rect = wrapper.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const width = Math.max(1, Math.floor(rect.width));
@@ -77,14 +132,8 @@ export default function HeroNetWebCanvas({
       canvas.style.height = `${height}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      if (particlesRef.current.length === 0) {
-        particlesRef.current = createParticles(particleCount, width, height);
-      } else {
-        particlesRef.current.forEach((p) => {
-          p.x = Math.min(width, Math.max(0, p.x));
-          p.y = Math.min(height, Math.max(0, p.y));
-        });
-      }
+      const count = particleCountProp ?? (isHero ? p.particleCount : DEFAULT_PARTICLE_COUNT);
+      particlesRef.current = createParticles(count, width, height);
     };
 
     const mapMouseToCanvas = (clientX, clientY) => {
@@ -96,6 +145,7 @@ export default function HeroNetWebCanvas({
     };
 
     const onMouseMove = (e) => {
+      if (tierRef.current !== 'lg') return;
       const { x, y } = mapMouseToCanvas(e.clientX, e.clientY);
       mouseRef.current = { x, y, active: true };
     };
@@ -112,7 +162,7 @@ export default function HeroNetWebCanvas({
       const alpha = baseAlpha * (1 - dist / maxDist);
       ctx.beginPath();
       ctx.strokeStyle = `rgba(${LINE_COLOR}, ${alpha})`;
-      ctx.lineWidth = 0.85;
+      ctx.lineWidth = tierRef.current === 'lg' ? 0.85 : 0.65;
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
@@ -125,20 +175,22 @@ export default function HeroNetWebCanvas({
         return;
       }
 
+      const p = animParamsRef.current;
       const particles = particlesRef.current;
       const reduced = reducedMotionRef.current;
       const mouse = mouseRef.current;
+      const vm = p.velocityMul;
 
       ctx.clearRect(0, 0, width, height);
 
       if (!reduced) {
-        for (const p of particles) {
-          p.x += p.vx;
-          p.y += p.vy;
-          if (p.x <= 0 || p.x >= width) p.vx *= -1;
-          if (p.y <= 0 || p.y >= height) p.vy *= -1;
-          p.x = Math.max(0, Math.min(width, p.x));
-          p.y = Math.max(0, Math.min(height, p.y));
+        for (const part of particles) {
+          part.x += part.vx * vm;
+          part.y += part.vy * vm;
+          if (part.x <= 0 || part.x >= width) part.vx *= -1;
+          if (part.y <= 0 || part.y >= height) part.vy *= -1;
+          part.x = Math.max(0, Math.min(width, part.x));
+          part.y = Math.max(0, Math.min(height, part.y));
         }
       }
 
@@ -149,37 +201,39 @@ export default function HeroNetWebCanvas({
             particles[i].y,
             particles[j].x,
             particles[j].y,
-            LINK_DISTANCE,
-            0.22,
+            p.linkDistance,
+            p.lineAlpha,
           );
         }
       }
 
       if (mouse.active && mouse.x != null && mouse.y != null) {
-        for (const p of particles) {
-          drawLine(p.x, p.y, mouse.x, mouse.y, MOUSE_LINK_DISTANCE, 0.35);
-          const dx = p.x - mouse.x;
-          const dy = p.y - mouse.y;
+        for (const part of particles) {
+          drawLine(part.x, part.y, mouse.x, mouse.y, p.mouseLinkDistance, p.mouseLineAlpha);
+          const dx = part.x - mouse.x;
+          const dy = part.y - mouse.y;
           const dist = Math.hypot(dx, dy) || 1;
+          const pull = tierRef.current === 'lg' ? 0.4 : 0.22;
           if (dist < 100 && !reduced) {
-            p.x += (dx / dist) * 0.4;
-            p.y += (dy / dist) * 0.4;
+            part.x += (dx / dist) * pull;
+            part.y += (dy / dist) * pull;
           }
         }
       }
 
-      for (const p of particles) {
-        const glow = p.radius > 2;
+      const pam = p.particleAlphaMul;
+      for (const part of particles) {
+        const glow = part.radius > 2;
         ctx.beginPath();
         ctx.fillStyle = glow
-          ? `rgba(${PARTICLE_COLOR}, 0.35)`
-          : `rgba(${PARTICLE_COLOR}, 0.55)`;
-        ctx.arc(p.x, p.y, glow ? p.radius * 1.8 : p.radius, 0, Math.PI * 2);
+          ? `rgba(${PARTICLE_COLOR}, ${0.35 * pam})`
+          : `rgba(${PARTICLE_COLOR}, ${0.55 * pam})`;
+        ctx.arc(part.x, part.y, glow ? part.radius * 1.65 : part.radius * 0.95, 0, Math.PI * 2);
         ctx.fill();
         if (glow) {
           ctx.beginPath();
-          ctx.fillStyle = `rgba(${PARTICLE_COLOR}, 0.7)`;
-          ctx.arc(p.x, p.y, p.radius * 0.55, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${PARTICLE_COLOR}, ${0.65 * pam})`;
+          ctx.arc(part.x, part.y, part.radius * 0.5, 0, Math.PI * 2);
           ctx.fill();
         }
       }
@@ -204,13 +258,13 @@ export default function HeroNetWebCanvas({
       moveTarget.removeEventListener('mousemove', onMouseMove);
       moveTarget.removeEventListener('mouseleave', onMouseLeave);
     };
-  }, [particleCount]);
+  }, [particleCountProp, isHero, viewportTier]);
 
   const transformStyle = {
     ...(tiltDeg !== 0 || offsetY !== 0
       ? { transform: `rotate(${tiltDeg}deg) translateY(${offsetY}px)` }
       : {}),
-    ...(isHero
+    ...(isHeroDesktop
       ? {
           clipPath: HERO_CLIP,
           WebkitClipPath: HERO_CLIP,
@@ -223,7 +277,7 @@ export default function HeroNetWebCanvas({
   };
 
   const wrapperClass = isHero
-    ? 'hero__canvas hero__canvas--hero pointer-events-none absolute top-0 right-0 bottom-0 z-[1] left-[38%] overflow-hidden sm:left-[max(42%,calc(700px+2.5rem))] lg:left-[max(36rem,calc(700px+1.5rem))]'
+    ? 'hero__canvas hero__canvas--hero pointer-events-none absolute z-[1] overflow-hidden'
     : 'hero__canvas pointer-events-none absolute inset-0 z-[1] overflow-hidden';
 
   return (

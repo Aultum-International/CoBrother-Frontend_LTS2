@@ -231,7 +231,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div
-      className={`relative z-20 w-full ${embedded ? 'py-0' : 'py-3 pl-4 pr-4 sm:py-4 sm:pl-6 sm:pr-5 md:pl-10 lg:pl-20 lg:pr-8'} ${className}`.trim()}
+      className={`domain-search-bar relative z-20 w-full min-w-0 ${embedded ? 'py-0' : 'py-3 pl-4 pr-4 sm:py-4 sm:pl-6 sm:pr-5 md:pl-10 lg:pl-20 lg:pr-8'} ${className}`.trim()}
     >
       <div className={`w-full ${embedded ? '' : 'mx-auto max-w-[1200px]'}`}>
 
@@ -242,7 +242,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
             <Search className="h-5 w-5 shrink-0 text-slate-400" strokeWidth={2} />
             <input
               type="text"
-              className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-white-800 outline-none placeholder:text-gray-400 focus:ring-0 sm:text-base"
+              className="min-w-0 flex-1 border-none bg-transparent py-3 text-[15px] text-white outline-none placeholder:text-gray-400 focus:ring-0 sm:text-base"
               placeholder={t('domainSearchPlaceholder')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -258,18 +258,24 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
         </div>
 
         {/* Mobile / tablet */}
-        <div className="lg:hidden flex flex-col items-stretch gap-3 sm:gap-4">
-          <form onSubmit={handleSearch}
-            className={`search-glow-focus w-full flex flex-col sm:flex-row items-stretch sm:items-center bg-white rounded-2xl sm:rounded-full shadow-[0_8px_40px_rgba(99,102,241,0.2)] border-2 border-indigo-300/50 hover:border-indigo-400 hover:shadow-[0_12px_60px_rgba(99,102,241,0.35)] overflow-hidden px-4 sm:pl-6 sm:pr-3 py-3 sm:py-2.5 gap-3 sm:gap-0 flex-1 transition-all duration-300 hover:scale-[1.01] ${embedded ? '' : 'mx-auto max-w-[760px]'}`}>
+        <div className="domain-search-bar-mobile lg:hidden flex flex-col items-stretch gap-3 sm:gap-4">
+          <form
+            onSubmit={handleSearch}
+            className={`domain-search-bar-form search-glow-focus w-full min-w-0 flex flex-row items-center gap-2 bg-white rounded-full shadow-[0_8px_40px_rgba(99,102,241,0.2)] border-2 border-indigo-300/50 hover:border-indigo-400 hover:shadow-[0_12px_60px_rgba(99,102,241,0.35)] overflow-hidden pl-4 pr-2 py-2 sm:pl-5 sm:pr-2.5 sm:py-2 transition-all duration-300 ${embedded ? '' : 'mx-auto max-w-[760px]'}`}
+          >
+            <Search className="domain-search-bar-icon h-5 w-5 shrink-0 text-slate-400" strokeWidth={2} aria-hidden />
             <input
               type="text"
-              className="w-full min-w-0 flex-1 bg-transparent border-none outline-none text-white-800 text-base sm:text-lg placeholder:text-gray-400 py-2.5 sm:py-3 focus:ring-0"
+              className="domain-search-bar-input min-w-0 flex-1 border-none bg-transparent text-gray-900 outline-none placeholder:text-gray-400 focus:ring-0"
               placeholder={t('domainSearchPlaceholder')}
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={(e) => setQuery(e.target.value)}
+              autoComplete="off"
             />
-            <button type="submit"
-              className="bg-[#232f3e] text-white py-3 px-6 sm:px-7 rounded-full text-sm sm:text-base font-semibold transition-all w-full sm:w-auto hover:bg-gray-700 hover:-translate-y-0.5 flex-shrink-0">
+            <button
+              type="submit"
+              className="domain-search-bar-submit shrink-0 rounded-full bg-[#232f3e] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-gray-700 sm:px-6 sm:py-2.5 sm:text-base"
+            >
               {t('search')}
             </button>
           </form>

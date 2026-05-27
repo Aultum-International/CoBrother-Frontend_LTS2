@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 
 import SiteGradientBorder from './components/common/SiteGradientBorder';
+import ScrollToTop from './components/common/ScrollToTop';
 import CookieConsentBanner from './components/common/CookieConsentBanner';
 import { AuthProvider } from './context/AuthContext';
 import { CookieConsentProvider } from './context/CookieConsentContext';
@@ -50,6 +51,7 @@ const AuctionsPage = lazy(() => import('./pages/AuctionsPage'));
 export default function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <ScrollToTop />
       <LanguageProvider>
         <CurrencyProvider>
           <CookieConsentProvider>

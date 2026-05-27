@@ -10,9 +10,6 @@ function refreshBaseURL() {
   if (api.defaults.baseURL && String(api.defaults.baseURL).length > 0) {
     return api.defaults.baseURL;
   }
-  if (typeof window !== 'undefined') {
-    return window.location.origin;
-  }
   return PRODUCTION_API_ORIGIN;
 }
 

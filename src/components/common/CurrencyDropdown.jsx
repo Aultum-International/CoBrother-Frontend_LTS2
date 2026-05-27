@@ -91,18 +91,9 @@ export default function CurrencyDropdown({ variant = 'dark', className = '' }) {
                 setCurrency(code);
                 setOpen(false);
               }}
-              className={itemCls(currency === code)}
+              className={`${itemCls(currency === code)} tabular-nums`}
             >
-              {isMinimal ? (
-                <span className="flex items-center justify-between gap-3 tabular-nums">
-                  <span className="font-medium">
-                    {CURRENCY_SHORT[code] || ''} {code}
-                  </span>
-                  <span className="truncate text-slate-500">{CURRENCY_LABELS[code] || code}</span>
-                </span>
-              ) : (
-                CURRENCY_LABELS[code] || code
-              )}
+              {CURRENCY_LABELS[code] || `${CURRENCY_SHORT[code] || ''} ${code}`.trim()}
             </button>
           ))}
         </div>

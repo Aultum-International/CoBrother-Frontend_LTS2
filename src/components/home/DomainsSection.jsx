@@ -67,7 +67,7 @@ export default function DomainsSection() {
         <h3 className="font-display text-[1.4rem] md:text-[1.75rem] font-bold text-gray-900 mb-5 md:mb-6">
           {t('premiumDomains')}
         </h3>
-        <div className="listing-card-glow-grid domain-listing-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
+        <div className="listing-card-glow-grid domain-listing-grid home-featured-listings-grid grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
           {premiumDomains.slice(0, 8).map((domain) => (
               <ListingCardShell key={domain.id}>
                 <DomainListingCard

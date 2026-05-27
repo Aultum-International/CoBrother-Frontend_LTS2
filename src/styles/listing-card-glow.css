@@ -101,3 +101,155 @@
     0 0 32px rgba(59, 130, 246, 0.12),
     0 14px 32px rgba(15, 23, 42, 0.12);
 }
+
+/* Homepage featured rows (mobile): equal-height cards, stretched shells, footers pinned */
+@media (max-width: 639px) {
+  .listing-card-glow-grid.home-featured-listings-grid {
+    align-items: stretch;
+    padding: 8px 2px;
+  }
+
+  .listing-card-glow-grid.home-featured-listings-grid .listing-card-glow-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    padding: 6px 4px;
+  }
+
+  .listing-card-glow-grid.home-featured-listings-grid .listing-card-glow-shell > * {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    width: 100%;
+    min-height: 0;
+  }
+
+  .home-featured-listings-grid .domain-listing-card--browse,
+  .home-featured-listings-grid .venture-listing-card,
+  .home-featured-listings-grid .technology-listing-card,
+  .home-featured-listings-grid .community-listing-card {
+    box-sizing: border-box;
+    min-height: 18.5rem;
+    height: 100%;
+  }
+
+  .home-featured-listings-grid .domain-listing-card--browse .domain-listing-card__body {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .home-featured-listings-grid .domain-listing-card--browse .listing-browse-footer,
+  .home-featured-listings-grid .venture-listing-card .listing-browse-footer,
+  .home-featured-listings-grid .technology-listing-card .listing-browse-footer,
+  .home-featured-listings-grid .community-listing-card .listing-browse-footer {
+    flex-shrink: 0;
+    margin-top: auto;
+  }
+
+  .home-featured-listings-grid .venture-listing-card {
+    border-radius: 0.75rem;
+  }
+
+  .home-featured-listings-grid .venture-listing-card > div:first-of-type {
+    flex-shrink: 0;
+    padding: 0.5rem 0.65rem !important;
+    min-height: 3.5rem !important;
+  }
+
+  .home-featured-listings-grid .venture-listing-card > div:first-of-type .w-14.h-14 {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    font-size: 0.8rem !important;
+    border-radius: 0.5rem !important;
+  }
+
+  .home-featured-listings-grid .venture-listing-card > div:nth-child(2) {
+    padding: 0.5rem 0.65rem 0.65rem !important;
+  }
+
+  .home-featured-listings-grid .venture-listing-card h3.font-display {
+    font-size: 0.72rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .home-featured-listings-grid .venture-listing-card > div:nth-child(2) > p {
+    font-size: 0.6rem !important;
+    margin-bottom: 0.35rem !important;
+    line-height: 1.35 !important;
+  }
+
+  .home-featured-listings-grid .venture-listing-card .text-lg {
+    font-size: 0.95rem !important;
+    line-height: 1.1 !important;
+  }
+
+  .home-featured-listings-grid .venture-listing-card div.border-purple-100,
+  .home-featured-listings-grid .venture-listing-card div.border-emerald-100 {
+    padding: 0.4rem 0.5rem !important;
+    margin-bottom: 0.35rem !important;
+  }
+
+  .home-featured-listings-grid .technology-listing-card {
+    gap: 0.35rem !important;
+    padding: 0.65rem !important;
+    border-radius: 0.75rem;
+  }
+
+  .home-featured-listings-grid .technology-listing-card .w-\[42px\] {
+    width: 2.125rem !important;
+    height: 2.125rem !important;
+    font-size: 1rem !important;
+  }
+
+  .home-featured-listings-grid .technology-listing-card h3 {
+    font-size: 0.78rem !important;
+    margin-top: 0.1rem !important;
+  }
+
+  .home-featured-listings-grid .technology-listing-card .flex.min-h-0.flex-1.flex-col > p {
+    font-size: 0.62rem !important;
+    line-height: 1.35 !important;
+    margin-top: 0.15rem !important;
+    margin-bottom: 0.15rem !important;
+  }
+
+  .home-featured-listings-grid .technology-listing-card .font-bold.text-indigo-600 {
+    font-size: 0.82rem !important;
+  }
+
+  .home-featured-listings-grid .community-listing-card {
+    gap: 0.5rem !important;
+    padding: 0.65rem !important;
+    border-radius: 0.75rem;
+  }
+
+  .home-featured-listings-grid .community-listing-card .h-12.w-12 {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  .home-featured-listings-grid .community-listing-card h4 {
+    font-size: 0.75rem !important;
+  }
+
+  .home-featured-listings-grid .listing-browse-footer {
+    gap: 0.45rem;
+    padding-top: 0.45rem;
+  }
+
+  .home-featured-listings-grid .listing-browse-footer__meta {
+    font-size: 0.6875rem;
+    gap: 0.35rem;
+  }
+
+  .home-featured-listings-grid .listing-browse-footer__cta.btn-glow {
+    min-height: 0;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+    padding-left: 0.65rem;
+    padding-right: 0.65rem;
+    font-size: 0.65rem;
+  }
+}

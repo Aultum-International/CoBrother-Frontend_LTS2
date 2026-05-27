@@ -23,7 +23,7 @@ export default function CommunityListingCard({
 
   return (
     <div
-      className={`listing-card-glow community-listing-card card-glow-hover p-6 bg-white rounded-[18px] flex flex-col gap-3 relative border h-full ${isMe ? 'border-indigo-300' : 'border-gray-200'}${browseMode ? '' : ' cursor-pointer'}`}
+      className={`listing-card-glow community-listing-card card-glow-hover relative flex h-full min-w-0 flex-col gap-3 rounded-[18px] border bg-white p-6 ${isMe ? 'border-indigo-300' : 'border-gray-200'}${browseMode ? '' : ' cursor-pointer'}`}
       onClick={browseMode ? undefined : onView}
     >
       {isMe && (
@@ -37,69 +37,71 @@ export default function CommunityListingCard({
           <EditIcon size={16} />
         </button>
       )}
-      <div className="flex items-center gap-3">
-        {profile.imageUrl ? (
-          <img src={profile.imageUrl} alt={profile.name} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-        ) : (
-          <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center text-xl font-semibold text-indigo-600 flex-shrink-0">
-            {profile.name?.[0]?.toUpperCase() || '?'}
-          </div>
-        )}
-        <div>
-          <h4 className="font-semibold text-[0.95rem] text-gray-900">{profile.name || 'Anonymous'}</h4>
-          {profile.role && (
-            <div className="inline-block mt-0.5 px-1.5 py-0.5 bg-indigo-50 border border-indigo-200 rounded text-[0.7rem] text-indigo-600 uppercase tracking-wider">
-              {profile.role.replace(/_/g, ' ')}
+      <div className="flex min-h-0 flex-1 flex-col gap-3">
+        <div className="flex items-center gap-3">
+          {profile.imageUrl ? (
+            <img src={profile.imageUrl} alt={profile.name} className="h-12 w-12 shrink-0 rounded-full object-cover" />
+          ) : (
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 text-xl font-semibold text-indigo-600">
+              {profile.name?.[0]?.toUpperCase() || '?'}
             </div>
           )}
-        </div>
-      </div>
-      <div className="flex flex-col gap-1">
-        <span className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider">Industry & Location</span>
-        <div className="flex flex-wrap gap-1.5">
-          {profile.industry && (
-            <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700">
-              {profile.industry.replace(/_/g, ' ')}
-            </span>
-          )}
-          {profile.location && (
-            <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600">📍 {profile.location}</span>
-          )}
-        </div>
-      </div>
-      {skills.length > 0 && (
-        <div className="flex flex-col gap-1">
-          <span className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider">Skills</span>
-          <div className="flex flex-wrap gap-1.5">
-            {skills.slice(0, 4).map((skill) => (
-              <span key={skill} className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-xs text-gray-600">
-                {skill}
-              </span>
-            ))}
-            {skills.length > 4 && (
-              <span className="px-2 py-0.5 bg-gray-100 border border-gray-200 rounded text-xs text-gray-400">
-                +{skills.length - 4}
-              </span>
+          <div className="min-w-0">
+            <h4 className="truncate font-semibold text-[0.95rem] text-gray-900">{profile.name || 'Anonymous'}</h4>
+            {profile.role && (
+              <div className="mt-0.5 inline-block rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-[0.7rem] uppercase tracking-wider text-indigo-600">
+                {profile.role.replace(/_/g, ' ')}
+              </div>
             )}
           </div>
         </div>
-      )}
-      {profile.linkedInProfileUrl && (
-        <a
-          href={profile.linkedInProfileUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center gap-1 text-xs text-[#0077b5] no-underline mt-0.5 hover:text-[#005885]"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <LinkedInIcon size={13} /> LinkedIn ↗
-        </a>
-      )}
+        <div className="flex flex-col gap-1">
+          <span className="text-[0.72rem] font-semibold uppercase tracking-wider text-gray-400">Industry & Location</span>
+          <div className="flex flex-wrap gap-1.5">
+            {profile.industry && (
+              <span className="rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-700">
+                {profile.industry.replace(/_/g, ' ')}
+              </span>
+            )}
+            {profile.location && (
+              <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600">📍 {profile.location}</span>
+            )}
+          </div>
+        </div>
+        {skills.length > 0 && (
+          <div className="flex flex-col gap-1">
+            <span className="text-[0.72rem] font-semibold uppercase tracking-wider text-gray-400">Skills</span>
+            <div className="flex flex-wrap gap-1.5">
+              {skills.slice(0, 4).map((skill) => (
+                <span key={skill} className="rounded border border-gray-200 bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                  {skill}
+                </span>
+              ))}
+              {skills.length > 4 && (
+                <span className="rounded border border-gray-200 bg-gray-100 px-2 py-0.5 text-xs text-gray-400">
+                  +{skills.length - 4}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+        {profile.linkedInProfileUrl && (
+          <a
+            href={profile.linkedInProfileUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-0.5 flex items-center gap-1 text-xs text-[#0077b5] no-underline hover:text-[#005885]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <LinkedInIcon size={13} /> LinkedIn ↗
+          </a>
+        )}
+      </div>
       {browseMode ? (
         <ListingBrowseFooter
           onViewDetails={onView}
           label="View Profile"
-          className="mt-auto"
+          className="mt-auto border-t border-gray-100 pt-2"
         >
           {onLike ? (
             <LikeButton liked={likeState?.liked} count={likeState?.count} onToggle={onLike} forceRed />
