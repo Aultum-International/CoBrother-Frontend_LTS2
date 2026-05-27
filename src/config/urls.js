@@ -15,11 +15,15 @@ export const PRODUCTION_APP_URL = 'https://cobrother.com';
 const remoteApiBase =
   import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
 
-/** Spring Boot origin for OAuth redirects and SockJS. */
-export const API_ORIGIN = remoteApiBase || PRODUCTION_API_ORIGIN;
+const LOCAL_API_ORIGIN = 'http://localhost:8080';
 
-/** Axios baseURL. */
-export const API_BASE_URL = remoteApiBase || PRODUCTION_API_ORIGIN;
+/** Spring Boot origin for OAuth redirects and SockJS. */
+export const API_ORIGIN =
+  remoteApiBase || (import.meta.env.DEV ? LOCAL_API_ORIGIN : PRODUCTION_API_ORIGIN);
+
+/** Axios baseURL — local dev defaults to localhost:8080 unless VITE_API_URL is set. */
+export const API_BASE_URL =
+  remoteApiBase || (import.meta.env.DEV ? LOCAL_API_ORIGIN : PRODUCTION_API_ORIGIN);
 
 export const APP_BASE_URL =
   import.meta.env.VITE_APP_URL ||

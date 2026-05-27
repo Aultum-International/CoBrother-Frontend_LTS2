@@ -29,6 +29,9 @@ export default function FeedbackSection() {
       
       if (response.data && response.data.status === 'success') {
         setFeedbackSubmitted(true);
+        if (response.data.emailDelivered === false) {
+          console.warn('Feedback saved; email notification failed — update Gmail App Password in backend application.yaml');
+        }
       } else {
         alert('Failed to send feedback. Please try again.');
       }

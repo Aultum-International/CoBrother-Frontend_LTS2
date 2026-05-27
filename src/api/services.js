@@ -77,6 +77,7 @@ export const currencyAPI = {
 };
 
 export const domainAPI = {
+  getConfig:       ()        => api.get('/api/v1/domain/config'),
   getAll:          ()        => api.get('/api/v1/domain/all'),
   getMyListings:   ()        => api.get('/api/v1/domain/my-listings'),
   getMyPurchases:  ()        => api.get('/api/v1/domain/my-purchases'),
@@ -84,7 +85,9 @@ export const domainAPI = {
   create:          (data)    => api.post('/api/v1/domain', data),
   update:          (id, data)=> api.put(`/api/v1/domain/${id}`, data),
   delete:          (id)      => api.delete(`/api/v1/domain/${id}`),
-  check: (name) => api.get(`/api/v1/domain/check?name=${name}`),
+  check: (name) => api.get('/api/v1/domain/check', { params: { name } }),
+  checkBulk: (label, extensions = 'com,net') =>
+    api.get('/api/v1/domain/check-bulk', { params: { label, extensions } }),
   createOrder: (id, data) => api.post(`/api/v1/domain/${id}/purchase/create-order`, data),
   verifyPayment:   (id, data)=> api.post(`/api/v1/domain/${id}/purchase/verify`, data),
   handleFailure:   (id)      => api.post(`/api/v1/domain/${id}/purchase/failure`),

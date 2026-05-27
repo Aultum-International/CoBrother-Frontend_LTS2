@@ -4,26 +4,105 @@ import { Search } from 'lucide-react';
 import { domainAPI } from '../../api/services';
 import CompactDomainTicker from '../home/domainTicker/CompactDomainTicker';
 
-const TLDS = ['com', 'net', 'org', 'in', 'co', 'io', 'ai'];
-
-function buildRegisterUrl(name, ext) {
-  return `https://cp.openprovider.eu/domain/register?domain=${encodeURIComponent(name)}&tld=${encodeURIComponent(ext)}`;
-}
-
 export default function DomainSearchBar({ className = '', embedded = false }) {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
-  const [tld, setTld] = useState('com');
+  const [tldOptions, setTldOptions] = useState([]);
+  const [searchExtensions, setSearchExtensions] = useState([]);
+  const [registerUrl, setRegisterUrl] = useState('');
+  const [configError, setConfigError] = useState(null);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const debounceRef           = useRef(null);
+  const debounceRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    domainAPI
+      .getConfig()
+      .then(({ data }) => {
+        if (cancelled) return;
+        const options = Array.isArray(data.tldOptions) ? data.tldOptions : [];
+        const extensions = Array.isArray(data.searchExtensions) ? data.searchExtensions : [];
+        setTldOptions(options);
+        setSearchExtensions(extensions);
+        setRegisterUrl(typeof data.registerUrl === 'string' ? data.registerUrl : '');
+        setConfigError(null);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setConfigError(
+          err?.response?.data?.message ||
+            err?.response?.data?.error ||
+            'Could not load domain search settings from server'
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const buildRegisterUrl = (name, ext) => {
+    if (!registerUrl) return null;
+    const sep = registerUrl.includes('?') ? '&' : '?';
+    return `${registerUrl}${sep}domain=${encodeURIComponent(name)}&tld=${encodeURIComponent(ext)}`;
+  };
 
   const parseQuery = (raw) => {
+    if (!searchExtensions.length && !tldOptions.length) return null;
     const q = raw.trim().toLowerCase();
     if (!q) return null;
     const dot = q.indexOf('.');
-    if (dot !== -1) return [{ name: q.slice(0, dot), ext: q.slice(dot + 1) }];
-    return [{ name: q, ext: tld }];
+    if (dot !== -1) {
+      const name = q.slice(0, dot).replace(/[^a-z0-9-]/g, '');
+      const ext = q.slice(dot + 1).replace(/[^a-z0-9-]/g, '');
+      if (!name || !ext) return null;
+      return [{ name, ext }];
+    }
+    const label = q.replace(/[^a-z0-9-]/g, '');
+    if (!label) return null;
+    // All registrar-style TLDs from server config (no dropdown)
+    const exts = tldOptions.length ? tldOptions : searchExtensions;
+    return exts.map((ext) => ({ name: label, ext }));
+  };
+
+  const mapApiRow = (row) => ({
+    domain: row.domain || `${row.name}.${row.extension || row.ext}`,
+    name: row.name,
+    ext: row.extension || row.ext,
+    status: row.status,
+    price: row.price ?? null,
+    listing: row.listing ?? null,
+    message: row.message ?? null,
+  });
+
+  const checkOne = async ({ name, ext }) => {
+    const fullDomain = `${name}.${ext}`;
+    try {
+      const { data } = await domainAPI.check(fullDomain);
+      return mapApiRow({ ...data, name, ext, domain: fullDomain });
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        'Could not reach domain check service';
+      return { domain: fullDomain, name, ext, status: 'error', price: null, listing: null, message };
+    }
+  };
+
+  const checkMany = async (pairs) => {
+    if (pairs.length === 1) {
+      return [await checkOne(pairs[0])];
+    }
+    const label = pairs[0].name;
+    const extensions = pairs.map((p) => p.ext).join(',');
+    try {
+      const { data } = await domainAPI.checkBulk(label, extensions);
+      const rows = Array.isArray(data.results) ? data.results.map(mapApiRow) : [];
+      if (rows.length > 0) return rows;
+    } catch {
+      // Production may not have /check-bulk yet — fall back to per-TLD checks
+    }
+    return Promise.all(pairs.map((pair) => checkOne(pair)));
   };
 
   const doSearch = async (raw) => {
@@ -31,42 +110,34 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     if (!pairs) return;
     setLoading(true);
 
-    // Seed skeleton rows immediately
-    setResults(pairs.map(({ name, ext }) => ({
+    const skeleton = pairs.map(({ name, ext }) => ({
       domain: `${name}.${ext}`,
       name,
       ext,
-      status:  'loading',
-      price:   null,
+      status: 'loading',
+      price: null,
       listing: null,
-    })));
-
-    await Promise.all(pairs.map(async ({ name, ext }) => {
-      const fullDomain = `${name}.${ext}`;
-      try {
-        const { data } = await domainAPI.check(encodeURIComponent(fullDomain));
-        // Backend returns: { status: 'marketplace'|'available'|'taken', price, listing }
-        setResults(prev => prev.map(r =>
-          r.domain === fullDomain
-            ? { ...r, status: data.status, price: data.price ?? null, listing: data.listing ?? null }
-            : r
-        ));
-      } catch {
-        setResults(prev => prev.map(r =>
-          r.domain === fullDomain ? { ...r, status: 'error' } : r
-        ));
-      }
+      message: null,
     }));
+    setResults(skeleton);
+
+    const rows = await checkMany(pairs);
+    // Keep same order as skeleton (com, net, …)
+    const byDomain = Object.fromEntries(rows.map((r) => [r.domain, r]));
+    setResults(skeleton.map((s) => byDomain[s.domain] ?? { ...s, status: 'error', message: 'No result' }));
 
     setLoading(false);
   };
 
   useEffect(() => {
-    if (!query.trim()) { setResults([]); return; }
+    if (!query.trim() || configError || (!searchExtensions.length && !tldOptions.length)) {
+      setResults([]);
+      return;
+    }
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => doSearch(query), 700);
     return () => clearTimeout(debounceRef.current);
-  }, [query, tld]);
+  }, [query, searchExtensions, tldOptions, configError]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -79,13 +150,12 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   };
 
   const goRegister = (name, ext) => {
-    window.open(buildRegisterUrl(name, ext), '_blank', 'noopener,noreferrer');
+    const url = buildRegisterUrl(name, ext);
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   };
 
-  const best   = results.find(r => r.status === 'marketplace')
-              || results.find(r => r.status === 'available')
-              || results[0];
-  const others = results.filter(r => r !== best);
+  /** Single explicit domain (e.g. foo.com) → one hero card; label-only → grid of all TLDs */
+  const multiTldSearch = results.length > 1;
 
   // ── Sub-components ──────────────────────────────────────────────────────────
   const Badge = ({ status }) => {
@@ -105,7 +175,7 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
   };
 
   const Price = ({ result, large }) => {
-    if (!result.price) return null;
+    if (result.price == null || Number(result.price) <= 0) return null;
     const p = Number(result.price);
     return (
       <div className="mb-4">
@@ -128,12 +198,19 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
     if (result.status === 'loading')
       return <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-500 rounded-full animate-spin" />;
 
-    if (result.status === 'marketplace')
+    if (result.status === 'marketplace' && result.listing?.id)
       return (
         <button onClick={() => goToMarketplace(result.listing)}
           className={`bg-indigo-600 text-white hover:bg-indigo-700 ${base}`}>
           View on Marketplace →
         </button>
+      );
+
+    if (result.status === 'error')
+      return (
+        <p className={`text-gray-500 ${large ? 'text-sm' : 'text-xs'} max-w-md`}>
+          {result.message || 'Domain check unavailable. Try again later.'}
+        </p>
       );
 
     if (result.status === 'available')
@@ -170,20 +247,6 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
-            <div className="relative flex shrink-0 items-center">
-            <select
-  value={tld}
-  onChange={(e) => setTld(e.target.value)}
-  className="cursor-pointer rounded-full border border-gray-700 bg-[#111827] py-2.5 pl-4 pr-8 text-sm font-semibold text-white outline-none transition-all duration-300 hover:bg-[#1f2937] focus:border-purple-400"
-  aria-label="Domain extension"
->
-                {TLDS.map((ext) => (
-                  <option key={ext} value={ext}>
-                    .{ext}
-                  </option>
-                ))}
-              </select>
-            </div>
             <button
   type="submit"
   className="shrink-0 rounded-full bg-white/95 backdrop-blur-md border border-purple-200 px-7 py-3 text-[14px] font-semibold text-gray-900 shadow-md transition-all duration-300 hover:bg-white hover:shadow-lg"
@@ -212,70 +275,109 @@ export default function DomainSearchBar({ className = '', embedded = false }) {
           </form>
         </div>
 
+        {configError && (
+          <p className="mt-4 text-center text-sm text-red-500">{configError}</p>
+        )}
+
         {/* Results */}
         <div className="mt-8">
-          {loading && results.every(r => r.status === 'loading') && (
+          {loading && results.length > 0 && results.every((r) => r.status === 'loading') && (
             <p className="text-center text-gray-400 text-sm mb-6">Checking domains…</p>
           )}
 
-          {/* Best match */}
-          {best && (
-            <div className={`mb-8 bg-white rounded-3xl p-8 shadow-xl border-2 transition-all ${
-              best.status === 'marketplace' ? 'border-indigo-400' :
-              best.status === 'available'   ? 'border-emerald-400' :
-              best.status === 'loading'     ? 'border-gray-200'   :
-                                              'border-red-200'
-            }`}>
-              <Badge status={best.status} />
-              <h2 className={`text-4xl font-extrabold mb-4 ${
-                best.status === 'taken' || best.status === 'error'
-                  ? 'text-gray-300 line-through' : 'text-gray-900'
-              }`}>
-                {best.name}
-                <span className={
-                  best.status === 'taken' || best.status === 'error'
-                    ? 'text-purple-200' : 'text-purple-600'
-                }>.{best.ext}</span>
+          {multiTldSearch && results.length > 0 && results[0]?.name && (
+            <p className="text-center text-gray-500 text-sm mb-4">
+              <span className="font-semibold text-gray-700">{results[0].name}</span>
+              {' · '}availability and pricing across extensions
+            </p>
+          )}
+
+          {/* Single explicit domain (e.g. name.com): one featured card */}
+          {!multiTldSearch && results[0] && (
+            <div
+              className={`mb-8 bg-white rounded-3xl p-8 shadow-xl border-2 transition-all ${
+                results[0].status === 'marketplace'
+                  ? 'border-indigo-400'
+                  : results[0].status === 'available'
+                    ? 'border-emerald-400'
+                    : results[0].status === 'loading'
+                      ? 'border-gray-200'
+                      : 'border-red-200'
+              }`}
+            >
+              <Badge status={results[0].status} />
+              <h2
+                className={`text-4xl font-extrabold mb-4 ${
+                  results[0].status === 'taken' || results[0].status === 'error'
+                    ? 'text-gray-300 line-through'
+                    : 'text-gray-900'
+                }`}
+              >
+                {results[0].name}
+                <span
+                  className={
+                    results[0].status === 'taken' || results[0].status === 'error'
+                      ? 'text-purple-200'
+                      : 'text-purple-600'
+                  }
+                >
+                  .{results[0].ext}
+                </span>
               </h2>
 
-              {best.status === 'marketplace' && best.listing && (
+              {results[0].status === 'marketplace' && results[0].listing && (
                 <p className="text-indigo-600 font-semibold mb-5">
-                  Asking ₹{Number(best.listing.askingPrice).toLocaleString('en-IN')}
-                  {best.listing.pricingDemand ? ` · ${best.listing.pricingDemand}` : ''}
+                  Asking ₹{Number(results[0].listing.askingPrice).toLocaleString('en-IN')}
+                  {results[0].listing.pricingDemand ? ` · ${results[0].listing.pricingDemand}` : ''}
                 </p>
               )}
 
-              {best.status === 'available' && <Price result={best} large />}
+              {results[0].status === 'available' && <Price result={results[0]} large />}
 
-              <Action result={best} large />
+              <Action result={results[0]} large />
             </div>
           )}
 
-          {/* Grid of other TLDs */}
-          {others.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {others.map((item, i) => (
-                <div key={i} className={`bg-white border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all ${
-                  item.status === 'taken'       ? 'border-gray-100 opacity-60' :
-                  item.status === 'error'       ? 'border-gray-100 opacity-60' :
-                  item.status === 'marketplace' ? 'border-indigo-200'          :
-                  item.status === 'available'   ? 'border-emerald-200'         :
-                                                  'border-gray-200'
-                }`}>
+          {/* Label-only search: registrar-style grid of every TLD + price */}
+          {multiTldSearch && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {results.map((item, i) => (
+                <div
+                  key={item.domain || i}
+                  className={`bg-white border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all ${
+                    item.status === 'taken'
+                      ? 'border-gray-100 opacity-60'
+                      : item.status === 'error'
+                        ? 'border-gray-100 opacity-60'
+                        : item.status === 'marketplace'
+                          ? 'border-indigo-200'
+                          : item.status === 'available'
+                            ? 'border-emerald-200'
+                            : 'border-gray-200'
+                  }`}
+                >
                   <Badge status={item.status} />
-                  <h2 className={`text-xl font-extrabold mb-3 ${
-                    item.status === 'taken' || item.status === 'error'
-                      ? 'text-gray-300 line-through' : 'text-gray-900'
-                  }`}>
-                    {item.name}
-                    <span className={
+                  <h2
+                    className={`text-lg font-extrabold mb-2 ${
                       item.status === 'taken' || item.status === 'error'
-                        ? 'text-purple-200' : 'text-purple-500'
-                    }>.{item.ext}</span>
+                        ? 'text-gray-300 line-through'
+                        : 'text-gray-900'
+                    }`}
+                  >
+                    {item.name}
+                    <span
+                      className={
+                        item.status === 'taken' || item.status === 'error'
+                          ? 'text-purple-200'
+                          : 'text-purple-500'
+                      }
+                    >
+                      .{item.ext}
+                    </span>
                   </h2>
 
                   {item.status === 'marketplace' && item.listing && (
-                    <p className="text-indigo-600 text-sm font-semibold mb-3">
+                    <p className="text-indigo-600 text-sm font-semibold mb-2">
                       ₹{Number(item.listing.askingPrice).toLocaleString('en-IN')} · Marketplace
                     </p>
                   )}
