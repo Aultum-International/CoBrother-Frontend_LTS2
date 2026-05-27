@@ -246,10 +246,10 @@
 
   .home-featured-listings-grid .listing-browse-footer__cta.btn-glow {
     min-height: 0;
-    padding-top: 0.4rem;
-    padding-bottom: 0.4rem;
-    padding-left: 0.65rem;
-    padding-right: 0.65rem;
-    font-size: 0.65rem;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+    font-size: 0.625rem;
   }
 }

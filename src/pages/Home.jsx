@@ -304,7 +304,7 @@ export default function Home() {
                   <p className="home-feature-card-desc text-gray-600 flex-1 leading-relaxed">
                     {t(feature.descKey)}
                   </p>
-                  <GlowButton className="home-feature-card-cta" onClick={() => navigate(feature.link)}>
+                  <GlowButton size="sm" className="home-feature-card-cta" onClick={() => navigate(feature.link)}>
                     {t('exploreBtn')} →
                   </GlowButton>
                 </div>

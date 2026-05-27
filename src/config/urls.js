@@ -1,7 +1,7 @@
 /**
  * API / backend origin resolution.
  *
- * **Defaults (main / production):**
+ * **Defaults (main / production — no .env):**
  *   Backend: https://backend.cobrother.com
  *   App:     https://cobrother.com
  *

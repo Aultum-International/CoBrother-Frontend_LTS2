@@ -360,6 +360,16 @@
   justify-content: center;
 }
 
+/* Browse-mode listing CTAs — compact pill (Domain / Venture / Technology / Community) */
+.listing-browse-footer__cta.btn-glow.btn-glow-sm {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  gap: 0.35rem;
+  min-height: 0;
+}
+
 /* Mobile only (< Tailwind `sm` / 640px): compact cards + tighter grid for domain listings */
 @media (max-width: 639px) {
   .domain-listing-grid {
@@ -482,11 +492,11 @@
   }
 
   .domain-listing-card .listing-browse-footer__cta.btn-glow {
-    padding-top: 0.4rem;
-    padding-bottom: 0.4rem;
-    padding-left: 0.65rem;
-    padding-right: 0.65rem;
-    font-size: 0.65rem;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+    padding-left: 0.55rem;
+    padding-right: 0.55rem;
+    font-size: 0.625rem;
     min-height: 0;
   }
 }
