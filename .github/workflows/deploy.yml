@@ -47,8 +47,8 @@ jobs:
 
       - name: Copy dist to server
         run: |
-          scp -i ~/.ssh/deploy_key -r dist/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/frontend/
+          scp -P 2222 -i ~/.ssh/deploy_key -r dist/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/frontend/
 
       - name: Reload Nginx
         run: |
-          ssh -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo systemctl reload nginx"
+          ssh -p 2222 -i ~/.ssh/deploy_key ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo systemctl reload nginx"
