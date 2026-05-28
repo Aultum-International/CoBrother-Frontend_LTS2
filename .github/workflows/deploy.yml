@@ -41,7 +41,9 @@ jobs:
 
           chmod 600 ~/.ssh/deploy_key
 
-          ssh-keyscan -T 20 -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts
+          echo -e "Host *\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+
+          ssh-keyscan -T 20 -p 22 -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts || true
 
       - name: Copy dist to server
         run: |
