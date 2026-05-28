@@ -1,13 +1,13 @@
 /**
  * API / backend origin resolution.
  *
- * **Defaults (main / production — no .env):**
+ * **Defaults (local dev — no .env):**
  *   Backend: https://backend.cobrother.com
  *   App:     https://cobrother.com
  *
- * **Local dev** — use `.env.local` (not committed), e.g.:
- *   VITE_API_URL=http://localhost:8080
- *   VITE_APP_URL=http://localhost:5173
+ * **Production** — use `.env.production` or deploy env, e.g.:
+ *   VITE_API_URL=https://backend.cobrother.com
+ *   VITE_APP_URL=https://cobrother.com
  */
 export const PRODUCTION_API_ORIGIN = 'https://backend.cobrother.com';
 export const PRODUCTION_APP_URL = 'https://cobrother.com';
