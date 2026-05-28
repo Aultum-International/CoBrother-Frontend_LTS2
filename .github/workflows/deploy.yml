@@ -19,7 +19,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install & Build
@@ -29,10 +29,19 @@ jobs:
 
       - name: Setup SSH
         run: |
+          set -euo pipefail
+
+          [ -n "${{ secrets.SSH_PRIVATE_KEY }}" ] || { echo "Missing SSH_PRIVATE_KEY"; exit 1; }
+          [ -n "${{ secrets.SERVER_HOST }}" ] || { echo "Missing SERVER_HOST"; exit 1; }
+          [ -n "${{ secrets.SERVER_USER }}" ] || { echo "Missing SERVER_USER"; exit 1; }
+
           mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
+
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+          ssh-keyscan -T 20 -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts
 
       - name: Copy dist to server
         run: |
