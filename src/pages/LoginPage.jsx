@@ -130,7 +130,7 @@ export default function LoginPage() {
               </button>
 
               <div className="mx-auto mt-6 max-w-[360px] text-center sm:mt-7">
-                <h2 className="text-[2.2rem] font-semibold tracking-[-0.025em] text-slate-900 sm:text-[2.45rem]">Welcome back</h2>
+                <h2 className="text-[2.2rem] font-semibold tracking-[-0.025em] text-slate-900 sm:text-[2.45rem]">Welcome Back</h2>
                 <p className="mt-1 text-[0.98rem] text-slate-500">Sign in to continue your journey</p>
               </div>
 
