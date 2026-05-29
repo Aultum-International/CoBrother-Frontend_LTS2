@@ -21,22 +21,22 @@ function createParticles(count, width, height) {
 function getViewportTier() {
   if (typeof window === 'undefined') return 'lg';
   const w = window.innerWidth;
-  if (w < 640) return 'sm';
+  if (w <= 768) return 'mobile';
   if (w < 1024) return 'md';
   return 'lg';
 }
 
 function tierParams(tier) {
   switch (tier) {
-    case 'sm':
+    case 'mobile':
       return {
-        particleCount: 10,
-        linkDistance: 100,
-        mouseLinkDistance: 85,
-        lineAlpha: 0.055,
-        mouseLineAlpha: 0.07,
-        particleAlphaMul: 0.3,
-        velocityMul: 0.4,
+        particleCount: 20,
+        linkDistance: 88,
+        mouseLinkDistance: 80,
+        lineAlpha: 0.16,
+        mouseLineAlpha: 0.12,
+        particleAlphaMul: 0.72,
+        velocityMul: 0.5,
       };
     case 'md':
       return {
@@ -277,7 +277,7 @@ export default function HeroNetWebCanvas({
   };
 
   const wrapperClass = isHero
-    ? 'hero__canvas hero__canvas--hero pointer-events-none absolute z-[1] overflow-hidden'
+    ? 'hero__canvas hero__canvas--hero network-web pointer-events-none absolute z-[1] overflow-hidden'
     : 'hero__canvas pointer-events-none absolute inset-0 z-[1] overflow-hidden';
 
   return (

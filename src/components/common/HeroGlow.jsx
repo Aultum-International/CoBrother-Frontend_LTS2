@@ -1,17 +1,39 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, CheckCircle2, Clock, Shield } from 'lucide-react';
 import HeroNetWebCanvas from './HeroNetWebCanvas';
 
+function useMediaQuery(query) {
+  const [matches, setMatches] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia(query).matches;
+  });
+
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const onChange = () => setMatches(mq.matches);
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [query]);
+
+  return matches;
+}
+
 export default function HeroGlow() {
   const { t } = useTranslation();
+  const isMobileNet = useMediaQuery('(max-width: 768px)');
+  const isSectionNet = useMediaQuery('(min-width: 769px)');
 
   return (
     <section className="hero-glow-section relative overflow-x-hidden overflow-y-visible border-b-0 bg-transparent py-6 pl-4 pr-4 sm:py-8 sm:pl-6 sm:pr-5 md:py-10 md:pl-10 lg:pl-20 lg:pr-8">
 
       <div className="pointer-events-none absolute inset-0 z-0 overflow-x-hidden glow-layer" aria-hidden />
 
-      <HeroNetWebCanvas variant="hero" />
+      {isSectionNet ? (
+        <HeroNetWebCanvas variant="hero" className="network-web network-web--desktop" />
+      ) : null}
 
       <div className="relative z-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-8">
@@ -23,8 +45,12 @@ export default function HeroGlow() {
             </p>
 
             <div className="flex flex-col gap-4 sm:gap-5">
-              <div>
-                <h1 className="hero-headline m-0 font-sans font-bold leading-[1.08] tracking-[-0.02em] text-[#1e293b]">
+              <div className="hero-headline-net-wrap relative">
+                {isMobileNet ? (
+                  <HeroNetWebCanvas variant="hero" className="network-web network-web--mobile" />
+                ) : null}
+
+                <h1 className="hero-headline relative z-[3] m-0 font-sans font-bold leading-[1.08] tracking-[-0.02em] text-[#1e293b]">
                   <span className="hero-headline-line1 block text-[#1e293b]">
                     {t('heroHeadingBefore')}
                   </span>
@@ -33,7 +59,7 @@ export default function HeroGlow() {
                   </span>
                 </h1>
 
-                <p className="hero-subtitle m-0 mt-3 max-w-[34rem] text-[15px] leading-[1.6] text-slate-500 sm:text-base">
+                <p className="hero-subtitle relative z-[3] m-0 mt-3 max-w-[34rem] text-[15px] leading-[1.6] text-slate-500 sm:text-base">
                   <span className="block">{t('heroSubtitleLine1')}</span>
                   <span className="block">{t('heroSubtitleLine2')}</span>
                 </p>
