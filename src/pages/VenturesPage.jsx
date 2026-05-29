@@ -23,6 +23,7 @@ import VentureLogo from '../assets/Coventure_logo.png';
 import { APP_BASE_URL } from '../config/urls';
 import { VENTURE_INDUSTRY_OPTIONS } from '../constants/listingCategories';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
+import { emitListingDeleted } from '../utils/listingSync';
 
 export default function VenturesPage() {
   const { t } = useTranslation();
@@ -88,11 +89,24 @@ export default function VenturesPage() {
   });
 
   const handleDelete = async () => {
+    const id = Number(deleteTarget);
+    if (!id) {
+      setDeleteTarget(null);
+      return;
+    }
     try {
-      await ventureAPI.delete(deleteTarget);
-      setAllVentures(v => v.filter(x => x.id !== deleteTarget));
+      await ventureAPI.delete(id);
+      setAllVentures((v) => v.filter((x) => Number(x.id) !== id));
+      emitListingDeleted('venture', id);
     } catch (err) {
-      alert(err.response?.data?.error || 'Delete failed.');
+      const message =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        (err?.response?.status === 403
+          ? 'You are not allowed to remove this venture.'
+          : null) ||
+        'Failed to remove venture. Please try again.';
+      alert(message);
     } finally {
       setDeleteTarget(null);
     }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Calendar } from 'lucide-react';
 import { adminAPI, meetingAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
@@ -12,6 +12,13 @@ import EnquireIcon from '../assets/Enquire.png';
 import HomepageFeatureSelector from '../components/admin/HomepageFeatureSelector';
 import SoftwareAuctionAdminTab from './SoftwareAuctionAdminTab';
 import { softwareAuctionAPI } from '../api/services';
+import useListingSync from '../hooks/useListingSync';
+import {
+  ListingSyncAction,
+  ListingEntityType,
+  matchesDomainListing,
+  normalizeAdminTabData,
+} from '../utils/listingSync';
 
 
 const STATUS_COLORS = {
@@ -33,38 +40,27 @@ export default function AdminDashboardPage() {
   const [takeDownTarget, setTakeDownTarget] = useState(null);
   const [softwareAuctions, setSoftwareAuctions] = useState([]);
 
-  const fetchers = {
-    coventures:         adminAPI.getCoVentures,
-    domains:            adminAPI.getDomains,
-    'domain-enquiries': adminAPI.getDomainEnquiries,
-    cocreations:        adminAPI.getCoCreations,
-    auctions:           adminAPI.getAllAuctions,
-    'venture-auctions': adminAPI.getAllVentureAuctions,
-    meetings:           meetingAPI.adminGetAll, 
+  const tabFetchers = useCallback(() => ({
+    coventures:          adminAPI.getCoVentures,
+    domains:             adminAPI.getDomains,
+    'domain-enquiries':  adminAPI.getDomainEnquiries,
+    cocreations:         adminAPI.getCoCreations,
+    auctions:            adminAPI.getAllAuctions,
+    'venture-auctions':  adminAPI.getAllVentureAuctions,
+    meetings:            meetingAPI.adminGetAll,
     'software-auctions': softwareAuctionAPI.adminGetAll,
-    'addon-orders':     adminAPI.getAddonOrders,
-  };
+    'addon-orders':      adminAPI.getAddonOrders,
+  }), []);
 
-  const loadTab = (currentTab) => {
-    const fetchers = {
-      coventures:          adminAPI.getCoVentures,
-      domains:             adminAPI.getDomains,
-      'domain-enquiries':  adminAPI.getDomainEnquiries,
-      cocreations:         adminAPI.getCoCreations,
-      auctions:            adminAPI.getAllAuctions,
-      'venture-auctions':  adminAPI.getAllVentureAuctions,
-      meetings:            meetingAPI.adminGetAll,
-      'software-auctions': softwareAuctionAPI.adminGetAll,
-      'addon-orders':      adminAPI.getAddonOrders,   // ← was missing
-    };
-  
+  const loadTab = useCallback((currentTab, { silent = false } = {}) => {
+    const fetchers = tabFetchers();
     if (!fetchers[currentTab]) return;
-    setLoading(true);
-    fetchers[currentTab]()
-      .then(({ data }) => setData(Array.isArray(data) ? data : []))
+    if (!silent) setLoading(true);
+    return fetchers[currentTab]()
+      .then(({ data }) => setData(normalizeAdminTabData(currentTab, data)))
       .catch(() => setData([]))
-      .finally(() => setLoading(false));
-  };
+      .finally(() => { if (!silent) setLoading(false); });
+  }, [tabFetchers]);
   
   const loadSoftwareAuctions = () => {
     softwareAuctionAPI.adminGetAll()
@@ -88,7 +84,53 @@ export default function AdminDashboardPage() {
     } else {
       loadTab(tab);
     }
-  }, [tab]);
+  }, [tab, loadTab]);
+
+  useListingSync((detail) => {
+    if (!detail) return;
+    const { action, entityType, id } = detail;
+
+    if (action === ListingSyncAction.DELETE) {
+      if (entityType === ListingEntityType.DOMAIN) {
+        setData((prev) => prev.filter((item) => !matchesDomainListing(item, id)));
+      }
+      if (entityType === ListingEntityType.SOFTWARE && tab === 'cocreations') {
+        setData((prev) => prev.filter((item) => Number(item.id) !== Number(id)));
+        loadTab('cocreations', { silent: true });
+      }
+      if (entityType === ListingEntityType.VENTURE && tab === 'venture-auctions') {
+        setData((prev) => prev.filter((item) => {
+          const auction = item.auction ?? item;
+          return Number(auction.venture?.id) !== Number(id);
+        }));
+        loadTab('venture-auctions', { silent: true });
+      }
+    }
+
+    if (action === ListingSyncAction.INVALIDATE) {
+      if (!entityType || entityType === ListingEntityType.DOMAIN) {
+        if (['domains', 'auctions', 'domain-enquiries'].includes(tab)) {
+          loadTab(tab, { silent: true });
+        }
+      }
+      if (!entityType || entityType === ListingEntityType.SOFTWARE) {
+        if (tab === 'cocreations') loadTab('cocreations', { silent: true });
+      }
+    }
+  }, [tab, loadTab]);
+
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      if (tab === 'software-auctions') {
+        loadSoftwareAuctions();
+      } else if (tab !== 'homepage-features' && tab !== 'requests') {
+        loadTab(tab, { silent: true });
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [tab, loadTab]);
 
 
   const handleForward = async (entityId, type, coBrotherId) => {
@@ -127,10 +169,10 @@ export default function AdminDashboardPage() {
   };
 
   const tabs = [
-    { id: 'coventures',         label: 'CoVentures',        icon: VentureIcon    },
+    { id: 'coventures',         label: 'CoVenture',         icon: VentureIcon    },
     { id: 'domains',            label: 'Domains',           icon: DomainsIcon    },
     { id: 'domain-enquiries',   label: 'Domain Enquiries',  icon: EnquireIcon    },
-    { id: 'cocreations',        label: 'CoCreations',       icon: TechnologyIcon },
+    { id: 'cocreations',        label: 'Technology',        icon: TechnologyIcon },
     { id: 'requests',           label: 'CoBrother Requests',icon: RequestIcon    },
     { id: 'auctions',           label: 'Domain Auctions',   icon: AuctionIcon    },
     { id: 'venture-auctions',   label: 'Venture Auctions',  icon: AuctionIcon    },

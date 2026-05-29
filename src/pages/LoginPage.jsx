@@ -77,9 +77,13 @@ export default function LoginPage() {
       <div className="pointer-events-none absolute top-[34%] -bottom-20 left-0 right-[52%] bg-[radial-gradient(ellipse_at_26%_74%,rgba(139,92,246,0.29)_0%,rgba(129,140,248,0.17)_34%,rgba(129,140,248,0.07)_56%,transparent_82%)] blur-[32px]" />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1280px] flex-col gap-10 px-6 py-8 sm:px-10 md:px-12 lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:px-12 lg:py-10">
-        <img src={coBrotherLogo} alt="CoBrother" className="absolute -left-10 top-8 h-auto w-[138px] sm:top-9 sm:w-[164px]" />
+        <img
+          src={coBrotherLogo}
+          alt="CoBrother"
+          className="login-page-brand-logo relative z-20 mb-2 h-auto w-[min(148px,52vw)] max-w-full shrink-0 object-contain object-left sm:w-[156px] lg:absolute lg:-left-10 lg:top-8 lg:mb-0 lg:w-[164px]"
+        />
         <section className="relative w-full lg:max-w-[480px] lg:-translate-x-40">
-          <div className="mt-8 sm:mt-9">
+          <div className="mt-4 sm:mt-5 lg:mt-9">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-100/70 bg-[linear-gradient(135deg,rgba(239,242,255,0.96)_0%,rgba(244,241,255,0.9)_58%,rgba(237,234,255,0.92)_100%)] px-4 py-[0.32rem] text-[10.5px] font-semibold leading-none tracking-[0.005em] text-indigo-700/90 shadow-[0_4px_12px_rgba(129,140,248,0.16),inset_0_1px_0_rgba(255,255,255,0.75)] backdrop-blur-[5px]">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.95)_0%,rgba(129,140,248,0.6)_55%,rgba(129,140,248,0.12)_100%)] shadow-[0_0_10px_rgba(129,140,248,0.35)]" />
               The Future is Collaborative

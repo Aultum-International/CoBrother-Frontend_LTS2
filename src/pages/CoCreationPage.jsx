@@ -24,6 +24,7 @@ import CurrencyPriceInput from '../components/common/CurrencyPriceInput';
 import { DEFAULT_LISTING_CURRENCY } from '../constants/currencies';
 import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils/preserveAppLayoutScroll';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
+import { emitListingDeleted } from '../utils/listingSync';
 import TechnologyListingCard from '../components/listings/TechnologyListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import { COCREATION_CATEGORIES, COCREATION_CATEGORY_OPTIONS } from '../constants/listingCategories';
@@ -37,6 +38,7 @@ export default function CoCreationPage() {
   const [allSoftware, setAllSoftware]       = useState([]);
   const [loading, setLoading]               = useState(true);
   const [showForm, setShowForm]             = useState(false);
+  const [editTarget, setEditTarget]         = useState(null);
   const [buyTarget, setBuyTarget]           = useState(null);
   const [successItem, setSuccessItem]       = useState(null);
   const [detailTarget, setDetailTarget]     = useState(null);
@@ -90,7 +92,7 @@ export default function CoCreationPage() {
 
   useEffect(() => {
     if (!user || allSoftware.length === 0) return;
-    const myListings = allSoftware.filter(s => s.listedBy?.id === user.id);
+    const myListings = allSoftware.filter(s => Number(s.listedBy?.id) === Number(user.id));
     myListings.forEach(s => {
       softwareAuctionAPI.getBySoftware(s.id)
         .then(({ data }) => {
@@ -102,12 +104,27 @@ export default function CoCreationPage() {
 
 
   const handleDelete = async () => {
+    const id = Number(deleteTarget);
+    if (!id) {
+      setDeleteTarget(null);
+      return;
+    }
     try {
-      await cocreationAPI.delete(deleteTarget);
-      setAllSoftware(s => s.filter(x => x.id !== deleteTarget));
+      await cocreationAPI.delete(id);
+      setAllSoftware((s) => s.filter((x) => Number(x.id) !== id));
+      emitListingDeleted('software', id);
     } catch (e) {
-      alert(e.response?.data?.error || 'Failed to remove listing.');
-    } finally { setDeleteTarget(null); }
+      const msg =
+        e.response?.data?.error
+        || e.response?.data?.message
+        || (e.response?.status === 403
+          ? 'You are not allowed to remove this listing.'
+          : null)
+        || 'Failed to remove listing.';
+      alert(msg);
+    } finally {
+      setDeleteTarget(null);
+    }
   };
 
   const handleAuctionSubmitted = () => {
@@ -144,7 +161,7 @@ export default function CoCreationPage() {
               <LayoutDashboard size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('dashboard')}</span>
             </button>
             {user && (
-              <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => setShowForm(true)}>
+              <button className="btn-glow btn-glow-sm flex items-center gap-1.5 md:gap-2 text-xs md:text-sm py-2 px-2 md:py-2 md:px-3" onClick={() => { setEditTarget(null); setShowForm(true); }}>
                 <Plus size={14} className="md:w-4 md:h-4" /> <span className="truncate">{t('listTechnology')}</span>
               </button>
             )}
@@ -153,23 +170,29 @@ export default function CoCreationPage() {
 
         <div className="flex gap-2 mb-6">
           <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'all' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => { setFilterTab('all'); setShowForm(false); }}>{t('allTechnology')}</button>
+            onClick={() => { setFilterTab('all'); setShowForm(false); setEditTarget(null); }}>{t('allTechnology')}</button>
           <button className={`btn-glow btn-glow-sm text-xs md:text-sm py-2 px-2 md:py-2 md:px-3 ${filterTab === 'mine' ? 'bg-gray-900 text-white border-gray-900' : ''}`}
-            onClick={() => { setFilterTab('mine'); setShowForm(false); }}>{t('myListings')}</button>
+            onClick={() => { setFilterTab('mine'); setShowForm(false); setEditTarget(null); }}>{t('myListings')}</button>
         </div>
 
-        {showForm && user && (
+        {(showForm || editTarget) && user && (
           <div className="mb-6">
             <SoftwareForm
+              initial={editTarget}
               onSaved={s => {
                 const snap = captureAppLayoutScroll();
                 flushSync(() => {
-                  setAllSoftware(prev => [s, ...prev]);
+                  if (editTarget) {
+                    setAllSoftware(prev => prev.map(x => Number(x.id) === Number(s.id) ? { ...x, ...s } : x));
+                    setEditTarget(null);
+                  } else {
+                    setAllSoftware(prev => [s, ...prev]);
+                  }
                   setShowForm(false);
                 });
                 scheduleRestoreAppLayoutScroll(snap);
               }}
-              onCancel={() => setShowForm(false)}
+              onCancel={() => { setShowForm(false); setEditTarget(null); }}
             />
           </div>
         )}
@@ -223,10 +246,15 @@ export default function CoCreationPage() {
         <ListingCardShell key={s.id}>
         <TechnologyListingCard
           item={s}
-          isOwner={s.listedBy?.id === user?.id}
+          isOwner={Number(s.listedBy?.id) === Number(user?.id)}
           likeState={getLike(s.id)}
           onLike={() => toggleLike(s.id)}
           onView={() => setDetailTarget(s)}
+          onEdit={() => {
+            setEditTarget(s);
+            setShowForm(true);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
           onBuy={() => setBuyTarget(s)}
           onDelete={() => setDeleteTarget(s.id)}
           onAuction={() => setAuctionTarget(s)}
@@ -297,16 +325,38 @@ export default function CoCreationPage() {
   );
 }
 
-// ─── Software Form (admin only) ───────────────────────────────────────────────
-function SoftwareForm({ onSaved, onCancel }) {
+function softwareToForm(initial, navCurrency) {
+  if (!initial) {
+    return {
+      name: '', description: '', videoLink: '', whatItDoes: '', howItHelps: '',
+      githubLink: '', liveDemoLink: '', techStack: '',
+      category: '', pricingDemand: '', price: '',
+      currency: navCurrency || DEFAULT_LISTING_CURRENCY,
+      agreement: { terms: false },
+    };
+  }
+  return {
+    name: initial.name ?? '',
+    description: initial.description ?? '',
+    videoLink: initial.videoLink ?? '',
+    whatItDoes: initial.whatItDoes ?? '',
+    howItHelps: initial.howItHelps ?? '',
+    githubLink: initial.githubLink ?? '',
+    liveDemoLink: initial.liveDemoLink ?? '',
+    techStack: initial.techStack ?? '',
+    category: initial.category ?? '',
+    pricingDemand: initial.pricingDemand ?? '',
+    price: initial.price != null ? String(initial.price) : '',
+    currency: initial.currency || navCurrency || DEFAULT_LISTING_CURRENCY,
+    agreement: { terms: true },
+  };
+}
+
+// ─── Software Form ──────────────────────────────────────────────────────────────
+function SoftwareForm({ initial, onSaved, onCancel }) {
   const { currency: navCurrency } = useCurrency();
-  const [form, setForm] = useState({
-    name: '', description: '', videoLink: '', whatItDoes: '', howItHelps: '',
-    githubLink: '', liveDemoLink: '', techStack: '',
-    category: '', pricingDemand: '', price: '',
-    currency: navCurrency || DEFAULT_LISTING_CURRENCY,
-    agreement: { terms: false },
-  });
+  const isEdit = Boolean(initial?.id);
+  const [form, setForm] = useState(() => softwareToForm(initial, navCurrency));
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
 
@@ -318,6 +368,12 @@ function SoftwareForm({ onSaved, onCancel }) {
   const fileInputRef                        = useRef(null);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  useEffect(() => {
+    setForm(softwareToForm(initial, navCurrency));
+    setError('');
+    setSavedSoftware(null);
+  }, [initial?.id, navCurrency]);
 
   // GitHub URL validation
   const isValidGithubUrl = (url) => {
@@ -337,13 +393,19 @@ function SoftwareForm({ onSaved, onCancel }) {
     }
 
     try {
-      const { data } = await cocreationAPI.create({
+      const payload = {
         ...form,
         currency: form.currency || DEFAULT_LISTING_CURRENCY,
-      });
-      setSavedSoftware(data);
+      };
+      if (isEdit) {
+        const { data } = await cocreationAPI.update(initial.id, payload);
+        onSaved(data?.data ?? data);
+      } else {
+        const { data } = await cocreationAPI.create(payload);
+        setSavedSoftware(data);
+      }
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to list Technology.');
+      setError(err.response?.data?.error || (isEdit ? 'Failed to update Technology.' : 'Failed to list Technology.'));
     } finally { setLoading(false); }
   };
 
@@ -423,8 +485,14 @@ function SoftwareForm({ onSaved, onCancel }) {
 
   return (
     <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
-      <h3 className="font-display text-2xl text-gray-900 font-semibold">List Technology</h3>
-      <p className="text-gray-500 text-sm mt-1">Add a new technology product to the CoCreation marketplace.</p>
+      <h3 className="font-display text-2xl text-gray-900 font-semibold">
+        {isEdit ? 'Edit Technology' : 'List Technology'}
+      </h3>
+      <p className="text-gray-500 text-sm mt-1">
+        {isEdit
+          ? 'Update your technology listing details.'
+          : 'Add a new technology product to the Technologies marketplace.'}
+      </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-5">
         <div className="flex flex-col gap-1.5">
@@ -535,7 +603,7 @@ function SoftwareForm({ onSaved, onCancel }) {
 
         <div className="flex gap-3 mt-2">
           <button type="submit" className="btn-glow flex-1" disabled={loading}>
-            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'List Technology →'}
+            {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : (isEdit ? 'Save Changes →' : 'List Technology →')}
           </button>
           <button type="button" className="btn-glow" onClick={onCancel}>Cancel</button>
         </div>

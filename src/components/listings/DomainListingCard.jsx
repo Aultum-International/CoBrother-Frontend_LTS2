@@ -203,10 +203,13 @@ export default function DomainListingCard({
                   <Share2 size={14} />
                 </button>
                 {shareOpen && (
-                  <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[140px]" onClick={stop}>
-                    <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(linkedinShare)}>LinkedIn</button>
-                    <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(facebookShare)}>Facebook</button>
-                    <button type="button" className="w-full px-3 py-2 text-left text-xs hover:bg-gray-50" onClick={() => handleShare(whatsappShare)}>WhatsApp</button>
+                  <div className="absolute right-0 bottom-full mb-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden min-w-[150px]" onClick={stop}>
+                    <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+                      <span className="text-[10px] font-semibold text-gray-500">Share via</span>
+                    </div>
+                    <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors" onClick={() => handleShare(linkedinShare)}>LinkedIn</button>
+                    <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors" onClick={() => handleShare(facebookShare)}>Facebook</button>
+                    <button type="button" className="w-full flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors" onClick={() => handleShare(whatsappShare)}>WhatsApp</button>
                   </div>
                 )}
               </div>

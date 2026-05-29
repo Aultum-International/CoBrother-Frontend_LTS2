@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { communityAPI, communityAuctionAPI } from '../api/services';
@@ -7,7 +8,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { openRazorpayCheckout } from '../utils/razorpayCheckout';
 import { buildOrderCurrencyPayload } from '../utils/currencyDisplay';
 import AppLayout from '../components/layout/AppLayout';
-import DisruptorIcon from '../assets/Cobrother_Profile.png';
+import CreatorProfileIcon from '../assets/Cobrother_Profile.png';
 import { useLikes } from '../hooks/useLikes';
 import LikeButton from '../components/common/LikeButton';
 import { COMMUNITY_INDUSTRIES } from '../constants/listingCategories';
@@ -15,6 +16,7 @@ import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUr
 import CommunityListingCard from '../components/listings/CommunityListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 
 const ROLES = [
   'FOUNDER','CO_FOUNDER','INVESTOR','MENTOR',
@@ -35,6 +37,7 @@ const DURATIONS = [
 ];
 
 export default function CommunityPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -153,6 +156,16 @@ export default function CommunityPage() {
     setShowAuctionModal(false);
   };
 
+  const handleDeleteMyProfile = () => {
+    const id = detailProfile?.id ?? myProfile?.id;
+    if (!id) return;
+    setProfiles(prev => prev.filter(p => p.id !== id));
+    setMyProfile(null);
+    setShowForm(false);
+    setMyAuction(null);
+    closeListingDetail();
+  };
+
   // Active auction badge text
   const auctionStatusLabel = () => {
     if (!myAuction) return null;
@@ -181,7 +194,7 @@ export default function CommunityPage() {
         {/* ── Header ── */}
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Disruptor</h1>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{t('disruptors')}</h1>
             <p className="text-gray-600 mt-1">Connect with founders, investors, and operators.</p>
           </div>
           <div className="flex gap-3 flex-wrap items-center">
@@ -231,7 +244,7 @@ export default function CommunityPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Search disruptors by name, skills, industry..."
+              placeholder="Search creators by name, skills, industry..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all"
@@ -265,10 +278,10 @@ export default function CommunityPage() {
         ) : filteredProfiles.length === 0 ? (
           <div className="text-center py-20">
             <div className="mb-4 flex justify-center">
-              <img src={DisruptorIcon} alt="Disruptors" className="w-16 h-16 opacity-50" />
+              <img src={CreatorProfileIcon} alt={t('disruptors')} className="w-16 h-16 opacity-50" />
             </div>
             <h3 className="font-display text-2xl font-bold text-gray-900 mb-2">
-              {searchQuery ? 'No disruptors found' : 'No Disruptors yet'}
+              {searchQuery ? 'No creators found' : t('noDisruptors')}
             </h3>
             <p className="text-gray-600 mb-6">
               {searchQuery ? 'Try adjusting your search terms.' : 'Connect your LinkedIn to join.'}
@@ -303,6 +316,7 @@ export default function CommunityPage() {
           isMe={detailProfile.appUser?.id === user?.id}
           onClose={closeListingDetail}
           onEdit={() => { setMyProfile(detailProfile); setShowForm(true); closeListingDetail(); }}
+          onDelete={handleDeleteMyProfile}
           onViewAuction={(auctionId) => navigate(`/community-auction/${auctionId}`)}
         />
       )}
@@ -554,11 +568,12 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
 }
 
 // ─── Community Detail Modal (with auction link) ───────────────────────────────
-function CommunityDetailModal({ profile, isMe, onClose, onEdit, onViewAuction }) {
+function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onViewAuction }) {
   const { formatPrice } = useCurrency();
   const [detail, setDetail]     = useState(null);
   const [loading, setLoading]   = useState(true);
   const [auction, setAuction]   = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const p = detail || profile;
   const skills = p.skills?.split(',').map(s => s.trim()).filter(Boolean) || [];
 
@@ -652,14 +667,48 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onViewAuction })
               </div>
             )}
 
-            <div className="flex gap-3 mt-6">
-              {isMe && (
-                <button type="button" className="btn-glow inline-flex items-center justify-center" onClick={onEdit}>
-                  <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
-                </button>
-              )}
-              <button className="btn-glow" onClick={onClose}>Close</button>
+            <div className="mt-6 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                {isMe && (
+                  <>
+                    <button
+                      type="button"
+                      className="inline-flex h-10 items-center justify-center rounded-full border border-gray-900 bg-white px-4 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-50"
+                      onClick={onEdit}
+                    >
+                      <EditActionLabel iconSize={16}>Edit Profile</EditActionLabel>
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex h-10 items-center justify-center rounded-full border border-red-300 bg-red-50 px-4 text-sm font-bold text-red-700 transition-colors hover:border-red-400 hover:bg-red-100"
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
+              <button
+                type="button"
+                className="inline-flex h-10 shrink-0 items-center justify-center rounded-full border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                onClick={onClose}
+              >
+                Close
+              </button>
             </div>
+
+            <ConfirmDialog
+              open={showDeleteConfirm}
+              title="Delete Creator Profile?"
+              message="This will remove your creator profile from the platform. This action cannot be undone."
+              confirmLabel="Delete"
+              danger
+              onConfirm={() => {
+                setShowDeleteConfirm(false);
+                onDelete?.();
+              }}
+              onCancel={() => setShowDeleteConfirm(false)}
+            />
           </>
         )}
       </div>

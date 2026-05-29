@@ -10,7 +10,7 @@ const sidebarItems = [
   { icon: Globe, label: 'Domains', to: '/domains' },
   { icon: Handshake, label: 'Ventures', to: '/ventures' },
   { icon: Zap, label: 'Technology', to: '/cocreation' },
-  { icon: Users, label: 'Disruptor', to: '/community' },
+  { icon: Users, label: 'Creator', to: '/community' },
   { icon: Gavel, label: 'Auctions', to: '/auctions' },
   { icon: ShoppingBag, label: 'Purchases', to: '/purchases' },
 ];

@@ -31,6 +31,7 @@ import { captureAppLayoutScroll, scheduleRestoreAppLayoutScroll } from '../utils
 import { asArray } from '../utils/asArray';
 import { APP_BASE_URL } from '../config/urls';
 import { useOpenListingDetailFromUrl } from '../hooks/useOpenListingDetailFromUrl';
+import { emitListingDeleted } from '../utils/listingSync';
 import { DOMAIN_PRICING_OPTIONS } from '../constants/listingCategories';
 
 const STATUS_COLORS = {
@@ -54,7 +55,7 @@ function buildDomainFormState(domain, navCurrency) {
       email: domain?.contactInfo?.email ?? '',
       phoneNumber: domain?.contactInfo?.phoneNumber ?? '',
     },
-    agreement: { terms: true },
+    agreement: { terms: false },
   };
 }
 
@@ -121,9 +122,15 @@ export default function DomainsPage() {
   });
 
   const handleDelete = async () => {
+    const id = Number(deleteTarget);
+    if (!id) {
+      setDeleteTarget(null);
+      return;
+    }
     try {
-      await domainAPI.delete(deleteTarget);
-      setAllDomains(d => asArray(d).filter(x => x.id !== deleteTarget));
+      await domainAPI.delete(id);
+      setAllDomains((d) => asArray(d).filter((x) => Number(x.id) !== id));
+      emitListingDeleted('domain', id);
     } catch (e) {
       alert(e.response?.data?.error || 'Failed to remove listing.');
     } finally { setDeleteTarget(null); }
@@ -377,6 +384,15 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
       setError('Please enter a valid minimum bid price.');
       return;
     }
+    const phone = (form.contactInfo.phoneNumber || '').trim();
+    if (!phone) {
+      setError('Phone number is required.');
+      return;
+    }
+    if (!/^\d{10}$/.test(phone)) {
+      setError('Please enter a valid 10-digit phone number.');
+      return;
+    }
     setLoading(true); setError('');
     try {
       const payload = {
@@ -597,14 +613,19 @@ function DomainForm({ editDomain, onSaved, onCancel }) {
               placeholder="your@email.com" required />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className={labelCls}>Phone</label>
+            <label className={labelCls}>Phone <span className="text-red-500">*</span></label>
             <input className={inputCls} value={form.contactInfo.phoneNumber}
               onChange={e => {
                 const value = e.target.value.replace(/[^0-9]/g, '');
                 setContact('phoneNumber', value);
               }}
               type="tel"
-              placeholder="10-digit number" maxLength={10} />
+              placeholder="10-digit number"
+              maxLength={10}
+              minLength={10}
+              required
+              inputMode="numeric"
+              autoComplete="tel" />
           </div>
         </div>
 

@@ -1,8 +1,18 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Search, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { adminAPI } from '../../api/services';
-import { isActiveListing, isHomepageFeaturedListing } from '../../utils/homepageListings';
+import {
+  filterHomepageListings,
+  isActiveListing,
+  isHomepageFeaturedListing,
+} from '../../utils/homepageListings';
 import { asArray } from '../../utils/asArray';
+import useListingSync from '../../hooks/useListingSync';
+import {
+  ListingSyncAction,
+  ListingEntityType,
+  matchesDomainListing,
+} from '../../utils/listingSync';
 
 const SECTION_LABELS = {
   domain: 'Featured Domains',
@@ -66,7 +76,7 @@ export default function HomepageFeatureSelector({ type }) {
       else if (type === 'software') response = await adminAPI.getSoftwares();
       else if (type === 'community') response = await adminAPI.getCommunities();
 
-      setItems(asArray(response.data));
+      setItems(filterHomepageListings(asArray(response.data), type));
     } catch (error) {
       console.error('Failed to fetch items:', error);
       setItems([]);
@@ -78,6 +88,22 @@ export default function HomepageFeatureSelector({ type }) {
   useEffect(() => {
     fetchItems();
   }, [fetchItems]);
+
+  useListingSync((detail) => {
+    if (!detail || detail.action !== ListingSyncAction.DELETE) return;
+    const typeMap = {
+      [ListingEntityType.DOMAIN]: 'domain',
+      [ListingEntityType.VENTURE]: 'venture',
+      [ListingEntityType.SOFTWARE]: 'software',
+    };
+    const mapped = typeMap[detail.entityType];
+    if (mapped !== type || !detail.id) return;
+    if (type === 'domain') {
+      setItems((prev) => prev.filter((item) => !matchesDomainListing(item, detail.id)));
+    } else {
+      setItems((prev) => prev.filter((item) => Number(item.id) !== Number(detail.id)));
+    }
+  }, [type]);
 
   useEffect(() => {
     setPage(1);

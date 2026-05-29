@@ -6,6 +6,7 @@ import PurchaseIcon from '../assets/purchase.png';
 import DomainsIcon from '../assets/CoBranding.png';
 import SoftwareIcon from '../assets/CoCreation.png';
 import CoBrotherIcon from '../assets/Community-profileicon.png';
+import CoBrotherProfileIcon from '../assets/New folder/Cobrother_Profile.png';
 import { generateInvoice } from '../utils/generateInvoice';
 import { useAuth } from '../context/AuthContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -136,7 +137,11 @@ export default function PurchasesPage() {
           <div className="relative w-full max-w-[440px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] text-center animate-slideUp">
             <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
             <div className="relative z-10 p-8">
-              <div className="text-5xl mb-4">◆</div>
+              <img
+                src={CoBrotherProfileIcon}
+                alt="CoBrother"
+                className="mx-auto mb-4 h-14 w-14 sm:h-16 sm:w-16 object-contain"
+              />
               <h2 className="font-display text-[1.75rem] font-semibold text-gray-900 mb-2">CoBrother Help Activated!</h2>
               <p className="text-gray-500 mb-5 leading-relaxed">
                 A CoBrother will reach out within <strong className="text-purple-600">24 hours</strong>{' '}
@@ -322,49 +327,79 @@ function CoBrotherHelpModal({ purchase, onClose, onSuccess }) {
     } catch (err) { setError(err.response?.data?.error || 'Failed.'); setLoading(false); }
   };
 
+  const payLabel = `Pay ${formatPrice(HELP_FEE_INR)} →`;
+
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fadeIn" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="relative w-full max-w-[500px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] text-center animate-slideUp">
+      <div className="relative w-full max-w-[480px] bg-white border border-gray-200 rounded-[18px] shadow-[0_20px_60px_rgba(0,0,0,0.15)] text-center animate-slideUp overflow-hidden">
         <div className="absolute -top-24 -right-24 w-[300px] h-[300px] rounded-full bg-purple-100/30 blur-3xl pointer-events-none" />
-        <div className="relative z-10 p-8">
-          <div className="modal-badge" style={{ background: '#ede9fe', color: '#7c3aed', border: '1px solid #c4b5fd' }}>◆ CoBrother Help</div>
-          <h2>{sw.name}</h2>
-          <p>Get a dedicated expert to help you succeed with this software.</p>
-        </div>
-        <div className="p-8">
-          <div className="mb-6">
+        <div className="relative z-10 px-6 pt-5 pb-6 sm:px-7">
+          <div className="text-center mb-4">
+            <div
+              className="modal-badge mb-2"
+              style={{ background: '#ede9fe', color: '#7c3aed', border: '1px solid #c4b5fd' }}
+            >
+              ◆ CoBrother Help
+            </div>
+            <h2 className="font-display text-xl font-semibold text-gray-900 mb-1 sm:text-[1.35rem]">{sw.name}</h2>
+            <p className="mx-auto max-w-[340px] text-sm leading-snug text-gray-600">
+              Get a dedicated expert to help you succeed with this software.
+            </p>
+          </div>
+
+          <div className="mb-4 space-y-2 text-left">
             {['Dedicated CoBrother assigned within 24 hours',
               'Personalised onboarding and setup guidance',
               'Help with deployment, configuration, and integration',
-              'Direct communication channel with your helper'].map((line, i) => (
-              <div key={i} className="flex items-center gap-2 mb-3">
-                <span className="text-green-600 text-sm">✓</span>
-                <span className="text-gray-600 text-sm leading-relaxed">{line}</span>
+              'Direct communication channel with your helper'].map((line) => (
+              <div key={line} className="flex items-start gap-2">
+                <span className="mt-0.5 shrink-0 text-sm text-green-600">✓</span>
+                <span className="text-sm leading-snug text-gray-600">{line}</span>
               </div>
             ))}
           </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-            <div className="text-xs text-gray-600 font-bold uppercase mb-2">Billing Summary</div>
-            <div className="flex justify-between mb-2">
-              <span className="text-gray-600 text-sm">Software (already paid)</span>
-              <span className="text-gray-600 text-sm">{formatPrice(sw.price || 0)}</span>
+
+          <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3.5 text-left">
+            <div className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-600">Billing Summary</div>
+            <div className="mb-1.5 flex justify-between gap-3 text-sm text-gray-600">
+              <span>Software (already paid)</span>
+              <span className="shrink-0">{formatPrice(sw.price || 0)}</span>
             </div>
-            <div className="flex justify-between mb-2">
-              <span className="text-gray-600 text-sm">CoBrother Helper Fee</span>
-              <span className="text-gray-600 text-sm font-bold">{formatPrice(HELP_FEE_INR)}</span>
+            <div className="mb-1.5 flex justify-between gap-3 text-sm text-gray-600">
+              <span>CoBrother Helper Fee</span>
+              <span className="shrink-0 font-semibold">{formatPrice(HELP_FEE_INR)}</span>
             </div>
-            <div className="h-1 bg-gray-200 mb-2" />
-            <div className="flex justify-between items-center">
-              <span className="font-bold text-gray-900 text-sm">Paying Today</span>
-              <span className="font-display text-lg font-bold text-purple-700">{formatPrice(HELP_FEE_INR)}</span>
+            <div className="my-2 h-px bg-gray-200" />
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-semibold text-gray-900">Paying Today</span>
+              <span className="font-display text-base font-bold text-purple-700">{formatPrice(HELP_FEE_INR)}</span>
             </div>
           </div>
-          {error && <div className="p-4 bg-red-100 border border-red-200 rounded-lg text-xs text-red-600 mb-6">{error}</div>}
-          <div className="flex gap-3">
-            <button className="btn-glow w-full" onClick={handlePay} disabled={loading}>
-              {loading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : `Pay ${formatPrice(HELP_FEE_INR)} — Get Help →`}
+
+          {error && (
+            <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600">{error}</div>
+          )}
+
+          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-start">
+            <button
+              type="button"
+              className="btn-glow btn-glow-sm inline-flex min-h-[38px] shrink-0 items-center justify-center whitespace-nowrap px-4 py-2 text-xs font-semibold sm:text-sm"
+              onClick={handlePay}
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-gray-400 border-t-gray-800" />
+              ) : (
+                payLabel
+              )}
             </button>
-            <button className="btn-glow w-full" onClick={onClose}>Cancel</button>
+            <button
+              type="button"
+              className="btn-glow btn-glow-sm inline-flex min-h-[38px] items-center justify-center px-4 py-2 text-xs font-semibold sm:text-sm"
+              onClick={onClose}
+            >
+              Cancel
+            </button>
           </div>
         </div>
       </div>

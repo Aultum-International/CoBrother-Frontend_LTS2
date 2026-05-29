@@ -52,7 +52,7 @@ export default function CoCreationDashboardPage() {
       <div>
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">CoCreation Dashboard</h1>
+            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">Technologies Dashboard</h1>
             <p className="text-gray-600 mt-1">Manage your software listings and purchases.</p>
           </div>
           <button className="btn-glow btn-glow-sm" onClick={() => navigate('/cocreation')}>

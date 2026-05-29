@@ -11,11 +11,11 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_PROXY_TARGET || 'https://backend.cobrother.com',
+        target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8080',
         changeOrigin: true,
       },
       '/oauth2': {
-        target: process.env.VITE_API_PROXY_TARGET || 'https://backend.cobrother.com',
+        target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:8080',
         changeOrigin: true,
       },
     },

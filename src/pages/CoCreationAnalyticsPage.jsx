@@ -1,149 +1,150 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+} from 'recharts';
 import { cocreationAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
+import {
+  StatCard,
+  ChartCard,
+  ChartEmpty,
+  AnalyticsTooltip,
+  AnalyticsPageHeader,
+  CHART_COLORS,
+  CHART_MARGIN,
+  AXIS_TICK,
+  GRID_STROKE,
+  getMaxBarSize,
+} from '../components/analytics/AnalyticsUI';
+
+function BreakdownList({ entries, valueClassName }) {
+  if (!entries.length) return null;
+  const total = entries.reduce((s, [, c]) => s + c, 0);
+  return (
+    <div className="flex flex-col gap-3">
+      {entries
+        .sort((a, b) => b[1] - a[1])
+        .map(([label, count]) => {
+          const pct = total ? Math.round((count / total) * 100) : 0;
+          return (
+            <div key={label}>
+              <div className="mb-1 flex justify-between gap-3 text-sm">
+                <span className="truncate text-slate-600">{label.replace(/_/g, ' ')}</span>
+                <span className={`shrink-0 tabular-nums text-xs font-medium ${valueClassName}`}>
+                  {count} ({pct}%)
+                </span>
+              </div>
+              <div className="h-1 overflow-hidden rounded-full bg-slate-100">
+                <div className="h-full rounded-full bg-violet-400/80" style={{ width: `${pct}%` }} />
+              </div>
+            </div>
+          );
+        })}
+    </div>
+  );
+}
 
 export default function CoCreationAnalyticsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [data, setData]     = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError]   = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     cocreationAPI.getAnalytics(id)
-      .then(({ data }) => setData(data))
+      .then(({ data: analytics }) => setData(analytics))
       .catch(() => setError('Failed to load analytics.'))
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <AppLayout><div className="flex items-center justify-center py-20"><div className="w-12 h-12 border-4 border-gray-400 border-t-gray-800 rounded-full animate-spin" /></div></AppLayout>;
-  if (error)   return <AppLayout><div className="text-center py-20"><p className="text-red-600">{error}</p></div></AppLayout>;
-  if (!data)   return null;
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-slate-200 border-t-slate-600" />
+        </div>
+      </AppLayout>
+    );
+  }
 
-  const viewEntries   = Object.entries(data.viewsByDay   || {});
+  if (error) {
+    return (
+      <AppLayout>
+        <div className="py-20 text-center text-sm text-rose-600">{error}</div>
+      </AppLayout>
+    );
+  }
+
+  if (!data) return null;
+
+  const viewsData = Object.entries(data.viewsByDay || {}).map(([date, count]) => ({
+    date: date.length > 10 ? date.slice(5) : date,
+    Views: count,
+  }));
   const industryEntries = Object.entries(data.byIndustry || {});
-  const roleEntries   = Object.entries(data.byRole       || {});
-
-  const maxViews = Math.max(...viewEntries.map(([, v]) => v), 1);
+  const roleEntries = Object.entries(data.byRole || {});
+  const hasViews = viewsData.some((d) => d.Views > 0);
 
   return (
     <AppLayout>
-      <div>
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-gray-900 m-0">{data.softwareName}</h1>
-            <p className="text-gray-600 mt-1">Analytics overview for this software listing.</p>
-          </div>
-          <button className="btn-glow btn-glow-sm" onClick={() => navigate('/cocreation/dashboard')}>
-            ← Dashboard
-          </button>
-        </div>
-
-        {/* Top stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <StatCard label="Total Views"   value={data.totalViews}   icon="👁"  color="#c8a96e" />
-          <StatCard label="Total Sales"   value={data.totalSales}   icon="💰"  color="#6ec896" />
-          <StatCard label="Total Revenue" value={`₹${Number(data.totalRevenue).toLocaleString('en-IN')}`} icon="📈" color="#6ec896" />
-          <StatCard label="Status" value={data.completionStatus || 'N/A'} icon="⟁" color="#a0a0b0" />
-        </div>
-
-        {/* Views over 30 days */}
-        <div style={sectionStyle}>
-          <h3 style={sectionTitle}>Views — Last 30 Days</h3>
-          {viewEntries.every(([, v]) => v === 0) ? (
-            <p style={{ color: '#666', fontSize: '0.875rem' }}>No views yet.</p>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: 100, overflowX: 'auto', paddingBottom: '0.5rem' }}>
-              {viewEntries.map(([day, count]) => (
-                <div key={day} title={`${day}: ${count}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, minWidth: 18 }}>
-                  <div style={{ width: 14, height: `${(count / maxViews) * 80}px`, minHeight: count > 0 ? 4 : 0,
-                                background: count > 0 ? '#c8a96e' : 'rgba(255,255,255,0.06)', borderRadius: '3px 3px 0 0', transition: 'height 0.3s' }} />
-                  {viewEntries.length <= 14 && (
-                    <span style={{ fontSize: '0.55rem', color: '#666', transform: 'rotate(-45deg)', transformOrigin: 'top left', whiteSpace: 'nowrap' }}>{day}</span>
-                  )}
-                </div>
-              ))}
-            </div>
+      <div className="max-w-[1100px]">
+        <AnalyticsPageHeader
+          title={data.softwareName}
+          description="Analytics overview for this software listing."
+          action={(
+            <button type="button" className="btn-glow btn-glow-sm" onClick={() => navigate('/cocreation/dashboard')}>
+              ← Dashboard
+            </button>
           )}
+        />
+
+        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          <StatCard label="Total Views" value={data.totalViews} tone="amber" />
+          <StatCard label="Total Sales" value={data.totalSales} tone="emerald" />
+          <StatCard
+            label="Total Revenue"
+            value={`₹${Number(data.totalRevenue).toLocaleString('en-IN')}`}
+            tone="emerald"
+          />
+          <StatCard label="Status" value={data.completionStatus || 'N/A'} tone="violet" />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          {/* By Industry */}
-          <div style={sectionStyle}>
-            <h3 style={sectionTitle}>Viewers by Industry</h3>
-            {industryEntries.length === 0 ? (
-              <p style={{ color: '#666', fontSize: '0.875rem' }}>No data yet.</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                {industryEntries.sort((a, b) => b[1] - a[1]).map(([industry, count]) => {
-                  const total = industryEntries.reduce((s, [, c]) => s + c, 0);
-                  const pct   = Math.round((count / total) * 100);
-                  return (
-                    <div key={industry}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '0.25rem' }}>
-                        <span style={{ color: '#c0c0d0' }}>{industry}</span>
-                        <span style={{ color: '#c8a96e' }}>{count} ({pct}%)</span>
-                      </div>
-                      <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3 }}>
-                        <div style={{ height: '100%', width: `${pct}%`, background: '#c8a96e', borderRadius: 3 }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+        <ChartCard title="Views — last 30 days">
+          {!hasViews ? (
+            <ChartEmpty message="No views yet." />
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={viewsData} margin={CHART_MARGIN} barCategoryGap="32%">
+                <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
+                <XAxis dataKey="date" tick={AXIS_TICK} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                <YAxis tick={AXIS_TICK} axisLine={false} tickLine={false} allowDecimals={false} width={36} />
+                <Tooltip content={<AnalyticsTooltip />} cursor={{ fill: 'rgba(148,163,184,0.08)' }} />
+                <Bar dataKey="Views" fill="#c4b5fd" radius={[4, 4, 0, 0]} maxBarSize={getMaxBarSize(viewsData.length)} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </ChartCard>
 
-          {/* By Role */}
-          <div style={sectionStyle}>
-            <h3 style={sectionTitle}>Viewers by Role</h3>
-            {roleEntries.length === 0 ? (
-              <p style={{ color: '#666', fontSize: '0.875rem' }}>No data yet.</p>
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <ChartCard title="Viewers by industry" height={220}>
+            {industryEntries.length === 0 ? (
+              <ChartEmpty />
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                {roleEntries.sort((a, b) => b[1] - a[1]).map(([role, count]) => {
-                  const total = roleEntries.reduce((s, [, c]) => s + c, 0);
-                  const pct   = Math.round((count / total) * 100);
-                  return (
-                    <div key={role}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: '0.25rem' }}>
-                        <span style={{ color: '#c0c0d0' }}>{role.replace(/_/g, ' ')}</span>
-                        <span style={{ color: '#6ec896' }}>{count} ({pct}%)</span>
-                      </div>
-                      <div style={{ height: 5, background: 'rgba(255,255,255,0.06)', borderRadius: 3 }}>
-                        <div style={{ height: '100%', width: `${pct}%`, background: '#6ec896', borderRadius: 3 }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <BreakdownList entries={industryEntries} valueClassName="text-violet-700" />
             )}
-          </div>
+          </ChartCard>
+
+          <ChartCard title="Viewers by role" height={220}>
+            {roleEntries.length === 0 ? (
+              <ChartEmpty />
+            ) : (
+              <BreakdownList entries={roleEntries} valueClassName="text-emerald-700" />
+            )}
+          </ChartCard>
         </div>
       </div>
     </AppLayout>
   );
 }
-
-function StatCard({ label, value, icon, color }) {
-  return (
-    <div style={{ padding: '1.25rem', background: 'rgba(255,255,255,0.95)', border: '1px solid rgba(0,0,0,0.1)',
-                  borderRadius: 12, transition: 'all 0.35s ease', cursor: 'default' }}
-         className="card-glow-hover" onMouseEnter={(e) => {}} onMouseLeave={(e) => {}}>
-      <div style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>{icon}</div>
-      <div style={{ fontSize: '1.4rem', fontWeight: 700, color, fontFamily: 'Cormorant Garamond, serif' }}>{value}</div>
-      <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.2rem' }}>{label}</div>
-    </div>
-  );
-}
-
-const sectionStyle = {
-  padding: '1.25rem', background: 'rgba(255,255,255,0.03)',
-  border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, marginBottom: '1rem'
-};
-
-const sectionTitle = {
-  fontSize: '0.85rem', fontWeight: 600, color: '#888',
-  textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem'
-};
