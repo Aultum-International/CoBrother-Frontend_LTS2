@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 import { API_ORIGIN } from '../config/urls';
+import { isValidPhoneNumber } from '../utils/phoneValidation';
 
 import coBrotherLogo from '../assets/Cobrother_logo.png';
 import { ArrowLeft, FolderKanban, Users, Globe2 } from 'lucide-react';
@@ -32,7 +33,12 @@ export default function LoginPage() {
 
     if (!loading && user) {
 
-      navigate(user.profileComplete ? '/dashboard' : '/complete-profile', { replace: true });
+      navigate(
+        user.profileComplete && isValidPhoneNumber(user.phoneNumber || user.phone || '')
+          ? '/dashboard'
+          : '/complete-profile',
+        { replace: true }
+      );
 
     }
 

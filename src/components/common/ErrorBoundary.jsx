@@ -23,7 +23,7 @@ export default class ErrorBoundary extends Component {
             Something went wrong
           </h1>
           <p className="text-gray-600 max-w-[400px] leading-relaxed">
-            An unexpected error occurred. Please refresh the page or go back to the dashboard.
+            Something went wrong. Please refresh the page.
           </p>
           <div className="flex gap-3 mt-2">
             <button

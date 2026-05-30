@@ -38,7 +38,7 @@ export default function VenturesPage() {
   const [deleteTarget, setDeleteTarget]     = useState(null);
   const [filterTab, setFilterTab]           = useState('all');
 
-  const { toggle: toggleLike, get: getLike } = useLikes('VENTURE', allVentures);
+  const { toggle: toggleLike, get: getLike, likeMap } = useLikes('VENTURE', allVentures);
 
   // ── Filter / sort / paginate ───────────────────────────────────────────────
   const {
@@ -56,6 +56,7 @@ export default function VenturesPage() {
       priceField:    'brandDetails.dealValue',
       categoryField: 'brandDetails.industry',
       dateField:     'createdAt',
+      likeMap,
     },
     20
   );

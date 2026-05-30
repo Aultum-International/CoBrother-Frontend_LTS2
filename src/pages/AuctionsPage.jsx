@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { auctionAPI, ventureAuctionAPI, communityAuctionAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import AuctionImg from '../assets/Auction.png';
@@ -35,12 +35,23 @@ function useCountdown(endTime) {
 
 export default function AuctionsPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [domainAuctions, setDomainAuctions]       = useState([]);
   const [ventureAuctions, setVentureAuctions]     = useState([]);
   const [communityAuctions, setCommunityAuctions] = useState([]);
   const [loading, setLoading]   = useState(true);
-  const [section, setSection]   = useState('all'); // all | ventures | domains | community
+  const initialSection = searchParams.get('section');
+  const [section, setSection]   = useState(
+    ['all', 'ventures', 'domains', 'community'].includes(initialSection) ? initialSection : 'all',
+  );
   const [filter, setFilter]     = useState('all'); // all | ending_soon | no_bids
+
+  useEffect(() => {
+    const urlSection = searchParams.get('section');
+    if (['all', 'ventures', 'domains', 'community'].includes(urlSection)) {
+      setSection(urlSection);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     setLoading(true);
@@ -89,7 +100,7 @@ export default function AuctionsPage() {
             { id: 'all',       label: `All (${totalLive})` },
             { id: 'ventures',  label: `🔨 Ventures (${ventureAuctions.length})` },
             { id: 'domains',   label: `◇ Domains (${domainAuctions.length})` },
-            { id: 'community', label: `👤 Profiles (${communityAuctions.length})` },
+            { id: 'community', label: `👤 Creators (${communityAuctions.length})` },
           ].map(t => (
             <button key={t.id}
               className={`px-5 py-2 rounded-full text-sm font-semibold cursor-pointer transition-all duration-200 ${section === t.id ? 'bg-gray-900 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'}`}
@@ -179,7 +190,7 @@ export default function AuctionsPage() {
             {shownCommunity.length > 0 && (
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <h2 className="text-base font-bold text-teal-600 m-0">👤 Community Profiles</h2>
+                  <h2 className="text-base font-bold text-teal-600 m-0">👤 Creators Profiles</h2>
                   <span className="text-xs text-gray-500 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full font-semibold">
                     {shownCommunity.length} live
                   </span>

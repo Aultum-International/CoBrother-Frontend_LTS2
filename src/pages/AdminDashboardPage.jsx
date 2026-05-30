@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useId } from 'react';
 import { Calendar } from 'lucide-react';
 import { adminAPI, meetingAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
@@ -149,22 +149,52 @@ export default function AdminDashboardPage() {
     setTakeDownTarget({ entityId, type, title });
 
   const confirmTakeDown = async (reason) => {
+    const { entityId, type, title } = takeDownTarget || {};
+    const trimmedReason = String(reason ?? '').trim();
+
+    if (!type || entityId == null || entityId === '') {
+      console.error('[takeDown] missing target', { takeDownTarget });
+      alert('Invalid listing. Please refresh and try again.');
+      return;
+    }
+    if (!trimmedReason) {
+      alert('Please provide a reason.');
+      return;
+    }
+
+    const payload = { type, entityId, reason: trimmedReason, title };
+    console.debug('[takeDown] submitting', payload);
+
     try {
-      await adminAPI.takeDown(takeDownTarget.type, takeDownTarget.entityId, reason);
+      const { data } = await adminAPI.takeDown(type, entityId, trimmedReason);
+      console.debug('[takeDown] success', data);
       setTakeDownTarget(null);
       loadTab(tab);
-
     } catch (e) {
-      alert('Failed to take down listing.');
+      console.error('[takeDown] failed', {
+        status: e.response?.status,
+        data: e.response?.data,
+        payload,
+      });
+      const message = e.response?.data?.error || e.response?.data?.message || e.response?.data;
+      alert(typeof message === 'string' ? message : 'Failed to take down listing.');
     }
   };
 
   const handleRestore = async (entityId, type) => {
+    if (!type || entityId == null || entityId === '') {
+      console.error('[restore] missing params', { entityId, type });
+      alert('Invalid listing. Please refresh and try again.');
+      return;
+    }
+
     try {
       await adminAPI.restore(type, entityId);
       loadTab(tab);
     } catch (e) {
-      alert('Failed to restore listing.');
+      console.error('[restore] failed', e.response?.data);
+      const message = e.response?.data?.error || e.response?.data?.message;
+      alert(typeof message === 'string' ? message : 'Failed to restore listing.');
     }
   };
 
@@ -300,13 +330,31 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore }) {
   const getTitle = () => {
     if (tabType === 'coventures') return item.venture?.brandDetails?.brandName || 'CoVenture #' + item.id;
     if (tabType === 'domains')    return (item.domainName || '') + (item.domainExtension || '');
-    return item.name || 'Software #' + item.id;
+    return item.software?.name || item.name || 'Software #' + (item.software?.id ?? item.purchaseId ?? item.id);
   };
 
-  const getType = () => {
+  const getForwardType = () => {
     if (tabType === 'coventures') return 'COVENTURE';
     if (tabType === 'domains')    return 'DOMAIN';
     return 'COCREATION';
+  };
+
+  /** Backend takedown API expects VENTURE / DOMAIN / SOFTWARE with listing entity IDs. */
+  const getTakeDownType = () => {
+    if (tabType === 'coventures') return 'VENTURE';
+    if (tabType === 'domains')    return 'DOMAIN';
+    return 'SOFTWARE';
+  };
+
+  const getForwardEntityId = () => {
+    if (tabType === 'cocreations') return item.purchaseId ?? item.id;
+    return item.id;
+  };
+
+  const getTakeDownEntityId = () => {
+    if (tabType === 'coventures') return item.venture?.id;
+    if (tabType === 'cocreations') return item.software?.id;
+    return item.id;
   };
 
   const lister    = tabType === 'coventures' ? item.venture?.listedBy : item.listedBy;
@@ -377,20 +425,20 @@ function AdminRow({ item, tabType, onForward, onTakeDown, onRestore }) {
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             {!item.takenDown && (
               <button className="btn-secondary btn-sm"
-                onClick={() => onForward(item.id, getType())}
+                onClick={() => onForward(getForwardEntityId(), getForwardType())}
                 style={{ fontSize: '0.8rem' }}>
                 ◆ Forward to CoBrother
               </button>
             )}
             {!item.takenDown ? (
               <button className="btn-danger btn-sm"
-                onClick={() => onTakeDown(item.id, getType(), getTitle())}
+                onClick={() => onTakeDown(getTakeDownEntityId(), getTakeDownType(), getTitle())}
                 style={{ fontSize: '0.8rem' }}>
                 ⚠ Take Down
               </button>
             ) : (
               <button className="btn-secondary btn-sm"
-                onClick={() => onRestore(item.id, getType())}
+                onClick={() => onRestore(getTakeDownEntityId(), getTakeDownType())}
                 style={{ fontSize: '0.75rem' }}>
                 ↺ Restore
               </button>
@@ -763,6 +811,80 @@ function RequestsTable({ requests }) {
   );
 }
 
+function ForwardPaymentInfo() {
+  const [tipOpen, setTipOpen] = useState(false);
+  const tipId = useId();
+  const tooltipText =
+    'Your ₹1,000 support request helps us connect, verify, and personally assist your collaboration opportunity through the CoBrother ecosystem';
+
+  return (
+    <div
+      style={{
+        padding: '0.875rem',
+        background: 'rgba(200,169,110,0.08)',
+        border: '1px solid rgba(200,169,110,0.2)',
+        borderRadius: 8,
+        marginBottom: '1.25rem',
+        fontSize: '0.83rem',
+        color: '#c8a96e',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem' }}>
+        <span style={{ flex: 1, lineHeight: 1.45 }}>
+          ⚡ A ₹1,000 payment request will be sent to the lister. CoBrother notified after payment.
+        </span>
+        <span style={{ position: 'relative', flexShrink: 0 }}>
+          <button
+            type="button"
+            aria-describedby={tipOpen ? tipId : undefined}
+            aria-expanded={tipOpen}
+            onMouseEnter={() => setTipOpen(true)}
+            onMouseLeave={() => setTipOpen(false)}
+            onFocus={() => setTipOpen(true)}
+            onBlur={() => setTipOpen(false)}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              color: '#2563eb',
+              textDecoration: 'underline',
+              fontSize: '0.83rem',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Learn more
+          </button>
+          {tipOpen && (
+            <span
+              id={tipId}
+              role="tooltip"
+              style={{
+                position: 'absolute',
+                right: 0,
+                bottom: 'calc(100% + 8px)',
+                width: 'max-content',
+                maxWidth: 'min(240px, calc(100vw - 2rem))',
+                padding: '0.5rem 0.75rem',
+                background: '#1f2937',
+                color: '#f9fafb',
+                fontSize: '0.75rem',
+                lineHeight: 1.45,
+                borderRadius: 6,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                zIndex: 20,
+                textAlign: 'left',
+              }}
+            >
+              {tooltipText}
+            </span>
+          )}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose }) {
   const [selectedCoBrother, setSelectedCoBrother] = useState('');
   const [loading, setLoading]                     = useState(false);
@@ -829,11 +951,7 @@ function ForwardModal({ entityId, type, coBrothers, requests, onForward, onClose
           </select>
         </div>
 
-        <div style={{ padding: '0.875rem', background: 'rgba(200,169,110,0.08)',
-                      border: '1px solid rgba(200,169,110,0.2)', borderRadius: 8,
-                      marginBottom: '1.25rem', fontSize: '0.83rem', color: '#c8a96e' }}>
-          ⚡ A ₹1,000 payment request will be sent to the lister. CoBrother notified after payment.
-        </div>
+        <ForwardPaymentInfo />
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button className="btn-primary" onClick={handleSubmit}
@@ -1088,6 +1206,10 @@ function AddonOrdersTable({ orders }) {
   );
 }
 
+function resolveAddonBuyerPhone(order) {
+  return order.buyerPhone || order.buyer?.phoneNumber || '—';
+}
+
 function AddonOrderRow({ order, statusColor }) {
   const [expanded, setExpanded] = useState(false);
   const services = order.selectedServices ? order.selectedServices.split(',') : [];
@@ -1134,8 +1256,8 @@ function AddonOrderRow({ order, statusColor }) {
             <div>
               <div style={labelStyle}>Buyer</div>
               <div style={valueStyle}>{order.buyerName || '—'}</div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{order.buyerEmail}</div>
-              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{order.buyerPhone || '—'}</div>
+              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{order.buyerEmail || '—'}</div>
+              <div style={{ fontSize: '0.78rem', color: '#6b7280' }}>{resolveAddonBuyerPhone(order)}</div>
             </div>
             <div>
               <div style={labelStyle}>Linked Purchase</div>

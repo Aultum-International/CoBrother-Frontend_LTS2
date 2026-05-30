@@ -50,7 +50,7 @@ export default function CoCreationPage() {
  
 
 
-  const { toggle: toggleLike, get: getLike } = useLikes('SOFTWARE', allSoftware);
+  const { toggle: toggleLike, get: getLike, likeMap } = useLikes('SOFTWARE', allSoftware);
 
   const {
     paginated, totalCount,
@@ -67,6 +67,7 @@ export default function CoCreationPage() {
       priceField:    'price',
       categoryField: 'category',
       dateField:     'createdAt',
+      likeMap,
     },
     20
   );
@@ -360,19 +361,19 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
 
-  const [savedSoftware, setSavedSoftware]   = useState(null);
-  const [imageFile, setImageFile]           = useState(null);
-  const [imagePreview, setImagePreview]     = useState(null);
-  const [imageUploading, setImageUploading] = useState(false);
-  const [imageError, setImageError]         = useState('');
-  const fileInputRef                        = useRef(null);
+  const [imageFile, setImageFile]       = useState(null);
+  const [imagePreview, setImagePreview] = useState(() => initial?.imageUrl ?? null);
+  const [imageError, setImageError]     = useState('');
+  const fileInputRef                    = useRef(null);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   useEffect(() => {
     setForm(softwareToForm(initial, navCurrency));
     setError('');
-    setSavedSoftware(null);
+    setImageFile(null);
+    setImagePreview(initial?.imageUrl ?? null);
+    setImageError('');
   }, [initial?.id, navCurrency]);
 
   // GitHub URL validation
@@ -397,13 +398,21 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
         ...form,
         currency: form.currency || DEFAULT_LISTING_CURRENCY,
       };
+      let saved = null;
       if (isEdit) {
         const { data } = await cocreationAPI.update(initial.id, payload);
-        onSaved(data?.data ?? data);
+        saved = data?.data ?? data;
       } else {
         const { data } = await cocreationAPI.create(payload);
-        setSavedSoftware(data);
+        saved = data;
       }
+      if (imageFile && saved?.id) {
+        const formData = new FormData();
+        formData.append('file', imageFile);
+        const { data: uploadData } = await cocreationAPI.uploadImage(saved.id, formData);
+        saved = { ...saved, imageUrl: uploadData.imageUrl };
+      }
+      onSaved(saved);
     } catch (err) {
       setError(err.response?.data?.error || (isEdit ? 'Failed to update Technology.' : 'Failed to list Technology.'));
     } finally { setLoading(false); }
@@ -420,68 +429,8 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
     reader.readAsDataURL(file);
   };
 
-  const handleImageUpload = async () => {
-    if (!imageFile || !savedSoftware) return;
-    setImageUploading(true); setImageError('');
-    try {
-      const formData = new FormData();
-      formData.append('file', imageFile);
-      const { data } = await cocreationAPI.uploadImage(savedSoftware.id, formData);
-      onSaved({ ...savedSoftware, imageUrl: data.imageUrl });
-    } catch (err) {
-      setImageError(err.response?.data?.error || 'Upload failed. You can add an image later.');
-      setImageUploading(false);
-    }
-  };
-
-  const handleSkip = () => onSaved(savedSoftware);
-
   const inputCls = 'px-3 py-2 border border-gray-300 rounded-[8px] text-gray-800 bg-white outline-none focus:border-indigo-500 transition-all w-full placeholder:text-gray-400';
   const labelCls = 'text-sm font-medium text-gray-700';
-
-  if (savedSoftware) {
-    return (
-      <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
-        <h3 className="font-display text-2xl text-gray-900 font-semibold">
-          Add an Image <span className="text-sm text-gray-400 font-normal">(optional)</span>
-        </h3>
-        <p className="text-gray-500 text-sm mt-1">
-          Upload a cover image or logo for <strong className="text-indigo-600">{savedSoftware.name}</strong>. You can also do this later.
-        </p>
-        <div className="mt-5">
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all mb-3 ${
-              imagePreview ? 'border-indigo-300 bg-indigo-50/50' : 'border-gray-200 bg-gray-50 hover:border-indigo-300'
-            }`}
-          >
-            {imagePreview ? (
-              <img src={imagePreview} alt="Preview" className="max-h-[140px] max-w-full rounded-lg object-contain mx-auto" />
-            ) : (
-              <>
-                <div className="text-4xl mb-2">🖼</div>
-                <div className="text-sm text-gray-500">Click to choose an image</div>
-                <div className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP</div>
-              </>
-            )}
-          </div>
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-          {imagePreview && (
-            <button type="button" className="text-xs text-gray-500 hover:text-red-500 mb-3"
-              onClick={() => { setImageFile(null); setImagePreview(null); }}>✕ Remove</button>
-          )}
-          {imageError && <div className="text-sm text-red-500 mb-3">{imageError}</div>}
-          <div className="flex gap-3">
-            <button type="button" className="btn-glow flex-1"
-              disabled={!imageFile || imageUploading} onClick={handleImageUpload}>
-              {imageUploading ? <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-800 rounded-full animate-spin inline-block" /> : 'Upload Image →'}
-            </button>
-            <button type="button" className="btn-glow" onClick={handleSkip}>Skip</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-8 bg-white border border-gray-200 rounded-[18px] shadow-sm">
@@ -583,6 +532,45 @@ function SoftwareForm({ initial, onSaved, onCancel }) {
           </label>
           <input className={inputCls} value={form.githubLink} onChange={e => set('githubLink', e.target.value)}
             placeholder="https://github.com/you/repo" required />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className={labelCls}>
+            Logo <span className="text-slate-400 font-normal">(optional)</span>
+          </label>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => fileInputRef.current?.click()}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click(); }}
+            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+              imagePreview ? 'border-indigo-300 bg-indigo-50/50' : 'border-gray-200 bg-gray-50 hover:border-indigo-300'
+            }`}
+          >
+            {imagePreview ? (
+              <img src={imagePreview} alt="Logo preview" className="max-h-[140px] max-w-full rounded-lg object-contain mx-auto" />
+            ) : (
+              <>
+                <div className="text-4xl mb-2">🖼</div>
+                <div className="text-sm text-gray-500">Click to choose an image</div>
+                <div className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP</div>
+              </>
+            )}
+          </div>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+          {imagePreview && (
+            <button
+              type="button"
+              className="text-xs text-gray-500 hover:text-red-500 self-start"
+              onClick={() => {
+                setImageFile(null);
+                setImagePreview(isEdit && initial?.imageUrl ? initial.imageUrl : null);
+              }}
+            >
+              ✕ Remove
+            </button>
+          )}
+          {imageError && <div className="text-sm text-red-500">{imageError}</div>}
         </div>
 
         <label className="inline-flex items-center gap-3 cursor-pointer self-start rounded-[12px] border border-purple-100 bg-purple-50/60 px-3.5 py-2.5 max-w-full">

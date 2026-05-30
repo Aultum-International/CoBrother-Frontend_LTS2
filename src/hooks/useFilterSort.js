@@ -14,7 +14,15 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
     priceField   = null,
     categoryField = null,
     dateField    = 'createdAt',
+    likeMap      = {},
   } = filterConfig;
+
+  const getLikeCount = (item) => {
+    if (!item?.id) return 0;
+    const fromMap = likeMap[String(item.id)]?.count;
+    if (fromMap != null) return Number(fromMap) || 0;
+    return Number(item.likeCount) || 0;
+  };
 
   const [search,      setSearch]      = useState('');
   const [category,    setCategory]    = useState('');
@@ -92,9 +100,9 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
         case 'price_desc':
           return Number(get(b, priceField) || 0) - Number(get(a, priceField) || 0);
         case 'most_liked':
-          return (b.likeCount || 0) - (a.likeCount || 0);
+          return getLikeCount(b) - getLikeCount(a);
         case 'most_viewed':
-          return (b.views || 0) - (a.views || 0);
+          return (Number(get(b, 'views')) || 0) - (Number(get(a, 'views')) || 0);
         default:
           return 0;
       }
@@ -102,7 +110,7 @@ export function useFilterSort(items = [], filterConfig = {}, pageSize = 20) {
 
     return result;
   }, [safeItems, search, category, minPrice, maxPrice, sortBy,
-      searchFields, priceField, categoryField, dateField]);
+      searchFields, priceField, categoryField, dateField, likeMap]);
 
   const totalPages  = Math.max(1, Math.ceil(filtered.length / pageSize));
   const safePage    = Math.min(page, totalPages);

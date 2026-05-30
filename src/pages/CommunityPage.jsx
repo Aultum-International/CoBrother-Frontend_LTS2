@@ -17,6 +17,8 @@ import CommunityListingCard from '../components/listings/CommunityListingCard';
 import ListingCardShell from '../components/listings/ListingCardShell';
 import EditActionLabel from '../components/common/EditActionLabel';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import { normalizeExternalUrl } from '../utils/externalUrl';
+import { toLocalIsoDate } from '../utils/formatAvailableFromDate';
 
 const ROLES = [
   'FOUNDER','CO_FOUNDER','INVESTOR','MENTOR',
@@ -484,9 +486,14 @@ function CreateAuctionModal({ communityId, profileName, onClose, onSuccess }) {
 
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium text-gray-700">Available From</label>
-                <input name="availableFrom" value={form.availableFrom} onChange={handleChange}
-                  placeholder="e.g. Immediately, June 2025"
-                  className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
+                <input
+                  name="availableFrom"
+                  type="date"
+                  value={form.availableFrom}
+                  min={toLocalIsoDate()}
+                  onChange={handleChange}
+                  className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all"
+                />
               </div>
 
               <div className="flex flex-col gap-1.5">
@@ -654,7 +661,7 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onView
             {p.linkedInProfileUrl && (
               <div className="mb-5">
                 <div className="text-[0.72rem] font-semibold text-gray-400 uppercase tracking-wider mb-2">LinkedIn</div>
-                <a href={p.linkedInProfileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm text-[#0077b5] no-underline hover:text-[#005885]">
+                <a href={normalizeExternalUrl(p.linkedInProfileUrl)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-sm text-[#0077b5] no-underline hover:text-[#005885]">
                   <LinkedInIcon size={14} /> View Profile ↗
                 </a>
               </div>
@@ -718,19 +725,34 @@ function CommunityDetailModal({ profile, isMe, onClose, onEdit, onDelete, onView
 
 // ─── Community Profile Form ───────────────────────────────────────────────────
 function CommunityProfileForm({ initial, onSaved, onCancel }) {
+  const linkedInUrl = normalizeExternalUrl(initial?.linkedInProfileUrl || '');
   const [form, setForm] = useState({
     role: initial?.role || '', skills: initial?.skills || '',
     industry: initial?.industry || '', location: initial?.location || '',
-    whyImHere: initial?.whyImHere || '', linkedInProfileUrl: initial?.linkedInProfileUrl || '',
+    whyImHere: initial?.whyImHere || '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState('');
+
+  useEffect(() => {
+    setForm({
+      role: initial?.role || '',
+      skills: initial?.skills || '',
+      industry: initial?.industry || '',
+      location: initial?.location || '',
+      whyImHere: initial?.whyImHere || '',
+    });
+  }, [initial?.id, initial?.linkedInProfileUrl]);
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async e => {
     e.preventDefault();
     if (!initial?.id) { setError('Profile ID missing — please refresh.'); return; }
+    if (!linkedInUrl) {
+      setError('LinkedIn profile URL is missing. Please reconnect LinkedIn to import your profile.');
+      return;
+    }
     setLoading(true); setError('');
     try {
       const { data } = await communityAPI.update(initial.id, form);
@@ -751,14 +773,26 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
             }
             <div>
               <div className="font-semibold text-gray-900">{initial.name}</div>
-              {initial.linkedInProfileUrl && (
-                <a href={initial.linkedInProfileUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs text-[#0077b5] no-underline hover:text-[#005885] mt-0.5">
+              {linkedInUrl && (
+                <a href={linkedInUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-[#0077b5] no-underline hover:text-[#005885] mt-0.5">
                   <LinkedInIcon size={13} /> View LinkedIn profile
                 </a>
               )}
             </div>
           </div>
-          <div className="mt-2.5 text-xs text-blue-500">✓ Name and photo imported from LinkedIn</div>
+          {linkedInUrl && (
+            <div className="flex flex-col gap-1.5 mt-3">
+              <label className="text-sm font-medium text-gray-700">LinkedIn URL</label>
+              <input
+                type="url"
+                readOnly
+                value={linkedInUrl}
+                className="px-3 py-2 border border-blue-200 rounded-[8px] text-gray-700 bg-white/80 outline-none cursor-default"
+                aria-readonly="true"
+              />
+            </div>
+          )}
+          <div className="mt-2.5 text-xs text-blue-500">✓ Name, photo, and LinkedIn URL imported from LinkedIn</div>
         </div>
       )}
       <h3 className="font-display text-2xl text-gray-900 font-semibold">Complete Your Community Profile</h3>
@@ -788,13 +822,21 @@ function CommunityProfileForm({ initial, onSaved, onCancel }) {
           <label className="text-sm font-medium text-gray-700">Location</label>
           <input name="location" value={form.location} onChange={handleChange} placeholder="e.g. Bengaluru, India" className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
         </div>
+        {!initial?.name && linkedInUrl && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-gray-700">LinkedIn URL</label>
+            <input
+              type="url"
+              readOnly
+              value={linkedInUrl}
+              className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-600 bg-gray-50 outline-none cursor-default"
+              aria-readonly="true"
+            />
+          </div>
+        )}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700">Why I'm Here <span className="text-gray-400 text-xs">(optional)</span></label>
           <textarea name="whyImHere" value={form.whyImHere} onChange={handleChange} placeholder="e.g. Looking to co-found a SaaS product..." rows={3} className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all resize-vertical" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium text-gray-700">LinkedIn Profile URL <span className="text-red-500">*</span></label>
-          <input name="linkedInProfileUrl" value={form.linkedInProfileUrl} onChange={handleChange} placeholder="https://www.linkedin.com/in/your-username" required className="px-3 py-2 border border-gray-300 rounded-[8px] text-gray-900 bg-white outline-none focus:border-indigo-500 transition-all" />
         </div>
         {error && <div className="text-sm text-red-500">{error}</div>}
         <div className="flex gap-3">

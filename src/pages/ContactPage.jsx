@@ -145,20 +145,13 @@ export default function ContactPage() {
             <p className="text-purple-100 text-lg mb-8 max-md:text-base max-md:mb-6">
               {t('ctaJoinDescription')}
             </p>
-            <div className="flex gap-4 justify-center max-md:flex-col">
+            <div className="flex justify-center">
               <button
                 type="button"
                 className="btn-glow"
                 onClick={() => navigate('/login')}
               >
                 {t('signIn')}
-              </button>
-              <button
-                type="button"
-                className="btn-glow"
-                onClick={() => navigate('/join-form')}
-              >
-                {t('joinUs')}
               </button>
             </div>
           </div>

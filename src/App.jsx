@@ -4,6 +4,8 @@ import { lazy, Suspense } from 'react';
 import SiteGradientBorder from './components/common/SiteGradientBorder';
 import ScrollToTop from './components/common/ScrollToTop';
 import CookieConsentBanner from './components/common/CookieConsentBanner';
+import PageLoader from './components/common/PageLoader';
+import RouteErrorBoundary from './components/common/RouteErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { CookieConsentProvider } from './context/CookieConsentContext';
 import { CurrencyProvider } from './context/CurrencyContext';
@@ -11,42 +13,43 @@ import { LanguageProvider } from './context/LanguageContext';
 import { ProtectedRoute, ProfileGuard } from './components/auth/ProtectedRoute';
 import { AdminGuard, CoBrotherGuard } from './components/auth/ProtectedRoute';
 
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import OAuthCallbackPage from './pages/OAuthCallbackPage';
-import CompleteProfilePage from './pages/CompleteProfilePage';
-import DashboardPage from './pages/DashboardPage';
-import NewVenturePage from './pages/NewVenturePage';
-import EditVenturePage from './pages/EditVenturePage';
-import VentureDashboardPage from './pages/VentureDashboardPage';
-import VentureAnalyticsPage from './pages/VentureAnalyticsPage';
-import ProfileAnalyticsPage from './pages/ProfileAnalyticsPage';
-import DomainsDashboardPage from './pages/DomainsDashboardPage';
-import CoCreationDashboardPage from './pages/CoCreationDashboardPage';
-import CoCreationAnalyticsPage from './pages/CoCreationAnalyticsPage';
-import NotificationsPage from './pages/NotificationsPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-import CoBrotherDashboardPage from './pages/CoBrotherDashboardPage';
-import FeeRequestsPage from './pages/FeeRequestsPage';
-import AuctionPage from './pages/AuctionPage';
-import VentureAuctionPage from './pages/VentureAuctionPage';
-import CommunityAuctionPage from './pages/CommunityAuctionPage';
-import MeetingsPage from './pages/MeetingsPage';
+/* Critical path — eager load for fastest first paint */
 import Home from './pages/Home';
-import JoinForm from './pages/JoinForm';
-import ContactPage from './pages/ContactPage';
-import SoftwareAuctionPage from './pages/SoftwareAuctionPage';
-import AboutUsPage from './pages/AboutUsPage';
-import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
-import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
+import LoginPage from './pages/LoginPage';
+import OAuthCallbackPage from './pages/OAuthCallbackPage';
 
-/* Lazy Loaded Pages */
-const VenturesPage = lazy(() => import('./pages/VenturesPage'));
-const CommunityPage = lazy(() => import('./pages/CommunityPage'));
-const DomainsPage = lazy(() => import('./pages/DomainsPage'));
-const CoCreationPage = lazy(() => import('./pages/CoCreationPage'));
-const PurchasesPage = lazy(() => import('./pages/PurchasesPage'));
-const AuctionsPage = lazy(() => import('./pages/AuctionsPage'));
+/* Lazy-loaded pages — code-split by route */
+const RegisterPage = lazy(() => import(/* webpackChunkName: "register" */ './pages/RegisterPage'));
+const CompleteProfilePage = lazy(() => import(/* webpackChunkName: "complete-profile" */ './pages/CompleteProfilePage'));
+const DashboardPage = lazy(() => import(/* webpackChunkName: "dashboard" */ './pages/DashboardPage'));
+const NewVenturePage = lazy(() => import(/* webpackChunkName: "venture-new" */ './pages/NewVenturePage'));
+const EditVenturePage = lazy(() => import(/* webpackChunkName: "venture-edit" */ './pages/EditVenturePage'));
+const VentureDashboardPage = lazy(() => import(/* webpackChunkName: "venture-dashboard" */ './pages/VentureDashboardPage'));
+const VentureAnalyticsPage = lazy(() => import(/* webpackChunkName: "venture-analytics" */ './pages/VentureAnalyticsPage'));
+const ProfileAnalyticsPage = lazy(() => import(/* webpackChunkName: "profile-analytics" */ './pages/ProfileAnalyticsPage'));
+const DomainsDashboardPage = lazy(() => import(/* webpackChunkName: "domains-dashboard" */ './pages/DomainsDashboardPage'));
+const CoCreationDashboardPage = lazy(() => import(/* webpackChunkName: "cocreation-dashboard" */ './pages/CoCreationDashboardPage'));
+const CoCreationAnalyticsPage = lazy(() => import(/* webpackChunkName: "cocreation-analytics" */ './pages/CoCreationAnalyticsPage'));
+const NotificationsPage = lazy(() => import(/* webpackChunkName: "notifications" */ './pages/NotificationsPage'));
+const AdminDashboardPage = lazy(() => import(/* webpackChunkName: "admin" */ './pages/AdminDashboardPage'));
+const CoBrotherDashboardPage = lazy(() => import(/* webpackChunkName: "cobrother" */ './pages/CoBrotherDashboardPage'));
+const FeeRequestsPage = lazy(() => import(/* webpackChunkName: "fee-requests" */ './pages/FeeRequestsPage'));
+const AuctionPage = lazy(() => import(/* webpackChunkName: "auction-detail" */ './pages/AuctionPage'));
+const VentureAuctionPage = lazy(() => import(/* webpackChunkName: "venture-auction-detail" */ './pages/VentureAuctionPage'));
+const CommunityAuctionPage = lazy(() => import(/* webpackChunkName: "community-auction-detail" */ './pages/CommunityAuctionPage'));
+const MeetingsPage = lazy(() => import(/* webpackChunkName: "meetings" */ './pages/MeetingsPage'));
+const JoinForm = lazy(() => import(/* webpackChunkName: "join-form" */ './pages/JoinForm'));
+const ContactPage = lazy(() => import(/* webpackChunkName: "contact" */ './pages/ContactPage'));
+const SoftwareAuctionPage = lazy(() => import(/* webpackChunkName: "software-auction" */ './pages/SoftwareAuctionPage'));
+const AboutUsPage = lazy(() => import(/* webpackChunkName: "about" */ './pages/AboutUsPage'));
+const PrivacyPolicyPage = lazy(() => import(/* webpackChunkName: "privacy" */ './pages/PrivacyPolicyPage'));
+const TermsAndConditionsPage = lazy(() => import(/* webpackChunkName: "terms" */ './pages/TermsAndConditionsPage'));
+const VenturesPage = lazy(() => import(/* webpackChunkName: "ventures" */ './pages/VenturesPage'));
+const CommunityPage = lazy(() => import(/* webpackChunkName: "community" */ './pages/CommunityPage'));
+const DomainsPage = lazy(() => import(/* webpackChunkName: "domains" */ './pages/DomainsPage'));
+const CoCreationPage = lazy(() => import(/* webpackChunkName: "cocreation" */ './pages/CoCreationPage'));
+const PurchasesPage = lazy(() => import(/* webpackChunkName: "purchases" */ './pages/PurchasesPage'));
+const AuctionsPage = lazy(() => import(/* webpackChunkName: "auctions" */ './pages/AuctionsPage'));
 
 export default function App() {
   return (
@@ -58,270 +61,262 @@ export default function App() {
             <AuthProvider>
               <SiteGradientBorder />
               <CookieConsentBanner />
-              <Routes>
+              <RouteErrorBoundary>
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
 
-            {/* Public */}
-            <Route path="/" element={<Home />} />
-            <Route path="/join-form" element={<JoinForm />} />
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/about" element={<AboutUsPage />} />
-            <Route path="/careers" element={<Navigate to="/contact" replace />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-            <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
-            <Route path="/auth/callback" element={<OAuthCallbackPage />} />
+                    {/* Public */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/join-form" element={<JoinForm />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/about" element={<AboutUsPage />} />
+                    <Route path="/careers" element={<Navigate to="/contact" replace />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+                    <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
+                    <Route path="/auth/callback" element={<OAuthCallbackPage />} />
 
-            {/* Auctions */}
-            <Route
-              path="/auction/:auctionId"
-              element={
-                <ProfileGuard>
-                  <AuctionPage />
-                </ProfileGuard>
-              }
-            />
+                    {/* Auctions */}
+                    <Route
+                      path="/auction/:auctionId"
+                      element={
+                        <ProfileGuard>
+                          <AuctionPage />
+                        </ProfileGuard>
+                      }
+                    />
 
-            <Route
-              path="/venture-auction/:auctionId"
-              element={
-                <ProfileGuard>
-                  <VentureAuctionPage />
-                </ProfileGuard>
-              }
-            />
+                    <Route
+                      path="/venture-auction/:auctionId"
+                      element={
+                        <ProfileGuard>
+                          <VentureAuctionPage />
+                        </ProfileGuard>
+                      }
+                    />
 
-            <Route
-              path="/community-auction/:auctionId"
-              element={
-                <ProfileGuard>
-                  <CommunityAuctionPage />
-                </ProfileGuard>
-              }
-            />
+                    <Route
+                      path="/community-auction/:auctionId"
+                      element={
+                        <ProfileGuard>
+                          <CommunityAuctionPage />
+                        </ProfileGuard>
+                      }
+                    />
 
-            <Route
-              path="/meetings"
-              element={
-                <ProfileGuard>
-                  <MeetingsPage />
-                </ProfileGuard>
-              }
-            />
+                    <Route
+                      path="/meetings"
+                      element={
+                        <ProfileGuard>
+                          <MeetingsPage />
+                        </ProfileGuard>
+                      }
+                    />
 
-            {/* Complete Profile */}
-            <Route
-              path="/complete-profile"
-              element={
-                <ProtectedRoute>
-                  <CompleteProfilePage />
-                </ProtectedRoute>
-              }
-            />
+                    {/* Complete Profile */}
+                    <Route
+                      path="/complete-profile"
+                      element={
+                        <ProtectedRoute>
+                          <CompleteProfilePage />
+                        </ProtectedRoute>
+                      }
+                    />
 
-            {/* Analytics */}
-            <Route
-              path="/ventures/analytics"
-              element={
-                <ProfileGuard>
-                  <VentureAnalyticsPage />
-                </ProfileGuard>
-              }
-            />
+                    {/* Analytics */}
+                    <Route
+                      path="/ventures/analytics"
+                      element={
+                        <ProfileGuard>
+                          <VentureAnalyticsPage />
+                        </ProfileGuard>
+                      }
+                    />
 
-            <Route
-              path="/profile/analytics"
-              element={
-                <ProfileGuard>
-                  <ProfileAnalyticsPage />
-                </ProfileGuard>
-              }
-            />
+                    <Route
+                      path="/profile/analytics"
+                      element={
+                        <ProfileGuard>
+                          <ProfileAnalyticsPage />
+                        </ProfileGuard>
+                      }
+                    />
 
-            {/* Dashboard */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProfileGuard>
-                  <DashboardPage />
-                </ProfileGuard>
-              }
-            />
+                    {/* Dashboard */}
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProfileGuard>
+                          <DashboardPage />
+                        </ProfileGuard>
+                      }
+                    />
 
-            {/* Ventures */}
-            <Route
-              path="/ventures"
-              element={
-                <Suspense fallback={<div className="p-6">Loading...</div>}>
-                  <ProfileGuard>
-                    <VenturesPage />
-                  </ProfileGuard>
+                    {/* Ventures */}
+                    <Route
+                      path="/ventures"
+                      element={
+                        <ProfileGuard>
+                          <VenturesPage />
+                        </ProfileGuard>
+                      }
+                    />
+
+                    <Route
+                      path="/ventures/new"
+                      element={
+                        <ProfileGuard>
+                          <NewVenturePage />
+                        </ProfileGuard>
+                      }
+                    />
+
+                    <Route
+                      path="/ventures/:id/edit"
+                      element={
+                        <ProfileGuard>
+                          <EditVenturePage />
+                        </ProfileGuard>
+                      }
+                    />
+
+                    <Route
+                      path="/ventures/dashboard"
+                      element={
+                        <ProfileGuard>
+                          <VentureDashboardPage />
+                        </ProfileGuard>
+                      }
+                    />
+
+                    {/* Community */}
+                    <Route
+                      path="/community"
+                      element={
+                        <ProfileGuard>
+                          <CommunityPage />
+                        </ProfileGuard>
+                      }
+                    />
+
+                    {/* Domains */}
+                    <Route
+                      path="/domains"
+                      element={
+                        <ProfileGuard>
+                          <DomainsPage />
+                        </ProfileGuard>
+                      }
+                    />
+
+                    <Route
+                      path="/domains/dashboard"
+                      element={
+                        <ProfileGuard>
+                          <DomainsDashboardPage />
+                        </ProfileGuard>
+                      }
+                    />
+
+                    {/* CoCreation */}
+                    <Route
+                      path="/cocreation"
+                      element={
+                        <ProfileGuard>
+                          <CoCreationPage />
+                        </ProfileGuard>
+                      }
+                    />
+
+                    <Route
+                      path="/cocreation/auction/:auctionId"
+                      element={<SoftwareAuctionPage />}
+                    />
+
+                    <Route
+                      path="/cocreation/dashboard"
+                      element={
+                        <ProfileGuard>
+                          <CoCreationDashboardPage />
+                        </ProfileGuard>
+                      }
+                    />
+
+                    <Route
+                      path="/cocreation/:id/analytics"
+                      element={
+                        <ProfileGuard>
+                          <CoCreationAnalyticsPage />
+                        </ProfileGuard>
+                      }
+                    />
+
+                    {/* Notifications */}
+                    <Route
+                      path="/notifications"
+                      element={
+                        <ProfileGuard>
+                          <NotificationsPage />
+                        </ProfileGuard>
+                      }
+                    />
+
+                    {/* Auctions */}
+                    <Route
+                      path="/auctions"
+                      element={
+                        <ProfileGuard>
+                          <AuctionsPage />
+                        </ProfileGuard>
+                      }
+                    />
+
+                    {/* Purchases */}
+                    <Route
+                      path="/purchases"
+                      element={
+                        <ProfileGuard>
+                          <PurchasesPage />
+                        </ProfileGuard>
+                      }
+                    />
+
+                    {/* Admin */}
+                    <Route path="/dashboard/admin" element={<Navigate to="/admin" replace />} />
+                    <Route
+                      path="/admin"
+                      element={
+                        <AdminGuard>
+                          <AdminDashboardPage />
+                        </AdminGuard>
+                      }
+                    />
+
+                    <Route
+                      path="/cobrother"
+                      element={
+                        <CoBrotherGuard>
+                          <CoBrotherDashboardPage />
+                        </CoBrotherGuard>
+                      }
+                    />
+
+                    <Route
+                      path="/fee-requests"
+                      element={
+                        <ProtectedRoute>
+                          <FeeRequestsPage />
+                        </ProtectedRoute>
+                      }
+                    />
+
+                    {/* Fallback */}
+                    <Route path="*" element={<Navigate to="/login" replace />} />
+
+                  </Routes>
                 </Suspense>
-              }
-            />
-
-            <Route
-              path="/ventures/new"
-              element={
-                <ProfileGuard>
-                  <NewVenturePage />
-                </ProfileGuard>
-              }
-            />
-
-            <Route
-              path="/ventures/:id/edit"
-              element={
-                <ProfileGuard>
-                  <EditVenturePage />
-                </ProfileGuard>
-              }
-            />
-
-            <Route
-              path="/ventures/dashboard"
-              element={
-                <ProfileGuard>
-                  <VentureDashboardPage />
-                </ProfileGuard>
-              }
-            />
-
-            {/* Community */}
-            <Route
-              path="/community"
-              element={
-                <Suspense fallback={<div className="p-6">Loading...</div>}>
-                  <ProfileGuard>
-                    <CommunityPage />
-                  </ProfileGuard>
-                </Suspense>
-              }
-            />
-
-            {/* Domains */}
-            <Route
-              path="/domains"
-              element={
-                <Suspense fallback={<div className="p-6">Loading...</div>}>
-                  <ProfileGuard>
-                    <DomainsPage />
-                  </ProfileGuard>
-                </Suspense>
-              }
-            />
-
-            <Route
-              path="/domains/dashboard"
-              element={
-                <ProfileGuard>
-                  <DomainsDashboardPage />
-                </ProfileGuard>
-              }
-            />
-
-            {/* CoCreation */}
-            <Route
-              path="/cocreation"
-              element={
-                <Suspense fallback={<div className="p-6">Loading...</div>}>
-                  <ProfileGuard>
-                    <CoCreationPage />
-                  </ProfileGuard>
-                </Suspense>
-              }
-            />
-
-            <Route
-              path="/cocreation/auction/:auctionId"
-              element={<SoftwareAuctionPage />}
-            />
-
-            <Route
-              path="/cocreation/dashboard"
-              element={
-                <ProfileGuard>
-                  <CoCreationDashboardPage />
-                </ProfileGuard>
-              }
-            />
-
-            <Route
-              path="/cocreation/:id/analytics"
-              element={
-                <ProfileGuard>
-                  <CoCreationAnalyticsPage />
-                </ProfileGuard>
-              }
-            />
-
-            {/* Notifications */}
-            <Route
-              path="/notifications"
-              element={
-                <ProfileGuard>
-                  <NotificationsPage />
-                </ProfileGuard>
-              }
-            />
-
-            {/* Auctions */}
-            <Route
-              path="/auctions"
-              element={
-                <Suspense fallback={<div className="p-6">Loading...</div>}>
-                  <ProfileGuard>
-                    <AuctionsPage />
-                  </ProfileGuard>
-                </Suspense>
-              }
-            />
-
-            {/* Purchases */}
-            <Route
-              path="/purchases"
-              element={
-                <Suspense fallback={<div className="p-6">Loading...</div>}>
-                  <ProfileGuard>
-                    <PurchasesPage />
-                  </ProfileGuard>
-                </Suspense>
-              }
-            />
-
-            {/* Admin */}
-            <Route path="/dashboard/admin" element={<Navigate to="/admin" replace />} />
-            <Route
-              path="/admin"
-              element={
-                <AdminGuard>
-                  <AdminDashboardPage />
-                </AdminGuard>
-              }
-            />
-
-            <Route
-              path="/cobrother"
-              element={
-                <CoBrotherGuard>
-                  <CoBrotherDashboardPage />
-                </CoBrotherGuard>
-              }
-            />
-
-            <Route
-              path="/fee-requests"
-              element={
-                <ProtectedRoute>
-                  <FeeRequestsPage />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
-
-              </Routes>
+              </RouteErrorBoundary>
             </AuthProvider>
           </CookieConsentProvider>
         </CurrencyProvider>

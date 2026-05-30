@@ -421,8 +421,8 @@ export default function AppLayout({ children }) {
       {/* Main column: header + page content (footer is outside workspace) */}
       <div className="app-layout-main-column flex min-w-0 flex-1 flex-col">
         {/* Top Header */}
-        <header className="sticky top-0 z-30 shrink-0 border-b border-gray-200 bg-white px-4 py-4 lg:px-8 flex items-center justify-between relative">
-          <div className="flex items-center gap-3 min-w-0 flex-1">
+        <header className="app-layout-header sticky top-0 z-30 shrink-0 border-b border-gray-200 bg-white px-4 py-4 lg:px-8 flex items-center justify-between relative">
+          <div className="app-layout-header-start flex items-center gap-2 lg:gap-3 min-w-0 flex-1 overflow-hidden">
             <button
               onClick={() => setMobileOpen(true)}
               className="lg:hidden p-2 text-gray-600 hover:text-gray-900 shrink-0"
@@ -434,18 +434,18 @@ export default function AppLayout({ children }) {
               <BackButton to={backTarget.to} label={backTarget.label} className="shrink-0" />
             )}
 
-            <Link to="/" className="lg:hidden flex items-center shrink-0">
+            <Link to="/" className="lg:hidden flex items-center min-w-0 shrink app-layout-header-logo">
               <img src={coBrotherLogo} alt="CoBrother" className="brand-nav-logo" />
             </Link>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="app-layout-header-utils home-nav-util-group" role="group" aria-label="Regional settings">
-              <LanguageDropdown variant="minimal" className="home-nav-util-language" />
-              <span className="home-nav-util-divider" aria-hidden="true">
+          <div className="app-layout-header-actions flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0">
+            <div className="app-layout-header-utils home-nav-util-group flex items-center" role="group" aria-label="Regional settings">
+              <LanguageDropdown variant="minimal" className="home-nav-util-language app-layout-header-language" />
+              <span className="home-nav-util-divider hidden lg:inline" aria-hidden="true">
                 |
               </span>
-              <CurrencyDropdown variant="minimal" className="home-nav-util-currency" />
+              <CurrencyDropdown variant="minimal" className="home-nav-util-currency hidden lg:flex" />
             </div>
             {/* Working Bell Icon with Notification Panel */}
             <div className="relative" ref={bellRef}>
@@ -525,7 +525,7 @@ export default function AppLayout({ children }) {
               )}
             </div>
 
-            <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
+            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-gray-200">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
                 {firstName.charAt(0).toUpperCase()}
               </div>

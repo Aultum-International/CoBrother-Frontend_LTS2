@@ -13,7 +13,7 @@ import {
   useReducedMotion,
 } from 'framer-motion';
 import SmallDomainTickerCard from './SmallDomainTickerCard';
-import { DOMAIN_TICKER_ITEMS } from './mockDomainTickerData';
+import { useDomainTickerItems } from '../../../hooks/useDomainTickerItems';
 
 const CARD_GAP_PX = 12;
 const DESKTOP_CARD_WIDTH = 292;
@@ -22,9 +22,20 @@ const LOOP_MS = 38000;
 const PAUSE_MS = 7200;
 const CENTER_TOLERANCE = 24;
 
+function TickerSkeletonCard({ cardWidth }) {
+  return (
+    <div
+      className="domain-ticker-card shrink-0 animate-pulse rounded-2xl border border-slate-100/80 bg-white/90"
+      style={{ width: cardWidth, height: 90 }}
+      aria-hidden
+    />
+  );
+}
+
 function TickerSlot({
   item,
   slotIndex,
+  sourceLength,
   x,
   wrapWidth,
   cardWidth,
@@ -61,7 +72,7 @@ function TickerSlot({
       <SmallDomainTickerCard
         item={item}
         slotId={slotIndex}
-        index={slotIndex % DOMAIN_TICKER_ITEMS.length}
+        index={sourceLength ? slotIndex % sourceLength : slotIndex}
         focused={focused}
         statusVisible={statusVisible}
         onStatusReveal={onStatusReveal}
@@ -73,6 +84,7 @@ function TickerSlot({
 
 export default function CompactDomainTicker({ className = '' }) {
   const reduceMotion = useReducedMotion();
+  const { items: sourceItems, loading } = useDomainTickerItems();
   const wrapRef = useRef(null);
   const x = useMotionValue(0);
   const [wrapWidth, setWrapWidth] = useState(420);
@@ -86,11 +98,13 @@ export default function CompactDomainTicker({ className = '' }) {
   const cardWidthRef = useRef(cardWidth);
   const stepRef = useRef(cardWidth + CARD_GAP_PX);
 
+  const poolSize = Math.max(sourceItems.length, 1);
+
   const tickerItems = useMemo(
-    () => [...DOMAIN_TICKER_ITEMS, ...DOMAIN_TICKER_ITEMS, ...DOMAIN_TICKER_ITEMS],
-    [],
+    () => [...sourceItems, ...sourceItems, ...sourceItems],
+    [sourceItems],
   );
-  const segment = (cardWidth + CARD_GAP_PX) * DOMAIN_TICKER_ITEMS.length;
+  const segment = (cardWidth + CARD_GAP_PX) * poolSize;
 
   wrapWidthRef.current = wrapWidth;
   cardWidthRef.current = cardWidth;
@@ -200,26 +214,32 @@ export default function CompactDomainTicker({ className = '' }) {
     <section
       ref={wrapRef}
       className={`domain-ticker-viewport relative flex min-w-0 items-end border-0 bg-transparent ${className}`.trim()}
-      aria-label="Recently sold premium domains"
+      aria-label="Recently listed domains"
+      aria-busy={loading}
     >
       <motion.div
-        className="domain-ticker-track relative z-0 flex w-max transform-gpu items-end gap-3 py-0 will-change-transform"
+        className="domain-ticker-track relative z-0 flex w-max transform-gpu items-end gap-3 will-change-transform"
         style={{ x, translateZ: 0 }}
       >
-        {tickerItems.map((item, index) => (
-          <TickerSlot
-            key={`${item.id}-${index}`}
-            item={item}
-            slotIndex={index}
-            x={x}
-            wrapWidth={wrapWidth}
-            focused={focusedSlot === index}
-            statusVisible={revealedSlots.has(index)}
-            onStatusReveal={onStatusReveal}
-            onSlotExit={onSlotExit}
-            cardWidth={cardWidth}
-          />
-        ))}
+        {loading && sourceItems.length === 0
+          ? Array.from({ length: 6 }, (_, index) => (
+              <TickerSkeletonCard key={`skeleton-${index}`} cardWidth={cardWidth} />
+            ))
+          : tickerItems.map((item, index) => (
+              <TickerSlot
+                key={`${item.id}-${index}`}
+                item={item}
+                slotIndex={index}
+                sourceLength={poolSize}
+                x={x}
+                wrapWidth={wrapWidth}
+                focused={focusedSlot === index}
+                statusVisible={revealedSlots.has(index)}
+                onStatusReveal={onStatusReveal}
+                onSlotExit={onSlotExit}
+                cardWidth={cardWidth}
+              />
+            ))}
       </motion.div>
       <div className="domain-ticker-edge-fade domain-ticker-edge-fade--left" aria-hidden="true" />
       <div className="domain-ticker-edge-fade domain-ticker-edge-fade--right" aria-hidden="true" />

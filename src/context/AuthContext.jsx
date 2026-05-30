@@ -1,10 +1,13 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authAPI, profileAPI } from '../api/services';
+import PageLoader from '../components/common/PageLoader';
+import { preloadAuthenticatedRoutes } from '../utils/preloadRoutes';
 
 /** Stable fallback so `useAuth()` never returns null (avoids destructuring errors outside provider). */
 const authContextDefault = {
   user: null,
   loading: false,
+  authLoading: false,
   login: () => {},
   logout: async () => {},
   refreshUser: async () => null,
@@ -43,6 +46,12 @@ export function AuthProvider({ children }) {
 
   useEffect(() => { fetchMe(); }, [fetchMe]);
 
+  useEffect(() => {
+    if (user) {
+      preloadAuthenticatedRoutes();
+    }
+  }, [user]);
+
   // ── login: called from OAuthCallbackPage and password/OTP login ──────────
   // Stores tokens FIRST, then optionally seeds user state
   const login = useCallback((tokens, userData) => {
@@ -64,8 +73,12 @@ export function AuthProvider({ children }) {
   const refreshUser = useCallback(() => fetchMe(), [fetchMe]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
-      {children}
+    <AuthContext.Provider value={{ user, loading, authLoading: loading, login, logout, refreshUser }}>
+      {loading ? (
+        <PageLoader message="Checking your session..." />
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 }

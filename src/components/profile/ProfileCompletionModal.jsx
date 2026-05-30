@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { profileAPI } from '../../api/services';
 import { useAuth } from '../../context/AuthContext';
+import { isValidPhoneNumber, sanitizePhoneInput } from '../../utils/phoneValidation';
 
 
 export default function ProfileCompletionModal({ forceOpen = false }) {
@@ -27,8 +28,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'phoneNumber') {
-      const numericValue = value.replace(/\D/g, '');
-      setForm({ ...form, [name]: numericValue });
+      setForm({ ...form, [name]: sanitizePhoneInput(value) });
     } else {
       setForm({ ...form, [name]: value });
     }
@@ -38,6 +38,14 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
     e.preventDefault();
     if (!form.firstname.trim() || !form.lastname.trim()) {
       setError('First name and last name are required.');
+      return;
+    }
+    if (!form.phoneNumber.trim()) {
+      setError('Phone number is required.');
+      return;
+    }
+    if (!isValidPhoneNumber(form.phoneNumber)) {
+      setError('Please enter a valid 10-digit phone number.');
       return;
     }
     setLoading(true);
@@ -97,7 +105,7 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
 
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">
-              Phone Number <span className="text-gray-400 text-xs">(optional)</span>
+              Phone Number <span className="text-red-400">*</span>
             </label>
             <input
               name="phoneNumber"
@@ -105,6 +113,10 @@ export default function ProfileCompletionModal({ forceOpen = false }) {
               onChange={handleChange}
               placeholder="e.g. 9876543210"
               maxLength={10}
+              minLength={10}
+              inputMode="numeric"
+              autoComplete="tel"
+              required
               className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-[10px] text-gray-900 text-sm placeholder:text-gray-400 outline-none transition-all duration-200 focus:border-purple-500 focus:shadow-[0_0_0_3px_rgba(147,51,234,0.1)]"
             />
           </div>

@@ -159,8 +159,23 @@ export const adminAPI = {
   getAllAuctions: () => api.get('/api/v1/auction/admin/all'),
   getAddonOrders: () => api.get('/api/v1/addon/admin/all'),
   getAllVentureAuctions: () => api.get('/api/v1/venture-auction/admin/all'),
-  takeDown:  (type, id, reason) => api.post(`/api/v1/admin/takedown`, { type, entityId: id, reason }),
-  restore:   (type, id)         => api.post(`/api/v1/admin/restore`,  { type, entityId: id }),
+  takeDown: (type, id, reason) => {
+    const payload = {
+      type: String(type ?? '').trim(),
+      entityId: id != null && id !== '' ? String(id) : '',
+      reason: String(reason ?? '').trim(),
+    };
+    console.debug('[adminAPI.takeDown] request', payload);
+    return api.post('/api/v1/admin/takedown', payload);
+  },
+  restore: (type, id) => {
+    const payload = {
+      type: String(type ?? '').trim(),
+      entityId: id != null && id !== '' ? String(id) : '',
+    };
+    console.debug('[adminAPI.restore] request', payload);
+    return api.post('/api/v1/admin/restore', payload);
+  },
   getDomainEnquiries: ()        => api.get('/api/v1/domain-enquiry/all'),
   toggleDomainHomepage:   (id)  => api.post(`/api/v1/admin/domain/${id}/toggle-homepage`),
   toggleVentureHomepage:  (id)  => api.post(`/api/v1/admin/venture/${id}/toggle-homepage`),

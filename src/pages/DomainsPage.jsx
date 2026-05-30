@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { flushSync } from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LayoutDashboard, Plus, CheckCircle } from 'lucide-react';
 import EditActionLabel from '../components/common/EditActionLabel';
@@ -64,6 +64,7 @@ export default function DomainsPage() {
   const { user }  = useAuth();
   const { currency, getSymbol } = useCurrency();
   const navigate  = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [allDomains, setAllDomains]         = useState([]);
   const [loading, setLoading]               = useState(true);
@@ -78,7 +79,7 @@ export default function DomainsPage() {
   const [filterTab, setFilterTab]           = useState('all');
   const [showConfetti, setShowConfetti]     = useState(false);
 
-  const { toggle: toggleLike, get: getLike } = useLikes('DOMAIN', allDomains);
+  const { toggle: toggleLike, get: getLike, likeMap } = useLikes('DOMAIN', allDomains);
 
   const domainRows = asArray(allDomains);
   const visibleDomains = filterTab === 'mine'
@@ -96,6 +97,7 @@ export default function DomainsPage() {
     priceField:    'askingPrice',
     categoryField: 'pricingDemand',
     dateField:     'createdAt',
+    likeMap,
   }, 20);
 
   useEffect(() => {
@@ -110,6 +112,18 @@ export default function DomainsPage() {
     .catch(() => setAllDomains([]))
     .finally(() => setLoading(false));
 }, [filterTab]);
+
+  useEffect(() => {
+    const shouldOpenListForm = searchParams.get('list') === '1' || searchParams.get('list') === 'true';
+    if (!shouldOpenListForm) return;
+
+    setShowForm(true);
+    setEditTarget(null);
+
+    const next = new URLSearchParams(searchParams);
+    next.delete('list');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const { closeListingDetail } = useOpenListingDetailFromUrl({
     items: domainRows,
@@ -719,6 +733,9 @@ function BuyDomainModal({ domain, onClose, onSuccess }) {
     try {
       const { data: orderData } = await domainAPI.createOrder(domain.id, {
         services: addons,
+        buyerName: `${user?.firstname || ''} ${user?.lastname || ''}`.trim(),
+        buyerEmail: user?.email || '',
+        buyerPhone: user?.phoneNumber || '',
         ...buildOrderCurrencyPayload(currency),
       });
       openRazorpayCheckout({

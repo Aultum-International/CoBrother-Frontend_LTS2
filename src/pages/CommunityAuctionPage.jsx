@@ -5,6 +5,8 @@ import { useCommunityAuction } from '../hooks/useCommunityAuction';
 import { communityAuctionAPI, meetingAPI } from '../api/services';
 import AppLayout from '../components/layout/AppLayout';
 import MeetingDateTimePicker from '../components/common/MeetingDateTimePicker';
+import { formatAvailableFromDate } from '../utils/formatAvailableFromDate';
+import { normalizeExternalUrl } from '../utils/externalUrl';
 
 // ─── Countdown Hook ───────────────────────────────────────────────────────────
 function useCountdown(endTime) {
@@ -412,9 +414,7 @@ export default function CommunityAuctionPage() {
                 <InfoRow label="Expected Rate"
                   value={auction.expectedRate ? `₹${Number(auction.expectedRate).toLocaleString('en-IN')}` : '—'} />
                 <InfoRow label="Available From"
-                  value={auction.availableFrom
-                    ? new Date(auction.availableFrom).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                    : '—'} />
+                  value={formatAvailableFromDate(auction.availableFrom)} />
                 <InfoRow label="Started"
                   value={auction.startTime
                     ? new Date(auction.startTime.endsWith('Z') ? auction.startTime : auction.startTime + 'Z')
@@ -494,7 +494,7 @@ function ProfileInfoCard({ community, auction }) {
             <div className="text-sm text-gray-500 mb-1">🏢 {community.industry.replace(/_/g, ' ')}</div>
           )}
           {community.linkedInProfileUrl && (
-            <a href={community.linkedInProfileUrl} target="_blank" rel="noopener noreferrer"
+            <a href={normalizeExternalUrl(community.linkedInProfileUrl)} target="_blank" rel="noopener noreferrer"
               className="text-sm text-blue-600 hover:underline">
               LinkedIn Profile ↗
             </a>
@@ -527,7 +527,7 @@ function ProfileInfoCard({ community, auction }) {
           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="text-xs text-blue-500 font-semibold uppercase tracking-wider mb-0.5">Available From</div>
             <div className="text-sm font-bold text-blue-800">
-              {new Date(auction.availableFrom).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+              {formatAvailableFromDate(auction.availableFrom)}
             </div>
           </div>
         )}

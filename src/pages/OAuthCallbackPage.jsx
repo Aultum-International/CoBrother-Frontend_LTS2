@@ -2,6 +2,12 @@ import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { consumeRedirectAfterLogin } from '../utils/listingNavigation';
+import { isValidPhoneNumber } from '../utils/phoneValidation';
+
+function isProfileReady(user) {
+  if (!user?.profileComplete) return false;
+  return isValidPhoneNumber(user.phoneNumber || user.phone || '');
+}
 
 /**
  * Spring Boot OAuth2 success handler redirects here:
@@ -45,7 +51,7 @@ export default function OAuthCallbackPage() {
     // ── Step 3: fetch real user profile ───────────────────────────────────
     refreshUser()
       .then((fetchedUser) => {
-        const isComplete = fetchedUser?.profileComplete ?? profileCompleteParam;
+        const isComplete = isProfileReady(fetchedUser) || (!fetchedUser && profileCompleteParam);
         const redirectPath = consumeRedirectAfterLogin();
         console.log('[OAuth] profileComplete:', isComplete, 'user:', fetchedUser?.email);
         const destination = isComplete

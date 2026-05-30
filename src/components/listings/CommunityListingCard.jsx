@@ -1,6 +1,7 @@
 import LikeButton from '../common/LikeButton';
 import { EditIcon } from '../common/EditActionLabel';
 import ListingBrowseFooter from './ListingBrowseFooter';
+import { normalizeExternalUrl } from '../../utils/externalUrl';
 
 function LinkedInIcon({ size = 18 }) {
   return (
@@ -38,7 +39,7 @@ export default function CommunityListingCard({
         </button>
       )}
       <div className="flex min-h-0 flex-1 flex-col gap-3">
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3">
           {profile.imageUrl ? (
             <img src={profile.imageUrl} alt={profile.name} className="h-12 w-12 shrink-0 rounded-full object-cover" />
           ) : (
@@ -46,8 +47,10 @@ export default function CommunityListingCard({
               {profile.name?.[0]?.toUpperCase() || '?'}
             </div>
           )}
-          <div className="min-w-0">
-            <h4 className="truncate font-semibold text-[0.95rem] text-gray-900">{profile.name || 'Anonymous'}</h4>
+          <div className="min-w-0 flex-1">
+            <h4 className="min-h-[2.5rem] font-semibold text-[0.95rem] leading-snug text-gray-900 line-clamp-2 break-words">
+              {profile.name || 'Anonymous'}
+            </h4>
             {profile.role && (
               <div className="mt-0.5 inline-block rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-[0.7rem] uppercase tracking-wider text-indigo-600">
                 {profile.role.replace(/_/g, ' ')}
@@ -87,9 +90,9 @@ export default function CommunityListingCard({
         )}
         {profile.linkedInProfileUrl && (
           <a
-            href={profile.linkedInProfileUrl}
+            href={normalizeExternalUrl(profile.linkedInProfileUrl)}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
             className="mt-0.5 flex items-center gap-1 text-xs text-[#0077b5] no-underline hover:text-[#005885]"
             onClick={(e) => e.stopPropagation()}
           >
